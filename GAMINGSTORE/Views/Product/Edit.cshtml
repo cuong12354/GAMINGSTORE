@@ -1,0 +1,72 @@
+﻿@model GAMINGSTORE.Models.Product
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    ViewData["Title"] = "Edit Product";
+}
+
+<h2>Edit Product</h2>
+
+<form asp-action="Update" method="post" enctype="multipart/form-data">
+
+    <input type="hidden" asp-for="Id" />
+
+    <div class="form-group">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Price"></label>
+        <input asp-for="Price" class="form-control" />
+        <span asp-validation-for="Price" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Description"></label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="CategoryId">Category</label>
+        <select asp-for="CategoryId" asp-items="@ViewBag.Categories" class="form-control"></select>
+    </div>
+
+    <!-- 🔥 IMAGE -->
+    <div class="form-group">
+        <label>Product Image</label>
+
+        <!-- chọn file -->
+        <input type="file" name="imageUrl" class="form-control" id="imageInput" />
+
+        <br />
+
+        <!-- preview -->
+        <img src="@Model.ImageUrl"
+             id="previewImage"
+             style="width:200px; height:200px; object-fit:cover; border:1px solid #ccc;" />
+    </div>
+
+    <br />
+    <button type="submit" class="btn btn-primary">Update</button>
+
+</form>
+
+<!-- 🔥 SCRIPT PREVIEW -->
+<script>
+    document.getElementById("imageInput").addEventListener("change", function (event) {
+        const file = event.target.files[0];
+
+        if (file) {
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                document.getElementById("previewImage").src = e.target.result;
+            };
+
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
