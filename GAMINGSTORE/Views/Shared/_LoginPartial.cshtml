@@ -1,0 +1,133 @@
+﻿@using Microsoft.AspNetCore.Identity
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<style>
+    .user-box {
+        position: relative;
+        cursor: pointer;
+        color: white;
+    }
+
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: white;
+        color: #ee4d2d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+
+    /* ===== DROPDOWN MƯỢT ===== */
+    .user-dropdown {
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px);
+        transition: all 0.35s ease;
+        position: absolute;
+        right: 0;
+        top: 120%;
+        background: white;
+        color: black;
+        min-width: 180px;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        overflow: hidden;
+        z-index: 1000;
+    }
+
+    /* hover thì hiện */
+    .user-box:hover .user-dropdown {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    /* item */
+    .user-dropdown a,
+    .user-dropdown button {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        text-align: left;
+        border: none;
+        background: none;
+        color: black;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+        /* hover item */
+        .user-dropdown a:hover,
+        .user-dropdown button:hover {
+            background: #f5f5f5;
+            padding-left: 15px;
+        }
+</style>
+
+<ul class="navbar-nav">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        var username = UserManager.GetUserName(User);
+        var firstChar = username.Substring(0, 1).ToUpper();
+
+        <li class="nav-item">
+            <div class="user-box d-flex align-items-center gap-2">
+
+                <!-- Avatar -->
+                <div class="user-avatar">
+                    @firstChar
+                </div>
+
+                <!-- Username -->
+                <span>@username ▼</span>
+
+                <!-- Dropdown -->
+                <div class="user-dropdown">
+
+                    <a asp-area="Identity" asp-page="/Account/Manage/Index">
+                        👤 Tài khoản
+                    </a>
+
+                    <a href="#">
+                        📦 Đơn hàng
+                    </a>
+
+                    <!-- LOGOUT FIX -->
+                    <form asp-area="Identity"
+                          asp-page="/Account/Logout"
+                          method="post"
+                          asp-route-returnUrl="/">
+
+                        <button type="submit">
+                            🚪 Đăng xuất
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item d-flex gap-2">
+
+            <a class="btn btn-light"
+               asp-area="Identity"
+               asp-page="/Account/Login">
+                Đăng nhập
+            </a>
+
+            <a class="btn btn-outline-light"
+               asp-area="Identity"
+               asp-page="/Account/Register">
+                Đăng ký
+            </a>
+
+        </li>
+    }
+</ul>

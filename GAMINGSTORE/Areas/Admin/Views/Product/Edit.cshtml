@@ -7,7 +7,7 @@
 
 <h2>Edit Product</h2>
 
-<form asp-action="Edit" method="post" enctype="multipart/form-data">
+<form asp-action="Update" method="post" enctype="multipart/form-data">
 
     <input type="hidden" asp-for="Id" />
 
@@ -31,10 +31,10 @@
 
     <div class="form-group">
         <label asp-for="CategoryId">Category</label>
-        <select asp-for="CategoryId" asp-items="@ViewBag.CategoryList" class="form-control"></select>
+        <select asp-for="CategoryId" asp-items="@ViewBag.Categories" class="form-control"></select>
     </div>
 
-    <!--  IMAGE -->
+    <!-- 🔥 IMAGE -->
     <div class="form-group">
         <label>Product Image</label>
 
@@ -54,7 +54,7 @@
 
 </form>
 
-<!-- SCRIPT PREVIEW -->
+<!-- 🔥 SCRIPT PREVIEW -->
 <script>
     document.getElementById("imageInput").addEventListener("change", function (event) {
         const file = event.target.files[0];

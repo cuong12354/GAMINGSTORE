@@ -1,10 +1,13 @@
 ﻿using GAMINGSTORE.Models;
 using GAMINGSTORE.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace GAMINGSTORE.Controllers
+namespace Ares.Admin.Controllers
 {
+    [Area("Admin")]
+    [Authorize]
     public class ProductController : Controller
     {
         private readonly IProductRepository _productRepository;
@@ -26,7 +29,7 @@ namespace GAMINGSTORE.Controllers
         public async Task<IActionResult> Create()
         {
             var categories = await _categoryRepository.GetAllAsync();
-            ViewBag.CategoryList = new SelectList(categories, "Id", "Name");
+            ViewBag.Categories = new SelectList(categories, "Id", "Name");
             return View();
         }
         // Xử lý thêm sản phẩm mới
@@ -47,7 +50,7 @@ namespace GAMINGSTORE.Controllers
             }
             // Nếu ModelState không hợp lệ, hiển thị form với dữ liệu đã nhập
             var categories = await _categoryRepository.GetAllAsync();
-            ViewBag.CategoryList = new SelectList(categories, "Id", "Name");
+            ViewBag.Categories = new SelectList(categories, "Id", "Name");
             return View(product);
         }
         // Viết thêm hàm SaveImage (tham khảo bài 02)
@@ -81,15 +84,17 @@ namespace GAMINGSTORE.Controllers
                 return NotFound();
             }
             var categories = await _categoryRepository.GetAllAsync();
-            ViewBag.CategoryList = new SelectList(categories, "Id", "Name",product.CategoryId);
+            ViewBag.Categories = new SelectList(categories, "Id", "Name",
+            product.CategoryId);
             return View(product);
         }
         // Xử lý cập nhật sản phẩm
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, Product product,IFormFile imageUrl)
+        public async Task<IActionResult> Edit(int id, Product product,
+        IFormFile imageUrl)
         {
             ModelState.Remove("ImageUrl"); // Loại bỏ xác thực ModelState cho ImageUrl
-        if (id != product.Id)
+            if (id != product.Id)
             {
                 return NotFound();
             }
@@ -98,7 +103,7 @@ namespace GAMINGSTORE.Controllers
                 var existingProduct = await
                 _productRepository.GetByIdAsync(id); // Giả định có phương thức GetByIdAsync
                                                      // Giữ nguyên thông tin hình ảnh nếu không có hình mới được tải lên
-            if (imageUrl == null)
+                if (imageUrl == null)
                 {
                     product.ImageUrl = existingProduct.ImageUrl;
                 }
@@ -119,7 +124,7 @@ namespace GAMINGSTORE.Controllers
                 return RedirectToAction(nameof(Index));
             }
             var categories = await _categoryRepository.GetAllAsync();
-            ViewBag.CategoryList = new SelectList(categories, "Id", "Name", product.CategoryId);
+            ViewBag.Categories = new SelectList(categories, "Id", "Name");
             return View(product);
         }
         // Hiển thị form xác nhận xóa sản phẩm
