@@ -12,25 +12,22 @@
 
     /* ===== BANNER ===== */
     .banner-img {
-        height: 350px;
-        object-fit: cover;
-        border-radius: 10px;
+        height: 350px; /* Bạn có thể chỉnh lại chiều cao tùy ý */
+        object-fit: cover; /* Chống méo ảnh */
     }
 
+    /* Kéo dài thời gian hiệu ứng Fade để mượt hơn (Mặc định của Bootstrap hơi nhanh) */
+    .carousel-fade .carousel-item {
+        transition: opacity 0.8s ease-in-out !important; /* 0.8s là thời gian chuyển cảnh, có thể tăng lên 1s nếu thích chậm hơn */
+    }
+
+    /* Làm cho 2 nút Next/Prev dễ bấm hơn và đẹp hơn */
     .carousel-control-prev-icon,
     .carousel-control-next-icon {
-        background-color: rgba(0,0,0,0.5);
+        background-color: rgba(0,0,0,0.6);
         border-radius: 50%;
+        padding: 22px;
     }
-
-    .carousel-fade .carousel-item {
-        opacity: 0;
-        transition: opacity 1s ease-in-out;
-    }
-
-        .carousel-fade .carousel-item.active {
-            opacity: 1;
-        }
 
     /* ===== CATEGORY ICON ===== */
     .category-box {
@@ -93,58 +90,164 @@
         margin: 20px 0 10px;
     }
 
+    .hover-dropdown .dropdown-menu {
+        display: block;
+        visibility: hidden;
+        opacity: 0;
+        transform: translateY(15px); /* Đẩy menu xuống một chút để tạo hiệu ứng trượt lên */
+        transition: all 0.4s ease; /* 0.4s là tốc độ biến mất từ từ (bạn có thể tăng lên 0.5s nếu muốn chậm hơn) */
+        margin-top: 0;
+        border: none;
+    }
+
+        /* Tạo một cầu nối vô hình giữa nút và menu để khi di chuột xuống không bị mất menu */
+        .hover-dropdown .dropdown-menu::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: transparent;
+        }
+
+    /* Khi di chuột vào khu vực dropdown */
+    .hover-dropdown:hover .dropdown-menu {
+        visibility: visible;
+        opacity: 1;
+        transform: translateY(0); /* Trượt về vị trí cũ */
+    }
+
+    /* Làm đẹp thẻ category-box một chút cho đồng bộ */
+    .category-box {
+        background: #fff;
+        border-radius: 10px;
+        padding: 12px 10px;
+        text-align: center;
+        cursor: pointer;
+        font-weight: 600;
+        border: 1px solid #eaeaea;
+        transition: all 0.3s ease;
+    }
+
+    .hover-dropdown:hover .category-box {
+        background-color: #f8f9fa;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+
 </style>
 
 <!-- ================= BANNER SLIDER ================= -->
 <div class="container mt-3">
-    <div id="bannerCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div id="bannerCarousel" class="carousel slide carousel-fade shadow-sm rounded overflow-hidden" data-bs-ride="carousel" data-bs-interval="3000">
 
-        <div class="carousel-inner rounded">
+        <div class="carousel-inner">
             <div class="carousel-item active">
-                <img src="~/images/banner/banner1.jpg" class="d-block w-100 banner-img">
+                <img src="~/images/banner/banner1.jpg" class="d-block w-100 banner-img" alt="Banner 1">
             </div>
             <div class="carousel-item">
-                <img src="~/images/banner/banner2.jpg" class="d-block w-100 banner-img">
+                <img src="~/images/banner/banner2.jpg" class="d-block w-100 banner-img" alt="Banner 2">
             </div>
             <div class="carousel-item">
-                <img src="~/images/banner/banner3.jpg" class="d-block w-100 banner-img">
+                <img src="~/images/banner/banner3.jpg" class="d-block w-100 banner-img" alt="Banner 3">
             </div>
-            <div id="bannerCarousel"
-                 class="carousel slide"
-                 data-bs-ride="carousel"
-                 data-bs-interval="3000">
-            </div>
-            <div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon"></span>
-                </button>
-
-                <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon"></span>
-            </div>
-
-
         </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+
+        <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+
     </div>
+</div>
 
     <!-- ================= CATEGORY QUICK ================= -->
-    <div class="container mt-4">
-        <div class="row text-center">
+    <div class="container mt-4 mb-5">
+        <div class="row text-center gx-2 gy-3">
 
             <div class="col">
-                <div class="category-box">💻 Laptop</div>
+                <div class="dropdown hover-dropdown">
+                    <div class="category-box" id="dropLaptop">
+                        💻 Laptop
+                    </div>
+                    <ul class="dropdown-menu shadow" aria-labelledby="dropLaptop">
+                        <li><a class="dropdown-item fw-bold" href="#">Laptop Gaming</a></li>
+                        <li><a class="dropdown-item" href="#">Laptop Sinh viên - Văn phòng</a></li>
+                        <li><a class="dropdown-item" href="#">Laptop Đồ họa - Kỹ thuật</a></li>
+                        <li><a class="dropdown-item" href="#">Laptop Mỏng nhẹ - Cao cấp</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#">Apple Macbook</a></li>
+                    </ul>
+                </div>
             </div>
+
             <div class="col">
-                <div class="category-box">🖥 PC</div>
+                <div class="dropdown hover-dropdown">
+                    <div class="category-box" id="dropPC">
+                        🖥 PC
+                    </div>
+                    <ul class="dropdown-menu shadow" aria-labelledby="dropPC">
+                        <li><a class="dropdown-item fw-bold" href="#">PC Gaming</a></li>
+                        <li><a class="dropdown-item" href="#">PC Đồ họa - Workstation</a></li>
+                        <li><a class="dropdown-item" href="#">PC Văn phòng - Đồng bộ</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#">Mini PC (Máy tính mini)</a></li>
+                    </ul>
+                </div>
             </div>
+
             <div class="col">
-                <div class="category-box">🖥 Màn hình</div>
+                <div class="dropdown hover-dropdown">
+                    <div class="category-box" id="dropMonitor">
+                        🖥 Màn hình
+                    </div>
+                    <ul class="dropdown-menu shadow" aria-labelledby="dropMonitor">
+                        <li><a class="dropdown-item fw-bold" href="#">Màn hình Gaming (144Hz+)</a></li>
+                        <li><a class="dropdown-item" href="#">Màn hình Đồ họa (Màu chuẩn)</a></li>
+                        <li><a class="dropdown-item" href="#">Màn hình Ultrawide / Cong</a></li>
+                        <li><a class="dropdown-item" href="#">Màn hình Văn phòng giá rẻ</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#">Giá treo màn hình (Arm)</a></li>
+                    </ul>
+                </div>
             </div>
+
             <div class="col">
-                <div class="category-box">⚙ Linh kiện</div>
+                <div class="dropdown hover-dropdown">
+                    <div class="category-box" id="dropComponent">
+                        ⚙ Linh kiện
+                    </div>
+                    <ul class="dropdown-menu shadow" aria-labelledby="dropComponent" style="min-width: 200px;">
+                        <li><a class="dropdown-item" href="#">CPU - Bộ vi xử lý</a></li>
+                        <li><a class="dropdown-item" href="#">VGA - Card màn hình</a></li>
+                        <li><a class="dropdown-item" href="#">Mainboard - Bo mạch chủ</a></li>
+                        <li><a class="dropdown-item" href="#">RAM - Bộ nhớ trong</a></li>
+                        <li><a class="dropdown-item" href="#">Ổ cứng (SSD / HDD)</a></li>
+                        <li><a class="dropdown-item" href="#">PSU - Nguồn máy tính</a></li>
+                        <li><a class="dropdown-item" href="#">Tản nhiệt (Khí / Nước)</a></li>
+                        <li><a class="dropdown-item" href="#">Vỏ Case máy tính</a></li>
+                    </ul>
+                </div>
             </div>
+
             <div class="col">
-                <div class="category-box">🛠 Build PC</div>
+                <div class="dropdown hover-dropdown">
+                    <div class="category-box" id="dropBuildPC">
+                        🛠 Build PC
+                    </div>
+                    <ul class="dropdown-menu shadow dropdown-menu-end" aria-labelledby="dropBuildPC">
+                        <li><a class="dropdown-item fw-bold text-primary" href="#">Công cụ Build PC tự do</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#">Cấu hình Intel khuyên dùng</a></li>
+                        <li><a class="dropdown-item" href="#">Cấu hình AMD khuyên dùng</a></li>
+                        <li><a class="dropdown-item" href="#">PC Trọn bộ (Kèm màn hình)</a></li>
+                    </ul>
+                </div>
             </div>
 
         </div>
@@ -211,6 +314,31 @@
                             </a>
                         </div>
 
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="container my-5">
+        <h2 class="text-center mb-4 text-uppercase fw-bold">Danh Sách Sản Phẩm</h2>
+        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 product-card shadow-sm">
+                        <div class="img-container">
+                            <img src="@item.ImageUrl" class="card-img-top" alt="@item.Name">
+                        </div>
+
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title text-truncate">@item.Name</h5>
+                            <p class="card-text text-danger fw-bold">@item.Price.ToString("N0") VNĐ</p>
+
+                            <div class="mt-auto">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm w-100 mb-2">Chi tiết</a>
+                                <button class="btn btn-primary btn-sm w-100">Thêm vào giỏ</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             }
