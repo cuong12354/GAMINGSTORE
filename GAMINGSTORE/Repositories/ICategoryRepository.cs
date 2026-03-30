@@ -10,7 +10,7 @@ namespace GAMINGSTORE.Repositories
         Task AddAsync(Category category);
         Task UpdateAsync(Category category);
         Task DeleteAsync(int id);
-
+        Task GetByIdAsync(object categoryId);
     }
 }
 

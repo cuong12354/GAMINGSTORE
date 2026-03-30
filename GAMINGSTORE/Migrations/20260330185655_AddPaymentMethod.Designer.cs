@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GAMINGSTORE.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260325074643_AddStatusToOrder")]
-    partial class AddStatusToOrder
+    [Migration("20260330185655_AddPaymentMethod")]
+    partial class AddPaymentMethod
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -148,7 +148,6 @@ namespace GAMINGSTORE.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("TotalPrice")
