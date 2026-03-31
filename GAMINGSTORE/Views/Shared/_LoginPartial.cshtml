@@ -30,14 +30,14 @@
         transition: all 0.35s ease;
         position: absolute;
         right: 0;
-        top: 120%;
+        top: 100%;
         background: white;
         color: black;
         min-width: 180px;
         border-radius: 8px;
         box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         overflow: hidden;
-        z-index: 1000;
+        z-index: 9999;
     }
 
     /* hover thì hiện */
@@ -45,6 +45,16 @@
         opacity: 1;
         visibility: visible;
         transform: translateY(0);
+    }
+
+    .user-box::after {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        width: 100%;
+        height: 10px;
+        pointer-events: none;
     }
 
     /* item */
