@@ -167,91 +167,97 @@
 </div>
 
     <!-- ================= CATEGORY QUICK ================= -->
-    <div class="container mt-4 mb-5">
-        <div class="row text-center gx-2 gy-3">
+<div class="container mt-4 mb-5">
+    <div class="row text-center gx-2 gy-3 row-cols-2 row-cols-md-3 row-cols-lg-6">
 
-            <div class="col">
-                <div class="dropdown hover-dropdown">
-                    <div class="category-box" id="dropLaptop">
-                        💻 Laptop
-                    </div>
-                    <ul class="dropdown-menu shadow" aria-labelledby="dropLaptop">
-                        <li><a class="dropdown-item fw-bold" href="#">Laptop Gaming</a></li>
-                        <li><a class="dropdown-item" href="#">Laptop Sinh viên - Văn phòng</a></li>
-                        <li><a class="dropdown-item" href="#">Laptop Đồ họa - Kỹ thuật</a></li>
-                        <li><a class="dropdown-item" href="#">Laptop Mỏng nhẹ - Cao cấp</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="#">Apple Macbook</a></li>
-                    </ul>
+        <div class="col">
+            <div class="dropdown hover-dropdown">
+                <div class="category-box" id="dropLaptop">
+                    💻 Laptop
                 </div>
+                <ul class="dropdown-menu shadow" aria-labelledby="dropLaptop">
+                    <li><a class="dropdown-item fw-bold" asp-controller="Product" asp-action="Category" asp-route-keyword="Laptop Gaming">Laptop Gaming</a></li>
+                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="Laptop Sinh viên">Laptop Văn phòng</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" asp-controller="Product" asp-action="Category" asp-route-keyword="Macbook">Apple Macbook</a></li>
+                </ul>
             </div>
-
-            <div class="col">
-                <div class="dropdown hover-dropdown">
-                    <div class="category-box" id="dropPC">
-                        🖥 PC
-                    </div>
-                    <ul class="dropdown-menu shadow" aria-labelledby="dropPC">
-                        <li><a class="dropdown-item fw-bold" href="#">PC Gaming</a></li>
-                        <li><a class="dropdown-item" href="#">PC Đồ họa - Workstation</a></li>
-                        <li><a class="dropdown-item" href="#">PC Văn phòng - Đồng bộ</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#">Mini PC (Máy tính mini)</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="dropdown hover-dropdown">
-                    <div class="category-box" id="dropMonitor">
-                        🖥 Màn hình
-                    </div>
-                    <ul class="dropdown-menu shadow" aria-labelledby="dropMonitor">
-                        <li><a class="dropdown-item fw-bold" href="#">Màn hình Gaming (144Hz+)</a></li>
-                        <li><a class="dropdown-item" href="#">Màn hình Đồ họa (Màu chuẩn)</a></li>
-                        <li><a class="dropdown-item" href="#">Màn hình Ultrawide / Cong</a></li>
-                        <li><a class="dropdown-item" href="#">Màn hình Văn phòng giá rẻ</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#">Giá treo màn hình (Arm)</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="dropdown hover-dropdown">
-                    <div class="category-box" id="dropComponent">
-                        ⚙ Linh kiện
-                    </div>
-                    <ul class="dropdown-menu shadow" aria-labelledby="dropComponent" style="min-width: 200px;">
-                        <li><a class="dropdown-item" href="#">CPU - Bộ vi xử lý</a></li>
-                        <li><a class="dropdown-item" href="#">VGA - Card màn hình</a></li>
-                        <li><a class="dropdown-item" href="#">Mainboard - Bo mạch chủ</a></li>
-                        <li><a class="dropdown-item" href="#">RAM - Bộ nhớ trong</a></li>
-                        <li><a class="dropdown-item" href="#">Ổ cứng (SSD / HDD)</a></li>
-                        <li><a class="dropdown-item" href="#">PSU - Nguồn máy tính</a></li>
-                        <li><a class="dropdown-item" href="#">Tản nhiệt (Khí / Nước)</a></li>
-                        <li><a class="dropdown-item" href="#">Vỏ Case máy tính</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="dropdown hover-dropdown">
-                    <div class="category-box" id="dropBuildPC">
-                        🛠 Build PC
-                    </div>
-                    <ul class="dropdown-menu shadow dropdown-menu-end" aria-labelledby="dropBuildPC">
-                        <li><a class="dropdown-item fw-bold text-primary" href="#">Công cụ Build PC tự do</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#">Cấu hình Intel khuyên dùng</a></li>
-                        <li><a class="dropdown-item" href="#">Cấu hình AMD khuyên dùng</a></li>
-                        <li><a class="dropdown-item" href="#">PC Trọn bộ (Kèm màn hình)</a></li>
-                    </ul>
-                </div>
-            </div>
-
         </div>
+
+        <div class="col">
+            <div class="dropdown hover-dropdown">
+                <div class="category-box" id="dropPC">
+                    🖥 PC
+                </div>
+                <ul class="dropdown-menu shadow" aria-labelledby="dropPC">
+                    <li><a class="dropdown-item fw-bold" asp-controller="Product" asp-action="Category" asp-route-keyword="PC Gaming">PC Gaming</a></li>
+                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="PC Đồ họa">PC Đồ họa</a></li>
+                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="PC Văn phòng">PC Đồng bộ</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="dropdown hover-dropdown">
+                <div class="category-box" id="dropMonitor">
+                    📺 Màn hình
+                </div>
+                <ul class="dropdown-menu shadow" aria-labelledby="dropMonitor">
+                    <li><a class="dropdown-item fw-bold" asp-controller="Product" asp-action="Category" asp-route-keyword="Màn hình Gaming">Màn hình Gaming</a></li>
+                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="Màn hình Đồ họa">Màn hình Đồ họa</a></li>
+                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="Màn hình Văn phòng">Màn hình Văn phòng</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="dropdown hover-dropdown">
+                <div class="category-box" id="dropGear">
+                    🖱️ Gear
+                </div>
+                <ul class="dropdown-menu shadow" aria-labelledby="dropGear">
+                    <li><a class="dropdown-item fw-bold" asp-controller="Product" asp-action="Category" asp-route-keyword="Bàn phím">Bàn phím cơ</a></li>
+                    <li><a class="dropdown-item fw-bold" asp-controller="Product" asp-action="Category" asp-route-keyword="Chuột">Chuột Gaming</a></li>
+                    <li><a class="dropdown-item fw-bold" asp-controller="Product" asp-action="Category" asp-route-keyword="Tai nghe">Tai nghe Gaming</a></li>
+                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="Lót chuột">Lót chuột (Mousepad)</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="Ghế Gaming">Ghế Gaming</a></li>
+                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="Loa">Loa máy tính</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="dropdown hover-dropdown">
+                <div class="category-box" id="dropComponent">
+                    ⚙ Linh kiện
+                </div>
+                <ul class="dropdown-menu shadow" aria-labelledby="dropComponent">
+                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="CPU">CPU</a></li>
+                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="VGA">VGA</a></li>
+                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="Mainboard">Mainboard</a></li>
+                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="RAM">RAM</a></li>
+                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="SSD">Ổ cứng SSD</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="dropdown hover-dropdown">
+                <div class="category-box" id="dropBuildPC">
+                    🛠 Build PC
+                </div>
+                <ul class="dropdown-menu shadow dropdown-menu-end" aria-labelledby="dropBuildPC">
+                    <li><a class="dropdown-item fw-bold text-primary" asp-controller="Product" asp-action="Category" asp-route-keyword="Build PC">Công cụ Build PC</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="PC Intel">Cấu hình Intel</a></li>
+                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="PC AMD">Cấu hình AMD</a></li>
+                </ul>
+            </div>
+        </div>
+
     </div>
+</div>
 
     <!-- ================= FLASH SALE ================= -->
     <div class="container mt-4">

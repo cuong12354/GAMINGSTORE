@@ -34,13 +34,19 @@ namespace GAMINGSTORE.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Product product, IFormFile imageUrl)
+        // ĐÃ SỬA: Thay IFormFile bằng List<IFormFile> imageFiles
+        public async Task<IActionResult> Create(Product product, List<IFormFile> imageFiles)
         {
             if (ModelState.IsValid)
             {
-                if (imageUrl != null)
+                // Kiểm tra xem người dùng có chọn ảnh nào không
+                if (imageFiles != null && imageFiles.Count > 0)
                 {
-                    product.ImageUrl = await SaveImage(imageUrl, product.CategoryId);
+                    // Lấy danh sách đường dẫn trả về
+                    var uploadedUrls = await SaveImages(imageFiles, product.CategoryId);
+
+                    // Nối các đường dẫn lại với nhau bằng dấu chấm phẩy (;) và lưu vào cột ImageUrl
+                    product.ImageUrl = string.Join(";", uploadedUrls);
                 }
 
                 await _productRepository.AddAsync(product);
@@ -78,7 +84,8 @@ namespace GAMINGSTORE.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, Product product, IFormFile imageUrl)
+        // ĐÃ SỬA: Thay IFormFile bằng List<IFormFile> imageFiles
+        public async Task<IActionResult> Edit(int id, Product product, List<IFormFile> imageFiles)
         {
             ModelState.Remove("ImageUrl");
 
@@ -92,22 +99,20 @@ namespace GAMINGSTORE.Controllers
                 if (existingProduct == null)
                     return NotFound();
 
-                // Nếu không upload ảnh mới → giữ ảnh cũ
-                if (imageUrl == null)
+                // Nếu người dùng CÓ CHỌN ảnh mới để upload
+                if (imageFiles != null && imageFiles.Count > 0)
                 {
-                    product.ImageUrl = existingProduct.ImageUrl;
+                    var uploadedUrls = await SaveImages(imageFiles, product.CategoryId);
+                    // Ghi đè ảnh cũ bằng danh sách ảnh mới
+                    existingProduct.ImageUrl = string.Join(";", uploadedUrls);
                 }
-                else
-                {
-                    product.ImageUrl = await SaveImage(imageUrl, product.CategoryId);
-                }
+                // Nếu không chọn ảnh mới -> Giữ nguyên existingProduct.ImageUrl đã có sẵn trong DB
 
-                // Update dữ liệu
+                // Update các dữ liệu khác
                 existingProduct.Name = product.Name;
                 existingProduct.Price = product.Price;
                 existingProduct.Description = product.Description;
                 existingProduct.CategoryId = product.CategoryId;
-                existingProduct.ImageUrl = product.ImageUrl;
 
                 await _productRepository.UpdateAsync(existingProduct);
 
@@ -138,34 +143,56 @@ namespace GAMINGSTORE.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ================= SAVE IMAGE (QUAN TRỌNG) =================
-        private async Task<string> SaveImage(IFormFile image, int categoryId)
+        // ================= SAVE IMAGES (ĐÃ NÂNG CẤP LÊN NHIỀU ẢNH) =================
+        private async Task<List<string>> SaveImages(List<IFormFile> images, int categoryId)
         {
             var category = await _categoryRepository.GetByIdAsync(categoryId);
-
-            // Tạo folder theo category
             string folder = category.Name.ToLower().Replace(" ", "");
-
             var folderPath = Path.Combine("wwwroot/images", folder);
 
-            // Nếu chưa có folder → tạo
             if (!Directory.Exists(folderPath))
             {
                 Directory.CreateDirectory(folderPath);
             }
 
-            // Tạo tên file không trùng
-            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
+            var imageUrls = new List<string>();
 
-            var filePath = Path.Combine(folderPath, fileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            // Duyệt qua từng file ảnh được tải lên
+            foreach (var image in images)
             {
-                await image.CopyToAsync(stream);
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
+                var filePath = Path.Combine(folderPath, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await image.CopyToAsync(stream);
+                }
+
+                // Thêm đường dẫn vào danh sách
+                imageUrls.Add($"/images/{folder}/{fileName}");
             }
 
-            // Trả về đường dẫn
-            return $"/images/{folder}/{fileName}";
+            // Trả về danh sách các đường dẫn
+            return imageUrls;
+        }
+        // ================= TÌM KIẾM THEO DANH MỤC (TỪ KHÓA) =================
+        public async Task<IActionResult> Category(string keyword)
+        {
+            if (string.IsNullOrEmpty(keyword))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var allProducts = await _productRepository.GetAllAsync();
+
+            var filteredProducts = allProducts
+                .Where(p => (p.Name != null && p.Name.ToLower().Contains(keyword.ToLower())) ||
+                            (p.Description != null && p.Description.ToLower().Contains(keyword.ToLower())))
+                .ToList();
+
+            ViewBag.CurrentKeyword = keyword;
+
+            return View(filteredProducts);
         }
     }
 }
