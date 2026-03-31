@@ -12,16 +12,14 @@
 
     /* ===== BANNER ===== */
     .banner-img {
-        height: 350px; /* Bạn có thể chỉnh lại chiều cao tùy ý */
-        object-fit: cover; /* Chống méo ảnh */
+        height: 350px;
+        object-fit: cover;
     }
 
-    /* Kéo dài thời gian hiệu ứng Fade để mượt hơn (Mặc định của Bootstrap hơi nhanh) */
     .carousel-fade .carousel-item {
-        transition: opacity 0.8s ease-in-out !important; /* 0.8s là thời gian chuyển cảnh, có thể tăng lên 1s nếu thích chậm hơn */
+        transition: opacity 0.8s ease-in-out !important;
     }
 
-    /* Làm cho 2 nút Next/Prev dễ bấm hơn và đẹp hơn */
     .carousel-control-prev-icon,
     .carousel-control-next-icon {
         background-color: rgba(0,0,0,0.6);
@@ -30,95 +28,6 @@
     }
 
     /* ===== CATEGORY ICON ===== */
-    .category-box {
-        background: white;
-        border-radius: 10px;
-        padding: 15px;
-        text-align: center;
-        transition: 0.3s;
-        cursor: pointer;
-    }
-
-        .category-box:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-        }
-
-    /* ===== PRODUCT ===== */
-    .product-card {
-        background: white;
-        border-radius: 10px;
-        overflow: hidden;
-        transition: 0.3s;
-    }
-
-        .product-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
-        }
-
-    .product-img {
-        height: 200px;
-        object-fit: cover;
-    }
-
-    .price {
-        color: #ee4d2d;
-        font-weight: bold;
-    }
-
-    .old-price {
-        text-decoration: line-through;
-        color: gray;
-        font-size: 13px;
-    }
-
-    .badge-sale {
-        position: absolute;
-        top: 10px;
-        left: 0;
-        background: red;
-        color: white;
-        padding: 3px 6px;
-        font-size: 12px;
-    }
-
-    /* ===== SECTION TITLE ===== */
-    .section-title {
-        font-size: 20px;
-        font-weight: bold;
-        margin: 20px 0 10px;
-    }
-
-    .hover-dropdown .dropdown-menu {
-        display: block;
-        visibility: hidden;
-        opacity: 0;
-        transform: translateY(15px); /* Đẩy menu xuống một chút để tạo hiệu ứng trượt lên */
-        transition: all 0.4s ease; /* 0.4s là tốc độ biến mất từ từ (bạn có thể tăng lên 0.5s nếu muốn chậm hơn) */
-        margin-top: 0;
-        border: none;
-    }
-
-        /* Tạo một cầu nối vô hình giữa nút và menu để khi di chuột xuống không bị mất menu */
-        .hover-dropdown .dropdown-menu::before {
-            content: '';
-            position: absolute;
-            top: -10px;
-            left: 0;
-            width: 100%;
-            height: 10px;
-            background: transparent;
-        }
-
-    /* Khi di chuột vào khu vực dropdown */
-    .hover-dropdown:hover .dropdown-menu {
-        visibility: visible;
-        opacity: 1;
-        transform: translateY(0); /* Trượt về vị trí cũ */
-    }
-
-    /* Làm đẹp thẻ category-box một chút cho đồng bộ */
     .category-box {
         background: #fff;
         border-radius: 10px;
@@ -135,9 +44,134 @@
         box-shadow: 0 4px 8px rgba(0,0,0,0.05);
     }
 
+    .hover-dropdown .dropdown-menu {
+        display: block;
+        visibility: hidden;
+        opacity: 0;
+        transform: translateY(15px);
+        transition: all 0.4s ease;
+        margin-top: 0;
+        border: none;
+    }
+
+        .hover-dropdown .dropdown-menu::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: transparent;
+        }
+
+    .hover-dropdown:hover .dropdown-menu {
+        visibility: visible;
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* ===== PRODUCT CARD ===== */
+    /* ===== PRODUCT CARD ===== */
+    .product-card {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        transition: 0.3s;
+        border: 1px solid #f0f0f0;
+    }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+
+    .product-img {
+        height: 200px;
+        object-fit: contain; /* Sửa thành contain để ảnh không bị mất góc */
+        padding: 10px;
+    }
+
+    /* ================================================== */
+    /* ===== BẮT ĐẦU PHẦN CSS HOVER ĐỔI ẢNH MỚI THÊM ===== */
+    /* ================================================== */
+    .product-img-wrapper {
+        position: relative;
+        height: 200px;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .img-primary, .img-secondary {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* Giữ nguyên tỷ lệ ảnh */
+        padding: 10px;
+        transition: opacity 0.6s ease-in-out; /* Thời gian chuyển mờ mượt mà */
+    }
+
+    .img-secondary {
+        opacity: 0; /* Ẩn ảnh 2 đi */
+    }
+
+    /* Khi lướt chuột vào thẻ card */
+    .product-card:hover .img-primary {
+        opacity: 0; /* Làm mờ ảnh 1 */
+    }
+
+    .product-card:hover .img-secondary {
+        opacity: 1; /* Hiện ảnh 2 lên */
+    }
+    /* ================================================== */
+    /* ===== KẾT THÚC PHẦN CSS HOVER ĐỔI ẢNH MỚI ====== */
+    /* ================================================== */
+
+    .product-title {
+        font-size: 1rem;
+        font-weight: 500;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        min-height: 48px;
+        margin-bottom: 8px;
+    }
+
+    .price {
+        color: #ee4d2d;
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+
+    .old-price {
+        text-decoration: line-through;
+        color: gray;
+        font-size: 13px;
+    }
+
+    .badge-sale {
+        position: absolute;
+        top: 10px;
+        left: 0;
+        background: red;
+        color: white;
+        padding: 4px 8px;
+        font-size: 12px;
+        font-weight: bold;
+        border-radius: 0 5px 5px 0;
+        z-index: 2;
+    }
+
+    .section-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 30px 0 15px;
+        text-transform: uppercase;
+    }
 </style>
 
-<!-- ================= BANNER SLIDER ================= -->
 <div class="container mt-3">
     <div id="bannerCarousel" class="carousel slide carousel-fade shadow-sm rounded overflow-hidden" data-bs-ride="carousel" data-bs-interval="3000">
 
@@ -162,19 +196,15 @@
             <span class="carousel-control-next-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Next</span>
         </button>
-
     </div>
 </div>
 
-    <!-- ================= CATEGORY QUICK ================= -->
 <div class="container mt-4 mb-5">
     <div class="row text-center gx-2 gy-3 row-cols-2 row-cols-md-3 row-cols-lg-6">
 
         <div class="col">
             <div class="dropdown hover-dropdown">
-                <div class="category-box" id="dropLaptop">
-                    💻 Laptop
-                </div>
+                <div class="category-box" id="dropLaptop">💻 Laptop</div>
                 <ul class="dropdown-menu shadow" aria-labelledby="dropLaptop">
                     <li><a class="dropdown-item fw-bold" asp-controller="Product" asp-action="Category" asp-route-keyword="Laptop Gaming">Laptop Gaming</a></li>
                     <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="Laptop Sinh viên">Laptop Văn phòng</a></li>
@@ -186,9 +216,7 @@
 
         <div class="col">
             <div class="dropdown hover-dropdown">
-                <div class="category-box" id="dropPC">
-                    🖥 PC
-                </div>
+                <div class="category-box" id="dropPC">🖥 PC</div>
                 <ul class="dropdown-menu shadow" aria-labelledby="dropPC">
                     <li><a class="dropdown-item fw-bold" asp-controller="Product" asp-action="Category" asp-route-keyword="PC Gaming">PC Gaming</a></li>
                     <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="PC Đồ họa">PC Đồ họa</a></li>
@@ -199,9 +227,7 @@
 
         <div class="col">
             <div class="dropdown hover-dropdown">
-                <div class="category-box" id="dropMonitor">
-                    📺 Màn hình
-                </div>
+                <div class="category-box" id="dropMonitor">📺 Màn hình</div>
                 <ul class="dropdown-menu shadow" aria-labelledby="dropMonitor">
                     <li><a class="dropdown-item fw-bold" asp-controller="Product" asp-action="Category" asp-route-keyword="Màn hình Gaming">Màn hình Gaming</a></li>
                     <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="Màn hình Đồ họa">Màn hình Đồ họa</a></li>
@@ -212,9 +238,7 @@
 
         <div class="col">
             <div class="dropdown hover-dropdown">
-                <div class="category-box" id="dropGear">
-                    🖱️ Gear
-                </div>
+                <div class="category-box" id="dropGear">🖱️ Gear</div>
                 <ul class="dropdown-menu shadow" aria-labelledby="dropGear">
                     <li><a class="dropdown-item fw-bold" asp-controller="Product" asp-action="Category" asp-route-keyword="Bàn phím">Bàn phím cơ</a></li>
                     <li><a class="dropdown-item fw-bold" asp-controller="Product" asp-action="Category" asp-route-keyword="Chuột">Chuột Gaming</a></li>
@@ -229,9 +253,7 @@
 
         <div class="col">
             <div class="dropdown hover-dropdown">
-                <div class="category-box" id="dropComponent">
-                    ⚙ Linh kiện
-                </div>
+                <div class="category-box" id="dropComponent">⚙ Linh kiện</div>
                 <ul class="dropdown-menu shadow" aria-labelledby="dropComponent">
                     <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="CPU">CPU</a></li>
                     <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="VGA">VGA</a></li>
@@ -244,9 +266,7 @@
 
         <div class="col">
             <div class="dropdown hover-dropdown">
-                <div class="category-box" id="dropBuildPC">
-                    🛠 Build PC
-                </div>
+                <div class="category-box" id="dropBuildPC">🛠 Build PC</div>
                 <ul class="dropdown-menu shadow dropdown-menu-end" aria-labelledby="dropBuildPC">
                     <li><a class="dropdown-item fw-bold text-primary" asp-controller="Product" asp-action="Category" asp-route-keyword="Build PC">Công cụ Build PC</a></li>
                     <li><hr class="dropdown-divider"></li>
@@ -259,94 +279,81 @@
     </div>
 </div>
 
-    <!-- ================= FLASH SALE ================= -->
-    <div class="container mt-4">
-        <div class="section-title">🔥 FLASH SALE</div>
+<div class="container mt-4 mb-5">
+    <div class="section-title">🔥 FLASH SALE</div>
 
-        <div class="row g-3">
-            @foreach (var item in Model.Take(4))
-            {
-                <div class="col-6 col-md-3">
-                    <div class="product-card position-relative">
+    <div class="row g-3">
+        @foreach (var item in Model.Take(4))
+        {
+            <div class="col-6 col-md-3">
+                <div class="card h-100 product-card position-relative shadow-sm">
+                    <div class="badge-sale">-20%</div>
 
-                        <div class="badge-sale">-20%</div>
+                    <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id">
+                        <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/no-image.png" : item.ImageUrl.Split(';')[0])" class="card-img-top w-100 product-img" alt="@item.Name">
+                    </a>
 
-                        <img src="@item.ImageUrl" class="w-100 product-img">
+                    <div class="card-body d-flex flex-column p-3">
+                        <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id" class="text-decoration-none text-dark">
+                            <div class="product-title">@item.Name</div>
+                        </a>
 
-                        <div class="p-2">
-                            <div>@item.Name</div>
-
-                            <div class="d-flex">
-                                <span class="price">@String.Format("{0:N0} VNĐ", item.Price)</span>
-                                <span class="old-price ms-2">
-                                    @String.Format("{0:N0} VNĐ", item.Price * 1.2M)
-                                </span>
+                        <div class="mt-auto">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="price">@item.Price.ToString("#,##0") đ</span>
+                                <span class="old-price ms-2">@((item.Price * 1.2M).ToString("#,##0")) đ</span>
                             </div>
-                        </div>
-
-                    </div>
-                </div>
-            }
-        </div>
-    </div>
-
-    <!-- ================= ALL PRODUCTS ================= -->
-    <div class="container mt-4">
-        <div class="section-title">🛒 SẢN PHẨM</div>
-
-        <div class="row g-3">
-            @foreach (var item in Model)
-            {
-                <div class="col-6 col-md-3">
-                    <div class="product-card position-relative">
-
-                        <div class="badge-sale">HOT</div>
-
-                        <img src="@item.ImageUrl" class="w-100 product-img">
-
-                        <div class="p-2">
-                            <div>@item.Name</div>
-
-                            <div class="d-flex">
-                                <span class="price">@String.Format("{0:N0} VNĐ", item.Price)</span>
-                            </div>
-
                             <a asp-controller="ShoppingCart"
                                asp-action="AddToCart"
                                asp-route-productId="@item.Id"
                                asp-route-quantity="@numOfQuantity"
-                               class="btn btn-danger mt-2 w-100">
+                               class="btn btn-outline-danger w-100 fw-bold">
                                 Thêm vào giỏ
                             </a>
                         </div>
-
                     </div>
                 </div>
-            }
-        </div>
+            </div>
+        }
     </div>
-    <div class="container my-5">
-        <h2 class="text-center mb-4 text-uppercase fw-bold">Danh Sách Sản Phẩm</h2>
-        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
-            @foreach (var item in Model)
-            {
-                <div class="col">
-                    <div class="card h-100 product-card shadow-sm">
-                        <div class="img-container">
-                            <img src="@item.ImageUrl" class="card-img-top" alt="@item.Name">
-                        </div>
+</div>
 
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title text-truncate">@item.Name</h5>
-                            <p class="card-text text-danger fw-bold">@item.Price.ToString("N0") VNĐ</p>
+<div class="container mt-4 mb-5">
+    <div class="section-title">🛒 SẢN PHẨM NỔI BẬT</div>
 
-                            <div class="mt-auto">
-                            <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm w-100 mb-2">Chi tiết</a>
-                                <button class="btn btn-primary btn-sm w-100">Thêm vào giỏ</button>
-                            </div>
+    <div class="row g-3 row-cols-2 row-cols-md-3 row-cols-lg-4">
+        @foreach (var item in Model)
+        {
+            <div class="col">
+                <div class="card h-100 product-card shadow-sm position-relative">
+                    <div class="badge-sale bg-warning text-dark">HOT</div>
+
+                    <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id">
+                        <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/no-image.png" : item.ImageUrl.Split(';')[0])" class="card-img-top product-img" alt="@item.Name">
+                    </a>
+
+                    <div class="card-body d-flex flex-column p-3">
+                        <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id" class="text-decoration-none text-dark">
+                            <div class="product-title text-truncate">@item.Name</div>
+                        </a>
+
+                        <div class="mt-auto">
+                            <div class="price mb-3">@item.Price.ToString("#,##0") VNĐ</div>
+
+                            <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                                Chi tiết
+                            </a>
+                            <a asp-controller="ShoppingCart"
+                               asp-action="AddToCart"
+                               asp-route-productId="@item.Id"
+                               asp-route-quantity="@numOfQuantity"
+                               class="btn btn-primary btn-sm w-100">
+                                Thêm vào giỏ
+                            </a>
                         </div>
                     </div>
                 </div>
-            }
-        </div>
+            </div>
+        }
     </div>
+</div>
