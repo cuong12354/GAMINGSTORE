@@ -50,7 +50,7 @@ namespace GAMINGSTORE.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CategoryId")
+                    b.Property<int>("categoryIds")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
@@ -70,7 +70,7 @@ namespace GAMINGSTORE.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
+                    b.HasIndex("categoryIds");
 
                     b.ToTable("Products");
                 });
@@ -101,7 +101,7 @@ namespace GAMINGSTORE.Migrations
                 {
                     b.HasOne("Category", "Category")
                         .WithMany("Products")
-                        .HasForeignKey("CategoryId")
+                        .HasForeignKey("categoryIds")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

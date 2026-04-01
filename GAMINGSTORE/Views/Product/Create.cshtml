@@ -21,12 +21,11 @@
         </div>
 
         <div class="form-group mb-3">
-            <label class="fw-bold">Category</label>
-            <select asp-for="CategoryId" asp-items="ViewBag.CategoryList" class="form-control">
-                <option value="">-- Select Category --</option>
+            <label class="fw-bold">Category (Có thể chọn nhiều)</label>
+            <select name="categoryIds" asp-items="ViewBag.CategoryList" class="form-control" multiple style="height: 120px;">
             </select>
+            <small class="text-muted text-danger">Mẹo: Giữ phím Ctrl (hoặc Cmd trên Mac) và click chuột để chọn nhiều danh mục cùng lúc.</small>
         </div>
-
         <div class="form-group mb-3">
             <label asp-for="Description" class="fw-bold"></label>
             <textarea asp-for="Description" class="form-control" rows="4"></textarea>

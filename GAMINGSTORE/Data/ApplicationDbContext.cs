@@ -19,6 +19,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Ignore<CartItem>();
+            
+            // Configure Many-to-Many relationship between Product and Category
+            modelBuilder.Entity<Product>()
+                .HasMany(p => p.Categories)
+                .WithMany(c => c.Products)
+                .UsingEntity(j => j.ToTable("CategoryProduct"));
+            
             base.OnModelCreating(modelBuilder);
         }
     }

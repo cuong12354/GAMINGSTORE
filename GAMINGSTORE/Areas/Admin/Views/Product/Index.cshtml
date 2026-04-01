@@ -35,7 +35,7 @@
                     }
                 </td>
 
-                <td>@product.Category?.Name</td>
+                <td>@string.Join(", ", product.Categories?.Select(c => c.Name) ?? new List<string>())</td>
 
                 <td>
                     <a asp-action="Edit" asp-route-id="@product.Id">Edit</a> |

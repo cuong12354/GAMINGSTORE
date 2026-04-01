@@ -5,11 +5,10 @@ using GAMINGSTORE.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-[Authorize]
+
 public class ShoppingCartController : Controller
 {
     private readonly IProductRepository _productRepository;
-
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     public ShoppingCartController(ApplicationDbContext context,
@@ -20,10 +19,12 @@ public class ShoppingCartController : Controller
         _context = context;
         _userManager = userManager;
     }
+    [Authorize]
     public IActionResult Checkout()
     {
         return View(new Order());
     }
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Checkout(Order order)
     {
@@ -35,6 +36,9 @@ public class ShoppingCartController : Controller
             return RedirectToAction("Index");
         }
         var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+            return Unauthorized();
+
         if (string.IsNullOrEmpty(order.Notes))
             order.Notes = "";
 

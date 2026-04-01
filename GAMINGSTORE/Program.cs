@@ -1,6 +1,7 @@
 using GAMINGSTORE.Data;
 using GAMINGSTORE.Models;
 using GAMINGSTORE.Repositories;
+using GAMINGSTORE.Seeding;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -72,6 +73,13 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}"
 );
 
-app.MapRazorPages(); 
+app.MapRazorPages();
+
+// ===== SEED DATABASE ON STARTUP =====
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await DataSeeding.SeedCategoriesAndProducts(dbContext);
+}
 
 app.Run();

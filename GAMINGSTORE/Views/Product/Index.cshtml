@@ -1,48 +1,412 @@
 ﻿@model IEnumerable<GAMINGSTORE.Models.Product>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Quản Lý Sản Phẩm";
 }
 
-<h2>Products</h2>
+<style>
+    :root {
+        --primary: #ee4d2d;
+        --primary-dark: #d63d1f;
+        --secondary: #f5f5f5;
+        --text: #212245;
+        --text-light: #666;
+        --border: #e5e5e5;
+        --success: #27ae60;
+        --danger: #e74c3c;
+    }
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Price</th>
-            <th>Description</th>
-            <th>Image</th>  ---
-            <th>Category</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var product in Model)
-        {
-            <tr>
-                <td>@product.Name</td>
-                <td>@product.Price</td>
-                <td>@product.Description</td>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-                <td>
-                    @if (!string.IsNullOrEmpty(product.ImageUrl))
-                    {
-                        <img src="@product.ImageUrl" width="100" />
-                    }
-                </td>
+    body {
+        background: var(--secondary);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        color: var(--text);
+    }
 
-                <td>@product.Category?.Name</td>
+    .admin-header {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        padding: 30px 0;
+        margin-bottom: 40px;
+        box-shadow: 0 4px 12px rgba(238, 77, 45, 0.2);
+    }
 
-                <td>
-                    <a asp-action="Edit" asp-route-id="@product.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@product.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@product.Id">Delete</a>
-                </td>
-            </tr>
+    .admin-header h1 {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .admin-header p {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+
+    .admin-container {
+        background: white;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .admin-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .btn-create {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-create:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(238, 77, 45, 0.3);
+    }
+
+    .products-count {
+        font-size: 14px;
+        color: var(--text-light);
+        font-weight: 600;
+    }
+
+    .products-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    .products-table thead {
+        background: var(--secondary);
+        border-bottom: 2px solid var(--border);
+    }
+
+    .products-table th {
+        padding: 15px;
+        text-align: left;
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--text);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .products-table tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: background-color 0.2s ease;
+    }
+
+    .products-table tbody tr:hover {
+        background-color: #fafafa;
+    }
+
+    .products-table td {
+        padding: 15px;
+        font-size: 13px;
+        color: var(--text);
+    }
+
+    .product-name {
+        font-weight: 600;
+        color: var(--text);
+        max-width: 300px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .product-price {
+        font-weight: 700;
+        color: var(--primary);
+        font-size: 14px;
+    }
+
+    .product-thumbnail {
+        width: 60px;
+        height: 60px;
+        border-radius: 6px;
+        object-fit: contain;
+        background: var(--secondary);
+        padding: 4px;
+    }
+
+    .product-categories {
+        font-size: 12px;
+        color: var(--text-light);
+        max-width: 200px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .product-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        background: white;
+        color: var(--text);
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-action:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+    .btn-edit {
+        border-color: #3498db;
+        color: #3498db;
+    }
+
+    .btn-edit:hover {
+        background-color: rgba(52, 152, 219, 0.1);
+        border-color: #3498db;
+        color: #3498db;
+    }
+
+    .btn-details {
+        border-color: var(--success);
+        color: var(--success);
+    }
+
+    .btn-details:hover {
+        background-color: rgba(39, 174, 96, 0.1);
+        border-color: var(--success);
+        color: var(--success);
+    }
+
+    .btn-delete {
+        border-color: var(--danger);
+        color: var(--danger);
+    }
+
+    .btn-delete:hover {
+        background-color: rgba(231, 76, 60, 0.1);
+        border-color: var(--danger);
+        color: var(--danger);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: var(--secondary);
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+
+    .empty-icon {
+        font-size: 60px;
+        margin-bottom: 15px;
+    }
+
+    .empty-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .empty-desc {
+        color: var(--text-light);
+        margin-bottom: 20px;
+    }
+
+    @@media (max-width: 768px) {
+        .admin-header h1 {
+            font-size: 24px;
         }
-    </tbody>
-</table>
+
+        .admin-toolbar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .btn-create {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .products-table {
+            font-size: 12px;
+        }
+
+        .products-table th,
+        .products-table td {
+            padding: 10px;
+        }
+
+        .product-thumbnail {
+            width: 50px;
+            height: 50px;
+        }
+
+        .product-actions {
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .btn-action {
+            width: 100%;
+            justify-content: center;
+            padding: 6px 8px;
+        }
+
+        .product-name,
+        .product-categories {
+            max-width: 150px;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .admin-container {
+            padding: 15px;
+        }
+
+        .products-table th {
+            font-size: 11px;
+            padding: 10px;
+        }
+
+        .products-table td {
+            padding: 8px;
+            font-size: 11px;
+        }
+
+        .product-thumbnail {
+            width: 45px;
+            height: 45px;
+        }
+
+        .btn-action {
+            padding: 6px 8px;
+            font-size: 10px;
+        }
+
+        .products-count {
+            font-size: 12px;
+        }
+    }
+</style>
+
+<!-- HEADER -->
+<div class="admin-header">
+    <div class="container">
+        <h1>📦 Quản Lý Sản Phẩm</h1>
+        <p>Quản lý toàn bộ sản phẩm trên hệ thống GAMINGSTORE</p>
+    </div>
+</div>
+
+<!-- CONTENT -->
+<div class="container">
+    <div class="admin-container">
+        <!-- TOOLBAR -->
+        <div class="admin-toolbar">
+            <a asp-action="Create" class="btn-create">➕ Thêm Sản Phẩm Mới</a>
+            <div class="products-count">
+                📊 Tổng cộng: <strong>@Model.Count()</strong> sản phẩm
+            </div>
+        </div>
+
+        <!-- TABLE -->
+        @if (Model.Any())
+        {
+            <table class="products-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Hình ảnh</th>
+                        <th style="width: 30%;">Tên sản phẩm</th>
+                        <th style="width: 120px;">Giá</th>
+                        <th style="width: 25%;">Danh mục</th>
+                        <th style="width: 150px;">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var product in Model)
+                    {
+                        <tr>
+                            <td>
+                                @if (!string.IsNullOrEmpty(product.ImageUrl))
+                                {
+                                    var images = product.ImageUrl.Split(';', StringSplitOptions.RemoveEmptyEntries);
+                                    <img src="@images[0]" alt="@product.Name" class="product-thumbnail" onerror="this.src='/images/no-image.png'">
+                                }
+                                else
+                                {
+                                    <img src="/images/no-image.png" alt="No image" class="product-thumbnail">
+                                }
+                            </td>
+                            <td>
+                                <div class="product-name" title="@product.Name">@product.Name</div>
+                            </td>
+                            <td>
+                                <div class="product-price">
+                                    @Math.Round(product.Price, 0).ToString("N0", new System.Globalization.CultureInfo("vi-VN")) ₫
+                                </div>
+                            </td>
+                            <td>
+                                <div class="product-categories" title="@string.Join(", ", product.Categories?.Select(c => c.Name) ?? new List<string>())">
+                                    @if (product.Categories?.Any() == true)
+                                    {
+                                        @string.Join(" • ", product.Categories.Select(c => c.Name))
+                                    }
+                                    else
+                                    {
+                                        <span style="color: var(--text-light);">Chưa phân loại</span>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                <div class="product-actions">
+                                    <a asp-action="Edit" asp-route-id="@product.Id" class="btn-action btn-edit">✏️ Sửa</a>
+                                    <a asp-action="Details" asp-route-id="@product.Id" class="btn-action btn-details">👁️ Xem</a>
+                                    <a asp-action="Delete" asp-route-id="@product.Id" class="btn-action btn-delete">🗑️ Xóa</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <div class="empty-title">Chưa có sản phẩm</div>
+                <div class="empty-desc">Hãy thêm sản phẩm mới để bắt đầu</div>
+                <a asp-action="Create" class="btn-create">➕ Thêm Sản Phẩm Đầu Tiên</a>
+            </div>
+        }
+    </div>
+</div>

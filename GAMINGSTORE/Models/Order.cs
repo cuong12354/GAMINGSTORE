@@ -15,9 +15,9 @@ namespace GAMINGSTORE.Models
         [Required]
         public string ShippingAddress { get; set; }
         public string? Notes { get; set; }
-        [ForeignKey("UserId")]
         [ValidateNever]
         public string PaymentMethod { get; set; }
+        [ForeignKey("UserId")]
         public ApplicationUser ApplicationUser { get; set; }
         public List<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
         public string? Status { get; set; }

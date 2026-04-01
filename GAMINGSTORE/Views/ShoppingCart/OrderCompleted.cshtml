@@ -1,3 +1,253 @@
 ﻿@model int
-<h2>Order Completed</h2>
-<p>Your order with ID @Model has been placed successfully.</p>
+
+@{
+    ViewData["Title"] = "Đặt Hàng Thành Công";
+}
+
+<style>
+    .order-success-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 200px);
+        padding: 20px;
+    }
+
+    .order-success-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        padding: 50px;
+        text-align: center;
+        max-width: 500px;
+    }
+
+    .success-icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+        animation: bounce 0.6s infinite alternate;
+    }
+
+    @@keyframes bounce {
+        from { transform: translateY(0); }
+        to { transform: translateY(-20px); }
+    }
+
+    .success-title {
+        font-size: 28px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .success-subtitle {
+        font-size: 16px;
+        color: #666;
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+
+    .order-id-box {
+        background-color: #f5f5f5;
+        border-left: 4px solid #28a745;
+        padding: 20px;
+        margin: 30px 0;
+        border-radius: 6px;
+    }
+
+    .order-id-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        color: #999;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .order-id {
+        font-size: 24px;
+        font-weight: bold;
+        color: #28a745;
+        font-family: monospace;
+    }
+
+    .info-list {
+        text-align: left;
+        margin: 30px 0;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 6px;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .info-value {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 30px;
+    }
+
+    .btn-action {
+        flex: 1;
+        padding: 14px 20px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background-color: #ee4d2d;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #d63d1f;
+        text-decoration: none;
+    }
+
+    .btn-secondary {
+        background-color: #f0f0f0;
+        color: #333;
+    }
+
+    .btn-secondary:hover {
+        background-color: #e0e0e0;
+        text-decoration: none;
+    }
+
+    .next-steps {
+        margin-top: 30px;
+        padding-top: 30px;
+        border-top: 2px solid #eee;
+        text-align: left;
+    }
+
+    .next-steps h5 {
+        color: #333;
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+
+    .step {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+        font-size: 14px;
+    }
+
+    .step-number {
+        background-color: #ee4d2d;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        flex-shrink: 0;
+    }
+
+    .step-content {
+        flex: 1;
+        padding-top: 5px;
+    }
+</style>
+
+<div class="order-success-container">
+    <div class="order-success-card">
+        <div class="success-icon">✓</div>
+        
+        <h2 class="success-title">Đặt Hàng Thành Công!</h2>
+        
+        <p class="success-subtitle">
+            Cảm ơn quý khách đã mua sắm tại GAMINGSTORE.<br>
+            Chúng tôi đã nhận được đơn hàng của bạn.
+        </p>
+
+        <div class="order-id-box">
+            <div class="order-id-label">Mã Đơn Hàng</div>
+            <div class="order-id">#@Model</div>
+        </div>
+
+        <div class="info-list">
+            <div class="info-item">
+                <span class="info-label">📧 Email xác nhận</span>
+                <span class="info-value">Sẽ được gửi ngay</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">⏱️ Thời gian xử lý</span>
+                <span class="info-value">1-2 giờ</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">🚚 Giao hàng</span>
+                <span class="info-value">2-3 ngày làm việc</span>
+            </div>
+        </div>
+
+        <div class="next-steps">
+            <h5>📋 Các Bước Tiếp Theo:</h5>
+            
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">Chúng tôi sẽ gửi email xác nhận đơn hàng trong vòng 1 giờ</div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">Kiểm tra email để cập nhật trạng thái vận chuyển</div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">Người giao hàng sẽ liên hệ với bạn trước khi giao</div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">Kiểm tra sản phẩm kỹ trước khi thanh toán (nếu COD)</div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <a asp-controller="Home" asp-action="Index" class="btn-action btn-secondary">
+                ← Tiếp Tục Mua Sắm
+            </a>
+            <a href="javascript:void(0)" class="btn-action btn-primary" onclick="window.print()">
+                🖨️ In Đơn Hàng
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Optional: Show success notification
+    console.log('Order Completed: #@Model');
+</script>

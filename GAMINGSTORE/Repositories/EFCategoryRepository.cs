@@ -50,10 +50,5 @@ namespace GAMINGSTORE.Repositories
                 await _context.SaveChangesAsync();
             }
         }
-
-        public Task GetByIdAsync(object categoryId)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

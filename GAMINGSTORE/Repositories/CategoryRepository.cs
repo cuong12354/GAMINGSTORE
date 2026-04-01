@@ -45,7 +45,7 @@ namespace GAMINGSTORE.Repositories
             }
         }
 
-        public Task GetByIdAsync(object categoryId)
+        public Task GetByIdAsync(object categoryIds)
         {
             throw new NotImplementedException();
         }

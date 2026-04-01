@@ -1,359 +1,670 @@
-﻿@model IEnumerable<GAMINGSTORE.Models.Product>
+@model IEnumerable<GAMINGSTORE.Models.Product>
 @using System.Globalization
 @{
-    ViewData["Title"] = "Trang chủ";
-    int numOfQuantity = 1;
+    ViewData["Title"] = "GAMINGSTORE - Mua Thiết Bị Gaming Online";
 }
 
 <style>
+    :root {
+        --primary: #ee4d2d;
+        --primary-dark: #d63d1f;
+        --secondary: #f5f5f5;
+        --text: #212245;
+        --text-light: #666;
+        --border: #e5e5e5;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
     body {
-        background: #f5f5f5;
+        background: var(--secondary);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        color: var(--text);
     }
 
-    /* ===== BANNER ===== */
+    /* BANNER */
+    .banner-section {
+        background: white;
+        padding: 0;
+        border-radius: 0;
+        overflow: hidden;
+        margin-bottom: 30px;
+    }
+
     .banner-img {
-        height: 350px;
+        height: 400px;
         object-fit: cover;
-    }
-
-    .carousel-fade .carousel-item {
-        transition: opacity 0.8s ease-in-out !important;
+        width: 100%;
     }
 
     .carousel-control-prev-icon,
     .carousel-control-next-icon {
-        background-color: rgba(0,0,0,0.6);
+        background-color: rgba(0, 0, 0, 0.5);
         border-radius: 50%;
-        padding: 22px;
+        padding: 15px;
     }
 
-    /* ===== CATEGORY ICON ===== */
-    .category-box {
-        background: #fff;
-        border-radius: 10px;
-        padding: 12px 10px;
-        text-align: center;
-        cursor: pointer;
+    /* CATEGORY SECTION */
+    .category-section {
+        background: white;
+        padding: 30px 0;
+        margin-bottom: 30px;
+        border-radius: 8px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    .category-title {
+        font-size: 14px;
         font-weight: 600;
-        border: 1px solid #eaeaea;
+        text-transform: uppercase;
+        color: var(--text-light);
+        margin-bottom: 20px;
+        padding: 0 20px;
+        letter-spacing: 0.5px;
+    }
+
+    .category-list {
+        display: none;
+    }
+
+    .category-dropdown {
+        width: 100%;
+        max-width: 400px;
+        padding: 12px 15px;
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        background: white;
+        cursor: pointer;
         transition: all 0.3s ease;
+        color: var(--text);
+        font-family: inherit;
     }
 
-    .hover-dropdown:hover .category-box {
-        background-color: #f8f9fa;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    .category-dropdown:hover {
+        border-color: var(--primary);
+        box-shadow: 0 2px 8px rgba(238, 77, 45, 0.1);
     }
 
-    .hover-dropdown .dropdown-menu {
-        display: block;
-        visibility: hidden;
-        opacity: 0;
-        transform: translateY(15px);
-        transition: all 0.4s ease;
-        margin-top: 0;
-        border: none;
+    .category-dropdown:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(238, 77, 45, 0.1);
     }
 
-        .hover-dropdown .dropdown-menu::before {
-            content: '';
-            position: absolute;
-            top: -10px;
-            left: 0;
-            width: 100%;
-            height: 10px;
-            background: transparent;
-        }
-
-    .hover-dropdown:hover .dropdown-menu {
-        visibility: visible;
-        opacity: 1;
-        transform: translateY(0);
+    .category-dropdown option {
+        padding: 8px 12px;
+        font-size: 14px;
+        color: var(--text);
     }
 
-    /* ===== PRODUCT CARD ===== */
-    /* ===== PRODUCT CARD ===== */
+    .category-item {
+        display: none;
+    }
+
+    .category-item:hover {
+        display: none;
+    }
+
+    .category-item.active {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        border-color: var(--primary);
+    }
+
+    .category-icon {
+        font-size: 28px;
+    }
+
+    .category-name {
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+
+    /* FILTER & SORT */
+    .filter-bar {
+        background: white;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .filter-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .form-select {
+        padding: 9px 12px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 13px;
+        background: white;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .form-select:hover {
+        border-color: var(--primary);
+    }
+
+    .form-select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px rgba(238, 77, 45, 0.1);
+    }
+
+    .result-count {
+        font-size: 13px;
+        color: var(--text-light);
+    }
+
+    /* PRODUCTS GRID */
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+
     .product-card {
         background: white;
-        border-radius: 10px;
+        border-radius: 8px;
         overflow: hidden;
-        transition: 0.3s;
-        border: 1px solid #f0f0f0;
+        border: 1px solid var(--border);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
     }
 
-        .product-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-        }
-
-    .product-img {
-        height: 200px;
-        object-fit: contain; /* Sửa thành contain để ảnh không bị mất góc */
-        padding: 10px;
+    .product-card:hover {
+        border-color: var(--primary);
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
     }
 
-    /* ================================================== */
-    /* ===== BẮT ĐẦU PHẦN CSS HOVER ĐỔI ẢNH MỚI THÊM ===== */
-    /* ================================================== */
-    .product-img-wrapper {
+    .product-image-wrapper {
         position: relative;
-        height: 200px;
         width: 100%;
+        height: 200px;
         overflow: hidden;
+        background: #f9f9f9;
     }
 
-    .img-primary, .img-secondary {
-        position: absolute;
-        top: 0;
-        left: 0;
+    .product-image {
         width: 100%;
         height: 100%;
-        object-fit: contain; /* Giữ nguyên tỷ lệ ảnh */
+        object-fit: contain;
         padding: 10px;
-        transition: opacity 0.6s ease-in-out; /* Thời gian chuyển mờ mượt mà */
+        transition: opacity 0.4s ease;
     }
 
-    .img-secondary {
-        opacity: 0; /* Ẩn ảnh 2 đi */
+    .product-card:hover .product-image {
+        opacity: 0.7;
     }
 
-    /* Khi lướt chuột vào thẻ card */
-    .product-card:hover .img-primary {
-        opacity: 0; /* Làm mờ ảnh 1 */
+    .product-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        padding: 6px 10px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 700;
+        z-index: 2;
     }
 
-    .product-card:hover .img-secondary {
-        opacity: 1; /* Hiện ảnh 2 lên */
+    .product-info {
+        padding: 12px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
     }
-    /* ================================================== */
-    /* ===== KẾT THÚC PHẦN CSS HOVER ĐỔI ẢNH MỚI ====== */
-    /* ================================================== */
 
-    .product-title {
-        font-size: 1rem;
-        font-weight: 500;
+    .product-name {
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.4;
+        color: var(--text);
+        margin-bottom: 8px;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
-        min-height: 48px;
+    }
+
+    .product-category {
+        font-size: 11px;
+        color: var(--text-light);
         margin-bottom: 8px;
     }
 
-    .price {
-        color: #ee4d2d;
-        font-weight: bold;
-        font-size: 1.1rem;
+    .product-price {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: auto;
+        margin-bottom: 10px;
+        letter-spacing: 0.5px;
     }
 
-    .old-price {
-        text-decoration: line-through;
-        color: gray;
-        font-size: 13px;
-    }
-
-    .badge-sale {
-        position: absolute;
-        top: 10px;
-        left: 0;
-        background: red;
+    .product-button {
+        width: 100%;
+        padding: 10px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
         color: white;
-        padding: 4px 8px;
+        border: none;
+        border-radius: 4px;
         font-size: 12px;
-        font-weight: bold;
-        border-radius: 0 5px 5px 0;
-        z-index: 2;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
     }
 
-    .section-title {
-        font-size: 24px;
-        font-weight: bold;
-        margin: 30px 0 15px;
-        text-transform: uppercase;
+    .product-button:hover {
+        background: var(--primary-dark);
+        transform: scale(1.01);
+    }
+
+    /* PAGINATION */
+    .pagination-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin: 40px 0;
+        flex-wrap: wrap;
+    }
+
+    .pagination-btn {
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        background: white;
+        color: var(--text);
+        border-radius: 4px;
+        cursor: pointer;
+        transition: 0.3s;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .pagination-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+    .pagination-btn.active,
+    .pagination-current {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        border-color: var(--primary);
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 8px;
+    }
+
+    .empty-icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+    }
+
+    .empty-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .empty-desc {
+        color: var(--text-light);
+        margin-bottom: 20px;
+    }
+
+    .empty-btn {
+        display: inline-block;
+        padding: 12px 30px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+    .empty-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(238, 77, 45, 0.3);
+    }
+
+    /* RESPONSIVE */
+    @@media (max-width: 1024px) {
+        .product-grid {
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .category-list {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .product-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .category-list {
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 10px;
+        }
+
+        .category-item {
+            min-height: 90px;
+            padding: 8px;
+            font-size: 11px;
+        }
+
+        .category-icon {
+            font-size: 24px;
+        }
+
+        .filter-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .form-select {
+            width: 100%;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .product-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .product-image-wrapper {
+            height: 150px;
+        }
+
+        .category-list {
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        }
     }
 </style>
 
-<div class="container mt-3">
-    <div id="bannerCarousel" class="carousel slide carousel-fade shadow-sm rounded overflow-hidden" data-bs-ride="carousel" data-bs-interval="3000">
-
-        <div class="carousel-inner">
-            <div class="carousel-item active">
-                <img src="~/images/banner/banner1.jpg" class="d-block w-100 banner-img" alt="Banner 1">
-            </div>
-            <div class="carousel-item">
-                <img src="~/images/banner/banner2.jpg" class="d-block w-100 banner-img" alt="Banner 2">
-            </div>
-            <div class="carousel-item">
-                <img src="~/images/banner/banner3.jpg" class="d-block w-100 banner-img" alt="Banner 3">
-            </div>
-        </div>
-
-        <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-        </button>
-
-        <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-        </button>
-    </div>
-</div>
-
-<div class="container mt-4 mb-5">
-    <div class="row text-center gx-2 gy-3 row-cols-2 row-cols-md-3 row-cols-lg-6">
-
-        <div class="col">
-            <div class="dropdown hover-dropdown">
-                <div class="category-box" id="dropLaptop">💻 Laptop</div>
-                <ul class="dropdown-menu shadow" aria-labelledby="dropLaptop">
-                    <li><a class="dropdown-item fw-bold" asp-controller="Product" asp-action="Category" asp-route-keyword="Laptop Gaming">Laptop Gaming</a></li>
-                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="Laptop Sinh viên">Laptop Văn phòng</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger" asp-controller="Product" asp-action="Category" asp-route-keyword="Macbook">Apple Macbook</a></li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="col">
-            <div class="dropdown hover-dropdown">
-                <div class="category-box" id="dropPC">🖥 PC</div>
-                <ul class="dropdown-menu shadow" aria-labelledby="dropPC">
-                    <li><a class="dropdown-item fw-bold" asp-controller="Product" asp-action="Category" asp-route-keyword="PC Gaming">PC Gaming</a></li>
-                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="PC Đồ họa">PC Đồ họa</a></li>
-                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="PC Văn phòng">PC Đồng bộ</a></li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="col">
-            <div class="dropdown hover-dropdown">
-                <div class="category-box" id="dropMonitor">📺 Màn hình</div>
-                <ul class="dropdown-menu shadow" aria-labelledby="dropMonitor">
-                    <li><a class="dropdown-item fw-bold" asp-controller="Product" asp-action="Category" asp-route-keyword="Màn hình Gaming">Màn hình Gaming</a></li>
-                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="Màn hình Đồ họa">Màn hình Đồ họa</a></li>
-                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="Màn hình Văn phòng">Màn hình Văn phòng</a></li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="col">
-            <div class="dropdown hover-dropdown">
-                <div class="category-box" id="dropGear">🖱️ Gear</div>
-                <ul class="dropdown-menu shadow" aria-labelledby="dropGear">
-                    <li><a class="dropdown-item fw-bold" asp-controller="Product" asp-action="Category" asp-route-keyword="Bàn phím">Bàn phím cơ</a></li>
-                    <li><a class="dropdown-item fw-bold" asp-controller="Product" asp-action="Category" asp-route-keyword="Chuột">Chuột Gaming</a></li>
-                    <li><a class="dropdown-item fw-bold" asp-controller="Product" asp-action="Category" asp-route-keyword="Tai nghe">Tai nghe Gaming</a></li>
-                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="Lót chuột">Lót chuột (Mousepad)</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="Ghế Gaming">Ghế Gaming</a></li>
-                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="Loa">Loa máy tính</a></li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="col">
-            <div class="dropdown hover-dropdown">
-                <div class="category-box" id="dropComponent">⚙ Linh kiện</div>
-                <ul class="dropdown-menu shadow" aria-labelledby="dropComponent">
-                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="CPU">CPU</a></li>
-                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="VGA">VGA</a></li>
-                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="Mainboard">Mainboard</a></li>
-                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="RAM">RAM</a></li>
-                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="SSD">Ổ cứng SSD</a></li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="col">
-            <div class="dropdown hover-dropdown">
-                <div class="category-box" id="dropBuildPC">🛠 Build PC</div>
-                <ul class="dropdown-menu shadow dropdown-menu-end" aria-labelledby="dropBuildPC">
-                    <li><a class="dropdown-item fw-bold text-primary" asp-controller="Product" asp-action="Category" asp-route-keyword="Build PC">Công cụ Build PC</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="PC Intel">Cấu hình Intel</a></li>
-                    <li><a class="dropdown-item" asp-controller="Product" asp-action="Category" asp-route-keyword="PC AMD">Cấu hình AMD</a></li>
-                </ul>
-            </div>
-        </div>
-
-    </div>
-</div>
-
-<div class="container mt-4 mb-5">
-    <div class="section-title">🔥 FLASH SALE</div>
-
-    <div class="row g-3">
-        @foreach (var item in Model.Take(4))
-        {
-            <div class="col-6 col-md-3">
-                <div class="card h-100 product-card position-relative shadow-sm">
-                    <div class="badge-sale">-20%</div>
-
-                    <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id">
-                        <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/no-image.png" : item.ImageUrl.Split(';')[0])" class="card-img-top w-100 product-img" alt="@item.Name">
-                    </a>
-
-                    <div class="card-body d-flex flex-column p-3">
-                        <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id" class="text-decoration-none text-dark">
-                            <div class="product-title">@item.Name</div>
-                        </a>
-
-                        <div class="mt-auto">
-                            <div class="d-flex align-items-center mb-2">
-                                <span class="price">@item.Price.ToString("#,##0") đ</span>
-                                <span class="old-price ms-2">@((item.Price * 1.2M).ToString("#,##0")) đ</span>
-                            </div>
-                            <a asp-controller="ShoppingCart"
-                               asp-action="AddToCart"
-                               asp-route-productId="@item.Id"
-                               asp-route-quantity="@numOfQuantity"
-                               class="btn btn-outline-danger w-100 fw-bold">
-                                Thêm vào giỏ
-                            </a>
-                        </div>
-                    </div>
+<div class="container mt-4">
+    <!-- BANNER -->
+    <div class="banner-section">
+        <div id="bannerCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="4000">
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <img src="~/images/banner/banner1.jpg" class="banner-img" alt="Banner">
+                </div>
+                <div class="carousel-item">
+                    <img src="~/images/banner/banner2.jpg" class="banner-img" alt="Banner">
+                </div>
+                <div class="carousel-item">
+                    <img src="~/images/banner/banner3.jpg" class="banner-img" alt="Banner">
                 </div>
             </div>
-        }
+            <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon"></span>
+            </button>
+        </div>
     </div>
 </div>
 
-<div class="container mt-4 mb-5">
-    <div class="section-title">🛒 SẢN PHẨM NỔI BẬT</div>
+<!-- CATEGORIES DROPDOWN -->
+<div class="container mt-5">
+    <div class="category-section">
+        <div class="category-title">🎮 DANH MỤC SẢN PHẨM</div>
+        <div style="padding: 0 20px;">
+            <form id="categoryForm" method="get" asp-controller="Home" asp-action="Index">
+                <input type="hidden" name="searchString" id="formSearchString" value="@ViewBag.SearchString">
+                <input type="hidden" name="sortBy" id="formSortBy" value="@ViewBag.SortBy">
+                <input type="hidden" name="page" value="1">
+                <select name="categoryId" class="form-select category-dropdown" onchange="handleCategoryChange()">
+                    @{
+                        var isAllSelected = ViewBag.SelectedCategoryId == null || (int?)ViewBag.SelectedCategoryId == 0;
+                    }
+                    @if (isAllSelected)
+                    {
+                        <option value="" selected>🏪 Tất cả danh mục</option>
+                    }
+                    else
+                    {
+                        <option value="">🏪 Tất cả danh mục</option>
+                    }
+                    @foreach (var category in ViewBag.Categories ?? new List<GAMINGSTORE.Models.Category>())
+                    {
+                        var isSelected = ViewBag.SelectedCategoryId != null && (int?)ViewBag.SelectedCategoryId == category.Id;
+                        @if (isSelected)
+                        {
+                            <option value="@category.Id" selected>@category.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@category.Id">@category.Name</option>
+                        }
+                    }
+                </select>
+            </form>
+        </div>
+    </div>
+</div>
 
-    <div class="row g-3 row-cols-2 row-cols-md-3 row-cols-lg-4">
-        @foreach (var item in Model)
-        {
-            <div class="col">
-                <div class="card h-100 product-card shadow-sm position-relative">
-                    <div class="badge-sale bg-warning text-dark">HOT</div>
+<!-- FILTER & SORT -->
+<div class="container">
+    <div class="filter-bar">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <label class="filter-label">Sắp xếp:</label>
+            <form asp-controller="Home" asp-action="Index" method="get" id="sortForm" onchange="document.getElementById('sortForm').submit()">
+                <input type="hidden" name="searchString" value="@ViewBag.SearchString">
+                <input type="hidden" name="categoryId" value="@ViewBag.SelectedCategoryId">
+                <input type="hidden" name="page" value="1">
+                
+                @{
+                    var sortBy = ViewBag.SortBy ?? "newest";
+                }
+                <select name="sortBy" class="form-select">
+                    @if (sortBy == "newest")
+                    {
+                        <option value="newest" selected>🆕 Mới nhất</option>
+                    }
+                    else
+                    {
+                        <option value="newest">🆕 Mới nhất</option>
+                    }
+                    @if (sortBy == "name_asc")
+                    {
+                        <option value="name_asc" selected>📝 Tên A-Z</option>
+                    }
+                    else
+                    {
+                        <option value="name_asc">📝 Tên A-Z</option>
+                    }
+                    @if (sortBy == "name_desc")
+                    {
+                        <option value="name_desc" selected>📝 Tên Z-A</option>
+                    }
+                    else
+                    {
+                        <option value="name_desc">📝 Tên Z-A</option>
+                    }
+                    @if (sortBy == "price_asc")
+                    {
+                        <option value="price_asc" selected>💰 Giá thấp</option>
+                    }
+                    else
+                    {
+                        <option value="price_asc">💰 Giá thấp</option>
+                    }
+                    @if (sortBy == "price_desc")
+                    {
+                        <option value="price_desc" selected>💰 Giá cao</option>
+                    }
+                    else
+                    {
+                        <option value="price_desc">💰 Giá cao</option>
+                    }
+                </select>
+                </select>
+            </form>
+        </div>
 
-                    <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id">
-                        <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/no-image.png" : item.ImageUrl.Split(';')[0])" class="card-img-top product-img" alt="@item.Name">
-                    </a>
+        <div class="result-count">
+            <strong>@ViewBag.TotalProduct</strong> sản phẩm
+            @if (ViewBag.SelectedCategoryId != null) { <span>• Bộ lọc: Danh mục</span> }
+            @if (!string.IsNullOrEmpty(ViewBag.SearchString)) { <span>• Tìm: <strong>"@ViewBag.SearchString"</strong></span> }
+        </div>
+    </div>
+</div>
 
-                    <div class="card-body d-flex flex-column p-3">
-                        <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id" class="text-decoration-none text-dark">
-                            <div class="product-title text-truncate">@item.Name</div>
+<!-- PRODUCTS -->
+<div class="container">
+    @if (Model.Any())
+    {
+        <div class="product-grid">
+            @foreach (var product in Model)
+            {
+                <div class="product-card">
+                    <div class="product-image-wrapper">
+                        <a asp-controller="Product" asp-action="Details" asp-route-id="@product.Id" style="text-decoration: none; display: block; height: 100%;">
+                            @{
+                                var images = string.IsNullOrEmpty(product.ImageUrl)
+                                    ? new string[] { "/images/no-image.png" }
+                                    : product.ImageUrl.Split(';', StringSplitOptions.RemoveEmptyEntries);
+                            }
+                            <img src="@images[0]" class="product-image" alt="@product.Name" onerror="this.src='/images/no-image.png'">
+                        </a>
+                        <span class="product-badge">-15%</span>
+                    </div>
+
+                    <div class="product-info">
+                        <a asp-controller="Product" asp-action="Details" asp-route-id="@product.Id" style="text-decoration: none;">
+                            <div class="product-name">@product.Name</div>
                         </a>
 
-                        <div class="mt-auto">
-                            <div class="price mb-3">@item.Price.ToString("#,##0") VNĐ</div>
+                        @if (product.Categories?.Any() == true)
+                        {
+                            <div class="product-category">@string.Join(" • ", product.Categories.Select(c => c.Name).Take(1))</div>
+                        }
 
-                            <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm w-100 mb-2">
-                                Chi tiết
-                            </a>
-                            <a asp-controller="ShoppingCart"
-                               asp-action="AddToCart"
-                               asp-route-productId="@item.Id"
-                               asp-route-quantity="@numOfQuantity"
-                               class="btn btn-primary btn-sm w-100">
-                                Thêm vào giỏ
-                            </a>
+                        <div class="product-price">
+                            @Math.Round(product.Price, 0).ToString("N0", new CultureInfo("vi-VN")) ₫
                         </div>
+
+                        <a asp-controller="ShoppingCart" asp-action="AddToCart" asp-route-productId="@product.Id" class="product-button">
+                            🛒 Thêm vào giỏ
+                        </a>
                     </div>
                 </div>
+            }
+        </div>
+
+        <!-- PAGINATION -->
+        @if (ViewBag.TotalPage > 1)
+        {
+            <div class="pagination-wrapper">
+                @if (ViewBag.CurrentPage > 1)
+                {
+                    <a asp-controller="Home" asp-action="Index" asp-route-page="1" 
+                       asp-route-searchString="@ViewBag.SearchString" asp-route-categoryId="@ViewBag.SelectedCategoryId" 
+                       asp-route-sortBy="@ViewBag.SortBy" class="pagination-btn">⏮ Đầu</a>
+                    
+                    <a asp-controller="Home" asp-action="Index" asp-route-page="@(ViewBag.CurrentPage - 1)" 
+                       asp-route-searchString="@ViewBag.SearchString" asp-route-categoryId="@ViewBag.SelectedCategoryId" 
+                       asp-route-sortBy="@ViewBag.SortBy" class="pagination-btn">⬅ Trước</a>
+                }
+
+                @for (int i = Math.Max(1, ViewBag.CurrentPage - 2); i <= Math.Min(ViewBag.TotalPage, ViewBag.CurrentPage + 2); i++)
+                {
+                    @if (i == ViewBag.CurrentPage)
+                    {
+                        <span class="pagination-current">@i</span>
+                    }
+                    else
+                    {
+                        <a asp-controller="Home" asp-action="Index" asp-route-page="@i" 
+                           asp-route-searchString="@ViewBag.SearchString" asp-route-categoryId="@ViewBag.SelectedCategoryId" 
+                           asp-route-sortBy="@ViewBag.SortBy" class="pagination-btn">@i</a>
+                    }
+                }
+
+                @if (ViewBag.CurrentPage < ViewBag.TotalPage)
+                {
+                    <a asp-controller="Home" asp-action="Index" asp-route-page="@(ViewBag.CurrentPage + 1)" 
+                       asp-route-searchString="@ViewBag.SearchString" asp-route-categoryId="@ViewBag.SelectedCategoryId" 
+                       asp-route-sortBy="@ViewBag.SortBy" class="pagination-btn">Tiếp ➡</a>
+                    
+                    <a asp-controller="Home" asp-action="Index" asp-route-page="@ViewBag.TotalPage" 
+                       asp-route-searchString="@ViewBag.SearchString" asp-route-categoryId="@ViewBag.SelectedCategoryId" 
+                       asp-route-sortBy="@ViewBag.SortBy" class="pagination-btn">Cuối ⏭</a>
+                }
             </div>
         }
-    </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <div class="empty-title">Không tìm thấy sản phẩm</div>
+            <div class="empty-desc">Hãy thử tìm kiếm hoặc bộ lọc khác</div>
+            <a asp-controller="Home" asp-action="Index" class="empty-btn">🏪 Quay lại</a>
+        </div>
+    }
 </div>
+
+<script>
+    function handleCategoryChange() {
+        const categorySelect = document.querySelector('[name="categoryId"]');
+        const selectedValue = categorySelect.value;
+        const form = document.getElementById('categoryForm');
+        
+        // Luôn reset về trang 1 khi thay đổi danh mục
+        document.querySelector('input[name="page"]').value = '1';
+        
+        if (selectedValue === '') {
+            // Nếu chọn "Tất cả", xóa categoryId và reset
+            window.location.href = '@Url.Action("Index", "Home")';
+        } else {
+            // Nếu chọn danh mục cụ thể, submit form
+            form.submit();
+        }
+    }
+</script>

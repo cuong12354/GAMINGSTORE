@@ -84,8 +84,8 @@ namespace Ares.Admin.Controllers
                 return NotFound();
             }
             var categories = await _categoryRepository.GetAllAsync();
-            ViewBag.Categories = new SelectList(categories, "Id", "Name",
-            product.CategoryId);
+            var selectedCategoryIds = product.Categories?.Select(c => c.Id).ToList() ?? new List<int>();
+            ViewBag.Categories = new SelectList(categories, "Id", "Name", selectedCategoryIds);
             return View(product);
         }
         // Xử lý cập nhật sản phẩm
@@ -118,7 +118,6 @@ namespace Ares.Admin.Controllers
                 existingProduct.Name = product.Name;
                 existingProduct.Price = product.Price;
                 existingProduct.Description = product.Description;
-                existingProduct.CategoryId = product.CategoryId;
                 existingProduct.ImageUrl = product.ImageUrl;
                 await _productRepository.UpdateAsync(existingProduct);
                 return RedirectToAction(nameof(Index));
