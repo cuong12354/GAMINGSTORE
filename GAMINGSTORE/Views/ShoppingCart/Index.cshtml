@@ -212,7 +212,7 @@
                                         <strong>@item.Name</strong>
                                     </td>
                                     <td class="price-column">
-                                        @item.Price.ToString("N0", new System.Globalization.CultureInfo("vi-VN")) ₫
+                                        @(item.Price.ToString("N0", new System.Globalization.CultureInfo("vi-VN"))) ₫
                                     </td>
                                     <td>
                                         <div class="qty-control">
@@ -222,7 +222,7 @@
                                         </div>
                                     </td>
                                     <td class="price-column">
-                                        @(item.Price * item.Quantity).ToString("N0", new System.Globalization.CultureInfo("vi-VN")) ₫
+                                        @((item.Price * item.Quantity).ToString("N0", new System.Globalization.CultureInfo("vi-VN"))) ₫
                                     </td>
                                     <td>
                                         <a asp-action="RemoveFromCart" asp-route-productId="@item.ProductId" class="remove-btn text-decoration-none">
@@ -242,7 +242,7 @@
 
                     <div class="summary-row">
                         <span>Tổng tiền hàng:</span>
-                        <span>@Model.Items.Sum(x => x.Price * x.Quantity).ToString("N0", new System.Globalization.CultureInfo("vi-VN")) ₫</span>
+                        <span>@(Model.Items.Sum(x => x.Price * x.Quantity).ToString("N0", new System.Globalization.CultureInfo("vi-VN"))) ₫</span>
                     </div>
 
                     <div class="summary-row">
@@ -257,7 +257,7 @@
 
                     <div class="summary-row">
                         <span>Tổng cộng:</span>
-                        <span class="total-price">@Model.Items.Sum(x => x.Price * x.Quantity).ToString("N0", new System.Globalization.CultureInfo("vi-VN")) ₫</span>
+                        <span class="total-price">@(Model.Items.Sum(x => x.Price * x.Quantity).ToString("N0", new System.Globalization.CultureInfo("vi-VN"))) ₫</span>
                     </div>
 
                     <div class="cart-actions">

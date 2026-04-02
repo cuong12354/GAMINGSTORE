@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
+[Authorize]
 public class ShoppingCartController : Controller
 {
     private readonly IProductRepository _productRepository;
@@ -19,17 +20,15 @@ public class ShoppingCartController : Controller
         _context = context;
         _userManager = userManager;
     }
-    [Authorize]
     public IActionResult Checkout()
     {
         return View(new Order());
     }
-    [Authorize]
+
     [HttpPost]
     public async Task<IActionResult> Checkout(Order order)
     {
-        var cart =
-        HttpContext.Session.GetObjectFromJson<ShoppingCart>("Cart");
+        var cart = HttpContext.Session.GetShoppingCart(User);
         if (cart == null || !cart.Items.Any())
         {
             // Xử lý giỏ hàng trống...
@@ -58,13 +57,13 @@ public class ShoppingCartController : Controller
         }).ToList();
         _context.Order.Add(order);
         await _context.SaveChangesAsync();
-        HttpContext.Session.Remove("Cart");
+        HttpContext.Session.RemoveShoppingCart(User);
         return View("OrderCompleted", order.Id); // Trang xác nhận hoàn thành đơn hàng
         }
     // VIEW GIỎ HÀNG
     public IActionResult Index()
     {
-        var cart = HttpContext.Session.GetObjectFromJson<ShoppingCart>("Cart") ?? new ShoppingCart();
+        var cart = HttpContext.Session.GetShoppingCart(User);
         return View(cart);
     }
 
@@ -83,11 +82,11 @@ public class ShoppingCartController : Controller
             Quantity = quantity
         };
 
-        var cart = HttpContext.Session.GetObjectFromJson<ShoppingCart>("Cart") ?? new ShoppingCart();
+        var cart = HttpContext.Session.GetShoppingCart(User);
 
         cart.AddItem(cartItem);
 
-        HttpContext.Session.SetObjectAsJson("Cart", cart);
+        HttpContext.Session.SetShoppingCart(User, cart);
 
         return RedirectToAction("Index", "Home");
     }
@@ -95,12 +94,12 @@ public class ShoppingCartController : Controller
     // XÓA
     public IActionResult RemoveFromCart(int productId)
     {
-        var cart = HttpContext.Session.GetObjectFromJson<ShoppingCart>("Cart");
+        var cart = HttpContext.Session.GetShoppingCart(User);
 
-        if (cart != null)
+        if (cart.Items.Any())
         {
             cart.RemoveItem(productId);
-            HttpContext.Session.SetObjectAsJson("Cart", cart);
+            HttpContext.Session.SetShoppingCart(User, cart);
         }
 
         return RedirectToAction("Index");
@@ -109,12 +108,12 @@ public class ShoppingCartController : Controller
     // TĂNG
     public IActionResult Increase(int productId)
     {
-        var cart = HttpContext.Session.GetObjectFromJson<ShoppingCart>("Cart");
+        var cart = HttpContext.Session.GetShoppingCart(User);
 
-        if (cart != null)
+        if (cart.Items.Any())
         {
             cart.IncreaseQuantity(productId);
-            HttpContext.Session.SetObjectAsJson("Cart", cart);
+            HttpContext.Session.SetShoppingCart(User, cart);
         }
 
         return RedirectToAction("Index");
@@ -123,12 +122,12 @@ public class ShoppingCartController : Controller
     // GIẢM
     public IActionResult Decrease(int productId)
     {
-        var cart = HttpContext.Session.GetObjectFromJson<ShoppingCart>("Cart");
+        var cart = HttpContext.Session.GetShoppingCart(User);
 
-        if (cart != null)
+        if (cart.Items.Any())
         {
             cart.DecreaseQuantity(productId);
-            HttpContext.Session.SetObjectAsJson("Cart", cart);
+            HttpContext.Session.SetShoppingCart(User, cart);
         }
 
         return RedirectToAction("Index");
@@ -137,7 +136,7 @@ public class ShoppingCartController : Controller
     // CLEAR
     public IActionResult ClearCart()
     {
-        HttpContext.Session.Remove("Cart");
+        HttpContext.Session.RemoveShoppingCart(User);
         return RedirectToAction("Index");
     }
 }

@@ -2,7 +2,7 @@
 @using GAMINGSTORE.Extensions
 
 @{
-    var cart = Context.Session.GetObjectFromJson<ShoppingCart>("Cart") ?? new ShoppingCart();
+    var cart = Context.Session.GetShoppingCart(Context.User);
     var totalQuantity = cart.GetTotalQuantity();
 }
 <!DOCTYPE html>

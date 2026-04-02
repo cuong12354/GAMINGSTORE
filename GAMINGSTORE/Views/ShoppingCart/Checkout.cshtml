@@ -473,7 +473,7 @@
                     <h4 class="summary-title">Tóm Tắt Đơn Hàng</h4>
 
                     @{
-                        var cart = Context.Session.GetObjectFromJson<ShoppingCart>("Cart") ?? new ShoppingCart();
+                        var cart = Context.Session.GetShoppingCart(Context.User);
                         var total = cart.Items.Sum(i => i.Price * i.Quantity);
                     }
 
@@ -488,7 +488,7 @@
                                         <div class="item-qty">Số lượng: @item.Quantity</div>
                                     </div>
                                     <div class="item-price">
-                                        @(item.Price * item.Quantity).ToString("N0", new System.Globalization.CultureInfo("vi-VN")) ₫
+                                        @((item.Price * item.Quantity).ToString("N0", new System.Globalization.CultureInfo("vi-VN"))) ₫
                                     </div>
                                 </div>
                             }
