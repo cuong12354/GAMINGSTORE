@@ -1,16 +1,66 @@
-﻿@using GAMINGSTORE.Models
-@inject SignInManager<ApplicationUser> SignInManager
-@{
-    var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
-}
-<ul class="nav nav-pills flex-column">
-    <li class="nav-item"><a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)" id="profile" asp-page="./Index">Profile</a></li>
-    <li class="nav-item"><a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)" id="email" asp-page="./Email">Email</a></li>
-    <li class="nav-item"><a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)" id="change-password" asp-page="./ChangePassword">Password</a></li>
-    @if (hasExternalLogins)
-    {
-        <li id="external-logins" class="nav-item"><a id="external-login" class="nav-link @ManageNavPages.ExternalLoginsNavClass(ViewContext)" asp-page="./ExternalLogins">External logins</a></li>
+﻿<style>
+    .manage-nav-title {
+        font-size: 12px;
+        font-weight: 800;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 14px;
+        padding: 0 8px;
     }
-    <li class="nav-item"><a class="nav-link @ManageNavPages.TwoFactorAuthenticationNavClass(ViewContext)" id="two-factor" asp-page="./TwoFactorAuthentication">Two-factor authentication</a></li>
-    <li class="nav-item"><a class="nav-link @ManageNavPages.PersonalDataNavClass(ViewContext)" id="personal-data" asp-page="./PersonalData">Personal data</a></li>
-</ul>
+
+    .manage-nav-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .manage-nav-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        text-decoration: none;
+        color: #374151;
+        font-weight: 700;
+        transition: all 0.25s ease;
+    }
+
+    .manage-nav-link:hover {
+        background: #fff4f1;
+        color: #ee4d2d;
+    }
+
+    .manage-nav-link.active {
+        background: linear-gradient(135deg, #ee4d2d, #d63d1f);
+        color: #fff;
+        box-shadow: 0 12px 24px rgba(238, 77, 45, 0.2);
+    }
+
+    .manage-nav-link i {
+        width: 18px;
+        text-align: center;
+        font-size: 15px;
+    }
+</style>
+
+<div class="manage-nav-title">Cài đặt tài khoản</div>
+<div class="manage-nav-list">
+    <a class="manage-nav-link @ManageNavPages.IndexNavClass(ViewContext)" id="profile" asp-page="./Index">
+        <i class="bi bi-person"></i>
+        <span>Hồ sơ</span>
+    </a>
+    <a class="manage-nav-link @ManageNavPages.EmailNavClass(ViewContext)" id="email" asp-page="./Email">
+        <i class="bi bi-envelope"></i>
+        <span>Email</span>
+    </a>
+    <a class="manage-nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)" id="change-password" asp-page="./ChangePassword">
+        <i class="bi bi-key"></i>
+        <span>Mật khẩu</span>
+    </a>
+    <a class="manage-nav-link @ManageNavPages.PersonalDataNavClass(ViewContext)" id="personal-data" asp-page="./PersonalData">
+        <i class="bi bi-database"></i>
+        <span>Dữ liệu cá nhân</span>
+    </a>
+</div>

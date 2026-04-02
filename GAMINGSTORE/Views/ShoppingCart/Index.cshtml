@@ -5,178 +5,340 @@
 }
 
 <style>
-    .cart-container {
-        background: white;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        padding: 20px;
+    :root {
+        --primary: #ee4d2d;
+        --primary-dark: #d63d1f;
+        --surface: #ffffff;
+        --surface-soft: #fff7f3;
+        --text: #1f2937;
+        --text-light: #6b7280;
+        --border: rgba(15, 23, 42, 0.08);
+        --danger: #d73a49;
     }
 
-    .cart-empty {
-        text-align: center;
-        padding: 60px 20px;
+    .cart-page {
+        padding: 36px 0 56px;
     }
 
-    .cart-empty-icon {
-        font-size: 80px;
-        margin-bottom: 20px;
+    .cart-hero {
+        background:
+            radial-gradient(circle at top right, rgba(238, 77, 45, 0.16), transparent 30%),
+            linear-gradient(135deg, #ffffff, #fff6f2);
+        border: 1px solid rgba(238, 77, 45, 0.08);
+        border-radius: 24px;
+        box-shadow: 0 18px 44px rgba(15, 23, 42, 0.07);
+        padding: 26px 28px;
+        margin-bottom: 24px;
+    }
+
+    .cart-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: rgba(238, 77, 45, 0.1);
+        color: var(--primary-dark);
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 14px;
+    }
+
+    .cart-title {
+        font-size: 34px;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 8px;
+    }
+
+    .cart-subtitle {
+        color: var(--text-light);
+        font-size: 15px;
+        line-height: 1.7;
+        max-width: 700px;
+        margin: 0;
+    }
+
+    .cart-card,
+    .cart-summary {
+        background: var(--surface);
+        border-radius: 24px;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        border: 1px solid var(--border);
+    }
+
+    .cart-card {
+        overflow: hidden;
     }
 
     .cart-table {
+        margin: 0;
         border: none;
     }
 
     .cart-table thead {
-        background-color: #f8f9fa;
-        border-bottom: 2px solid #ddd;
+        background: linear-gradient(180deg, #fff8f5 0%, #fff 100%);
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
     }
 
     .cart-table th {
-        color: #333;
-        font-weight: 600;
-        padding: 15px;
+        color: var(--text-light);
+        font-weight: 800;
+        padding: 18px 20px;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        border: none;
     }
 
     .cart-table td {
-        padding: 15px;
+        padding: 18px 20px;
         vertical-align: middle;
+        border-color: rgba(15, 23, 42, 0.06);
     }
 
     .product-cell {
-        text-align: left;
-        max-width: 350px;
+        max-width: 360px;
+    }
+
+    .product-name {
+        font-weight: 800;
+        color: var(--text);
+        font-size: 15px;
+        margin-bottom: 4px;
+    }
+
+    .product-meta {
+        color: var(--text-light);
+        font-size: 13px;
     }
 
     .qty-control {
         display: inline-flex;
         align-items: center;
-        gap: 5px;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        overflow: hidden;
+        gap: 6px;
+        padding: 4px;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 16px;
+        background: #f8fafc;
     }
 
-    .qty-control button {
+    .qty-btn {
+        width: 34px;
+        height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        text-decoration: none;
+        color: var(--text);
         background: white;
-        border: none;
-        padding: 8px 10px;
-        cursor: pointer;
-        font-weight: bold;
-        color: #333;
+        font-weight: 800;
+        transition: all 0.2s ease;
     }
 
-    .qty-control button:hover {
-        background-color: #f0f0f0;
+    .qty-btn:hover {
+        color: var(--primary);
+        background: #fff5f2;
     }
 
-    .qty-control span {
-        padding: 8px 15px;
-        min-width: 40px;
+    .qty-value {
+        min-width: 34px;
         text-align: center;
-        font-weight: bold;
+        font-weight: 800;
+        color: var(--text);
     }
 
     .price-column {
-        font-weight: 600;
-        color: #ee4d2d;
+        font-weight: 800;
+        color: var(--primary);
+        white-space: nowrap;
     }
 
     .remove-btn {
-        background-color: #dc3545;
-        color: white;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: 0.3s;
+        width: 38px;
+        height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        text-decoration: none;
+        background: rgba(215, 58, 73, 0.12);
+        color: var(--danger);
+        font-size: 18px;
+        transition: all 0.2s ease;
     }
 
     .remove-btn:hover {
-        background-color: #c82333;
-        text-decoration: none;
+        background: var(--danger);
         color: white;
     }
 
     .cart-summary {
-        background: #f8f9fa;
-        border-radius: 10px;
-        padding: 20px;
-        margin-top: 20px;
+        padding: 24px;
+        position: sticky;
+        top: 96px;
+    }
+
+    .summary-title {
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 6px;
+    }
+
+    .summary-subtitle {
+        color: var(--text-light);
+        font-size: 14px;
+        margin-bottom: 20px;
     }
 
     .summary-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 10px 0;
-        border-bottom: 1px solid #ddd;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        color: var(--text-light);
+        font-size: 14px;
     }
 
-    .summary-row:last-child {
+    .summary-row strong,
+    .summary-row span:last-child {
+        color: var(--text);
+        font-weight: 700;
+    }
+
+    .summary-row.total-row {
+        margin-top: 8px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(15, 23, 42, 0.08);
         border-bottom: none;
-        padding-top: 15px;
-        font-size: 18px;
-        font-weight: bold;
     }
 
-    .total-price {
-        color: #ee4d2d;
+    .summary-row.total-row strong,
+    .summary-row.total-row .total-price {
+        color: var(--primary);
         font-size: 24px;
+        font-weight: 800;
     }
 
     .cart-actions {
-        display: flex;
-        gap: 10px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
         margin-top: 20px;
-        flex-wrap: wrap;
     }
 
     .btn-action {
-        flex: 1;
-        min-width: 150px;
-        padding: 12px 20px;
-        border: none;
-        border-radius: 6px;
-        font-weight: 600;
+        min-height: 48px;
+        border-radius: 16px;
+        font-weight: 800;
         cursor: pointer;
-        transition: 0.3s;
-        font-size: 16px;
+        transition: all 0.25s ease;
+        font-size: 14px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
     }
 
     .btn-continue {
-        background-color: #f0f0f0;
-        color: #333;
-    }
-
-    .btn-continue:hover {
-        background-color: #e0e0e0;
+        background: #edf1f5;
+        color: var(--text);
     }
 
     .btn-clear {
-        background-color: #ffc107;
-        color: #333;
-    }
-
-    .btn-clear:hover {
-        background-color: #e0a800;
+        background: #fff4e5;
+        color: #9a6700;
     }
 
     .btn-checkout {
-        background-color: #ee4d2d;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
         color: white;
-        flex: 2;
+        width: 100%;
+        margin-top: 12px;
+        min-height: 54px;
+        box-shadow: 0 16px 28px rgba(238, 77, 45, 0.18);
     }
 
+    .btn-action:hover,
     .btn-checkout:hover {
-        background-color: #d63d1f;
+        transform: translateY(-1px);
+    }
+
+    .cart-empty {
+        text-align: center;
+        padding: 72px 24px;
+        border-radius: 24px;
+        background: white;
+        border: 1px solid var(--border);
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+    }
+
+    .cart-empty-icon {
+        width: 92px;
+        height: 92px;
+        border-radius: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff4f1;
+        font-size: 42px;
+        margin-bottom: 22px;
+    }
+
+    .empty-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 13px 20px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        text-decoration: none;
+        font-weight: 800;
+        margin-top: 8px;
+    }
+
+    @@media (max-width: 991px) {
+        .cart-summary {
+            position: static;
+            margin-top: 20px;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .cart-page {
+            padding-top: 24px;
+        }
+
+        .cart-title {
+            font-size: 28px;
+        }
+
+        .cart-actions {
+            grid-template-columns: 1fr;
+        }
+
+        .cart-table th,
+        .cart-table td {
+            padding: 14px 12px;
+            font-size: 13px;
+        }
     }
 </style>
 
-<div class="container my-5">
-    <h2 class="mb-4" style="color: #333; font-weight: bold;">
-        <i class="bi bi-cart-fill"></i> Giỏ Hàng (@Model.Items.Count sản phẩm)
-    </h2>
+<div class="container cart-page">
+    <div class="cart-hero">
+        <div class="cart-kicker"><i class="bi bi-bag-check"></i> Shopping cart</div>
+        <div class="cart-title">Giỏ hàng của bạn</div>
+        <p class="cart-subtitle">Rà soát lại sản phẩm, số lượng và tổng tiền trước khi chuyển sang bước thanh toán.</p>
+    </div>
 
     @if (Model.Items.Count == 0)
     {
@@ -184,8 +346,9 @@
             <div class="cart-empty-icon">🛒</div>
             <h3>Giỏ hàng của bạn trống</h3>
             <p class="text-muted mb-4">Hãy thêm sản phẩm để tiếp tục mua sắm</p>
-            <a asp-controller="Home" asp-action="Index" class="btn btn-danger btn-lg">
-                🏪 Quay lại Cửa hàng
+            <a asp-controller="Home" asp-action="Index" class="empty-btn">
+                <span>🏪</span>
+                <span>Quay lại cửa hàng</span>
             </a>
         </div>
     }
@@ -193,7 +356,7 @@
     {
         <div class="row">
             <div class="col-lg-8">
-                <div class="cart-container">
+                <div class="cart-card">
                     <table class="table cart-table table-hover">
                         <thead>
                             <tr>
@@ -209,16 +372,17 @@
                             {
                                 <tr>
                                     <td class="product-cell">
-                                        <strong>@item.Name</strong>
+                                        <div class="product-name">@item.Name</div>
+                                        <div class="product-meta">Mã sản phẩm: #@item.ProductId</div>
                                     </td>
                                     <td class="price-column">
                                         @(item.Price.ToString("N0", new System.Globalization.CultureInfo("vi-VN"))) ₫
                                     </td>
                                     <td>
                                         <div class="qty-control">
-                                            <a asp-action="Decrease" asp-route-productId="@item.ProductId" class="btn btn-sm" style="padding: 0 8px; text-decoration: none;">−</a>
-                                            <span>@item.Quantity</span>
-                                            <a asp-action="Increase" asp-route-productId="@item.ProductId" class="btn btn-sm" style="padding: 0 8px; text-decoration: none;">+</a>
+                                            <a asp-action="Decrease" asp-route-productId="@item.ProductId" class="qty-btn">−</a>
+                                            <span class="qty-value">@item.Quantity</span>
+                                            <a asp-action="Increase" asp-route-productId="@item.ProductId" class="qty-btn">+</a>
                                         </div>
                                     </td>
                                     <td class="price-column">
@@ -238,7 +402,8 @@
 
             <div class="col-lg-4">
                 <div class="cart-summary">
-                    <h5 class="fw-bold mb-3">📋 Đơn hàng</h5>
+                    <div class="summary-title">Tóm tắt đơn hàng</div>
+                    <div class="summary-subtitle">@Model.Items.Count sản phẩm đang chờ thanh toán</div>
 
                     <div class="summary-row">
                         <span>Tổng tiền hàng:</span>
@@ -255,8 +420,8 @@
                         <span>0 ₫</span>
                     </div>
 
-                    <div class="summary-row">
-                        <span>Tổng cộng:</span>
+                    <div class="summary-row total-row">
+                        <strong>Tổng cộng:</strong>
                         <span class="total-price">@(Model.Items.Sum(x => x.Price * x.Quantity).ToString("N0", new System.Globalization.CultureInfo("vi-VN"))) ₫</span>
                     </div>
 
@@ -266,7 +431,7 @@
                     </div>
 
                     <form asp-action="Checkout" method="get">
-                        <button type="submit" class="btn-action btn-checkout w-100" style="margin-top: 10px;">
+                        <button type="submit" class="btn-checkout">
                             ✓ Thanh Toán (@Model.Items.Count sản phẩm)
                         </button>
                     </form>

@@ -1,74 +1,404 @@
 ﻿@page
 @model RegisterModel
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = "Đăng ký";
 }
 
-<h1>@ViewData["Title"]</h1>
+<style>
+    body {
+        background:
+            radial-gradient(circle at top left, rgba(238, 77, 45, 0.12), transparent 35%),
+            linear-gradient(180deg, #f7f7f7 0%, #efefef 100%);
+    }
 
-<div class="row">
-    <div class="col-md-4">
-        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <h2>Create a new account.</h2>
-            <hr />
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.FullName" class="form-control" autocomplete="fullname" aria-required="true" />
-                <label asp-for="Input.FullName"></label>
-                <span asp-validation-for="Input.FullName" class="text-danger"></span>
-            </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                <label asp-for="Input.Email">Email</label>
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
-            </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.Password">Password</label>
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
-            </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.ConfirmPassword">Confirm Password</label>
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-            </div>
-            <div class="form-floating mb-3">
-                <select asp-for="Input.Role" asp-items="@Model.Input.RoleList" class="form-control">
-                    <option disabled selected>Select Role</option>
-                </select>
-            </div>
-            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-        </form>
-    </div>
-    <div class="col-md-6 col-md-offset-2">
-        <section>
-            <h3>Use another service to register.</h3>
-            <hr />
-            @{
-                if ((Model.ExternalLogins?.Count ?? 0) == 0)
-                {
-                    <div>
-                        <p>
-                            There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">article
-                            about setting up this ASP.NET application to support logging in via external services</a>.
+    .register-shell {
+        min-height: 88vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px 0;
+    }
+
+    .register-card {
+        border: none;
+        border-radius: 22px;
+        overflow: hidden;
+        max-width: 1120px;
+        width: 100%;
+        background: #fff;
+        box-shadow: 0 22px 60px rgba(0, 0, 0, 0.12);
+    }
+
+    .register-hero {
+        position: relative;
+        min-height: 680px;
+        padding: 44px 38px;
+        color: white;
+        background:
+            linear-gradient(160deg, rgba(18, 22, 36, 0.86), rgba(238, 77, 45, 0.72)),
+            url('https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1932&auto=format&fit=crop') center/cover;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .register-hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.18));
+        pointer-events: none;
+    }
+
+    .hero-content,
+    .hero-footer {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.14);
+        backdrop-filter: blur(10px);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+    }
+
+    .hero-title {
+        font-size: 42px;
+        line-height: 1.08;
+        font-weight: 800;
+        margin-bottom: 18px;
+        max-width: 420px;
+    }
+
+    .hero-desc {
+        max-width: 430px;
+        font-size: 15px;
+        line-height: 1.75;
+        color: rgba(255,255,255,0.88);
+    }
+
+    .hero-highlights {
+        display: grid;
+        gap: 14px;
+        margin-top: 28px;
+    }
+
+    .hero-highlight {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(8px);
+        font-size: 14px;
+    }
+
+    .hero-highlight i {
+        width: 34px;
+        height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: rgba(255,255,255,0.16);
+        font-size: 16px;
+    }
+
+    .hero-footer {
+        font-size: 13px;
+        color: rgba(255,255,255,0.76);
+    }
+
+    .register-form-side {
+        padding: 42px 44px;
+        background: linear-gradient(180deg, #ffffff 0%, #fff8f6 100%);
+    }
+
+    .form-brand {
+        font-size: 30px;
+        font-weight: 800;
+        color: #212245;
+        margin-bottom: 8px;
+    }
+
+    .form-subtitle {
+        color: #6b7280;
+        margin-bottom: 26px;
+        font-size: 15px;
+    }
+
+    .validation-box {
+        border-radius: 12px;
+        padding: 12px 14px;
+        background: #fff1f0;
+        border: 1px solid #ffd6d2;
+        margin-bottom: 18px;
+        font-size: 14px;
+    }
+
+    .register-label {
+        font-size: 13px;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 8px;
+    }
+
+    .register-input-group {
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        background: white;
+        overflow: hidden;
+        transition: all 0.25s ease;
+    }
+
+    .register-input-group:focus-within {
+        border-color: #ee4d2d;
+        box-shadow: 0 0 0 4px rgba(238, 77, 45, 0.12);
+    }
+
+    .register-input-group .input-group-text {
+        border: none;
+        background: transparent;
+        color: #9ca3af;
+        padding-left: 16px;
+        padding-right: 8px;
+    }
+
+    .register-input-group .form-control,
+    .register-input-group .form-select {
+        border: none;
+        box-shadow: none;
+        background: transparent;
+        min-height: 54px;
+        font-size: 14px;
+        color: #111827;
+    }
+
+    .register-input-group .form-control::placeholder {
+        color: #adb5bd;
+    }
+
+    .register-submit {
+        width: 100%;
+        border: none;
+        border-radius: 14px;
+        padding: 14px 18px;
+        background: linear-gradient(135deg, #ee4d2d, #d63d1f);
+        color: white;
+        font-size: 15px;
+        font-weight: 800;
+        letter-spacing: 0.3px;
+        transition: all 0.3s ease;
+        box-shadow: 0 14px 28px rgba(238, 77, 45, 0.18);
+    }
+
+    .register-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 34px rgba(238, 77, 45, 0.26);
+    }
+
+    .register-links {
+        text-align: center;
+        margin-top: 20px;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .register-links a {
+        color: #ee4d2d;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .divider-text {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        color: #9ca3af;
+        margin: 20px 0;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .divider-text::before,
+    .divider-text::after {
+        content: "";
+        flex: 1;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .divider-text::before {
+        margin-right: .6em;
+    }
+
+    .divider-text::after {
+        margin-left: .6em;
+    }
+
+    @@media (max-width: 991px) {
+        .register-hero {
+            min-height: 320px;
+        }
+
+        .hero-title {
+            font-size: 32px;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .register-form-side,
+        .register-hero {
+            padding: 28px 24px;
+        }
+
+        .hero-title {
+            font-size: 28px;
+            max-width: none;
+        }
+
+        .register-shell {
+            padding: 16px 0;
+        }
+    }
+</style>
+
+<div class="register-shell">
+    <div class="register-card">
+        <div class="row g-0">
+            <div class="col-lg-5">
+                <div class="register-hero">
+                    <div class="hero-content">
+                        <div class="hero-badge">
+                            <i class="bi bi-controller"></i>
+                            Gamingstore Member
+                        </div>
+                        <h1 class="hero-title">Tạo tài khoản để mua sắm nhanh hơn và theo dõi đơn hàng dễ hơn.</h1>
+                        <p class="hero-desc">
+                            Đăng ký thành viên để lưu thông tin, quản lý lịch sử mua hàng và tiếp cận các sản phẩm gaming mới nhất trên hệ thống.
                         </p>
+
+                        <div class="hero-highlights">
+                            <div class="hero-highlight">
+                                <i class="bi bi-bag-check"></i>
+                                <span>Theo dõi đơn hàng và trạng thái thanh toán thuận tiện.</span>
+                            </div>
+                            <div class="hero-highlight">
+                                <i class="bi bi-stars"></i>
+                                <span>Lưu giỏ hàng và thao tác mua sắm nhanh hơn cho mỗi tài khoản.</span>
+                            </div>
+                            <div class="hero-highlight">
+                                <i class="bi bi-shield-check"></i>
+                                <span>Tài khoản được quản lý bằng hệ thống xác thực ASP.NET Identity.</span>
+                            </div>
+                        </div>
                     </div>
-                }
-                else
-                {
-                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
-                        <div>
-                            <p>
+
+                    <div class="hero-footer">
+                        GAMINGSTORE | Thiết bị gaming chính hãng, giao diện mua sắm hiện đại.
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7 d-flex align-items-center">
+                <div class="register-form-side w-100">
+                    <div class="form-brand">Đăng ký tài khoản</div>
+                    <p class="form-subtitle">Điền đầy đủ thông tin để bắt đầu mua sắm trên GAMINGSTORE.</p>
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger validation-box" role="alert"></div>
+
+                    <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                        <div class="mb-3">
+                            <label asp-for="Input.FullName" class="register-label">Họ và tên</label>
+                            <div class="input-group register-input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input asp-for="Input.FullName" class="form-control" autocomplete="name" aria-required="true" placeholder="Nguyen Van A" />
+                            </div>
+                            <span asp-validation-for="Input.FullName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Input.Email" class="register-label">Email</label>
+                            <div class="input-group register-input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                            </div>
+                            <span asp-validation-for="Input.Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="Input.Password" class="register-label">Mật khẩu</label>
+                                <div class="input-group register-input-group">
+                                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                    <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="********" />
+                                </div>
+                                <span asp-validation-for="Input.Password" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Input.ConfirmPassword" class="register-label">Xác nhận mật khẩu</label>
+                                <div class="input-group register-input-group">
+                                    <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
+                                    <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="********" />
+                                </div>
+                                <span asp-validation-for="Input.ConfirmPassword" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 mb-4">
+                            <label asp-for="Input.Role" class="register-label">Vai trò tài khoản</label>
+                            <div class="input-group register-input-group">
+                                <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                                <select asp-for="Input.Role" asp-items="@Model.Input.RoleList" class="form-select">
+                                    <option disabled selected value="">Chọn vai trò</option>
+                                </select>
+                            </div>
+                            <span asp-validation-for="Input.Role" class="text-danger small"></span>
+                        </div>
+
+                        <button id="registerSubmit" type="submit" class="register-submit">Tạo tài khoản</button>
+                    </form>
+
+                    <div class="divider-text">Hoặc đăng ký bằng</div>
+
+                    @{
+                        if ((Model.ExternalLogins?.Count ?? 0) == 0)
+                        {
+                            <div class="text-center text-muted small">
+                                Hệ thống hiện chưa cấu hình đăng nhập bên thứ ba.
+                                <a href="https://go.microsoft.com/fwlink/?LinkID=532715" target="_blank" class="text-secondary">Xem hướng dẫn thiết lập</a>.
+                            </div>
+                        }
+                        else
+                        {
+                            <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="d-grid gap-2">
                                 @foreach (var provider in Model.ExternalLogins!)
                                 {
-                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                                    <button type="submit" class="btn btn-outline-dark fw-bold py-2" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
+                                        Đăng ký với @provider.DisplayName
+                                    </button>
                                 }
-                            </p>
-                        </div>
-                    </form>
-                }
-            }
-        </section>
+                            </form>
+                        }
+                    }
+
+                    <div class="register-links">
+                        Đã có tài khoản?
+                        <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl">Đăng nhập ngay</a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

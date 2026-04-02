@@ -30,15 +30,142 @@
     .banner-section {
         background: white;
         padding: 0;
-        border-radius: 0;
+        border-radius: 28px;
         overflow: hidden;
         margin-bottom: 30px;
+        box-shadow: 0 24px 48px rgba(15, 23, 42, 0.1);
+    }
+
+    .banner-section .carousel,
+    .banner-section .carousel-inner,
+    .banner-section .carousel-item {
+        height: 400px;
+    }
+
+    .banner-section .carousel-item {
+        transition: opacity 1.1s ease-in-out;
     }
 
     .banner-img {
         height: 400px;
         object-fit: cover;
         width: 100%;
+        transform: scale(1.06);
+        transition: transform 5.5s ease, filter 1.1s ease;
+        filter: saturate(1.02);
+    }
+
+    .banner-section .carousel-item.active .banner-img {
+        transform: scale(1);
+    }
+
+    .banner-section .carousel::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.12));
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .banner-section .carousel-control-prev,
+    .banner-section .carousel-control-next {
+        z-index: 2;
+    }
+
+    .banner-caption {
+        position: absolute;
+        left: 42px;
+        bottom: 38px;
+        z-index: 2;
+        max-width: 520px;
+        color: white;
+    }
+
+    .banner-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.14);
+        backdrop-filter: blur(10px);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        margin-bottom: 14px;
+    }
+
+    .banner-title {
+        font-size: 40px;
+        line-height: 1.06;
+        font-weight: 800;
+        margin-bottom: 12px;
+        text-shadow: 0 10px 30px rgba(0,0,0,0.22);
+    }
+
+    .banner-desc {
+        font-size: 15px;
+        line-height: 1.75;
+        color: rgba(255,255,255,0.88);
+        max-width: 470px;
+        margin-bottom: 18px;
+    }
+
+    .banner-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .banner-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 46px;
+        padding: 0 18px;
+        border-radius: 16px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 800;
+        transition: all 0.25s ease;
+    }
+
+    .banner-btn-primary {
+        background: white;
+        color: var(--primary-dark);
+    }
+
+    .banner-btn-secondary {
+        background: rgba(255,255,255,0.14);
+        color: white;
+        backdrop-filter: blur(10px);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
+    }
+
+    .banner-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .carousel-indicators {
+        margin-bottom: 18px;
+        z-index: 2;
+    }
+
+    .carousel-indicators [data-bs-target] {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(255,255,255,0.52);
+    }
+
+    .carousel-indicators .active {
+        width: 28px;
+        border-radius: 999px;
+        background: white;
     }
 
     .carousel-control-prev-icon,
@@ -46,6 +173,7 @@
         background-color: rgba(0, 0, 0, 0.5);
         border-radius: 50%;
         padding: 15px;
+        backdrop-filter: blur(4px);
     }
 
     /* CATEGORY SECTION */
@@ -53,33 +181,38 @@
         background: white;
         padding: 30px 0;
         margin-bottom: 30px;
-        border-radius: 8px;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        border-radius: 22px;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        border: 1px solid rgba(15,23,42,0.06);
     }
 
     .category-title {
-        font-size: 14px;
-        font-weight: 600;
+        font-size: 12px;
+        font-weight: 800;
         text-transform: uppercase;
         color: var(--text-light);
-        margin-bottom: 20px;
-        padding: 0 20px;
-        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+        padding: 0 24px;
+        letter-spacing: 0.8px;
     }
 
-    .category-list {
-        display: none;
+    .category-subtitle {
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 18px;
+        padding: 0 24px;
     }
 
     .category-dropdown {
         width: 100%;
-        max-width: 400px;
-        padding: 12px 15px;
-        border: 2px solid var(--border);
-        border-radius: 8px;
+        max-width: 440px;
+        padding: 14px 16px;
+        border: 1px solid rgba(15,23,42,0.08);
+        border-radius: 16px;
         font-size: 14px;
-        font-weight: 600;
-        background: white;
+        font-weight: 700;
+        background: #fbfcfd;
         cursor: pointer;
         transition: all 0.3s ease;
         color: var(--text);
@@ -103,37 +236,14 @@
         color: var(--text);
     }
 
-    .category-item {
-        display: none;
-    }
-
-    .category-item:hover {
-        display: none;
-    }
-
-    .category-item.active {
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        color: white;
-        border-color: var(--primary);
-    }
-
-    .category-icon {
-        font-size: 28px;
-    }
-
-    .category-name {
-        font-size: 12px;
-        font-weight: 600;
-        line-height: 1.2;
-    }
-
     /* FILTER & SORT */
     .filter-bar {
         background: white;
-        padding: 15px 20px;
+        padding: 18px 22px;
         margin-bottom: 20px;
-        border-radius: 8px;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        border-radius: 20px;
+        box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+        border: 1px solid rgba(15,23,42,0.06);
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -143,16 +253,16 @@
 
     .filter-label {
         font-size: 13px;
-        font-weight: 600;
+        font-weight: 800;
         color: var(--text);
     }
 
     .form-select {
-        padding: 9px 12px;
-        border: 1px solid var(--border);
-        border-radius: 6px;
+        padding: 11px 14px;
+        border: 1px solid rgba(15,23,42,0.08);
+        border-radius: 14px;
         font-size: 13px;
-        background: white;
+        background: #fbfcfd;
         cursor: pointer;
         transition: 0.2s;
     }
@@ -170,76 +280,113 @@
     .result-count {
         font-size: 13px;
         color: var(--text-light);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .result-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 34px;
+        padding: 0 12px;
+        border-radius: 999px;
+        background: #fff4f1;
+        color: var(--primary-dark);
+        font-size: 12px;
+        font-weight: 700;
     }
 
     /* PRODUCTS GRID */
     .product-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+        gap: 22px;
         margin-bottom: 40px;
     }
 
     .product-card {
         background: white;
-        border-radius: 8px;
+        border-radius: 22px;
         overflow: hidden;
-        border: 1px solid var(--border);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(15,23,42,0.06);
+        transition: all 0.32s cubic-bezier(0.4, 0, 0.2, 1);
         display: flex;
         flex-direction: column;
         cursor: pointer;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
     }
 
     .product-card:hover {
-        border-color: var(--primary);
-        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
-        transform: translateY(-2px);
+        border-color: rgba(238, 77, 45, 0.18);
+        box-shadow: 0 22px 44px rgba(15, 23, 42, 0.1);
+        transform: translateY(-4px);
     }
 
     .product-image-wrapper {
         position: relative;
         width: 100%;
-        height: 200px;
+        height: 220px;
         overflow: hidden;
-        background: #f9f9f9;
+        background: linear-gradient(180deg, #fff8f5, #f8fafc);
     }
 
     .product-image {
         width: 100%;
         height: 100%;
         object-fit: contain;
-        padding: 10px;
-        transition: opacity 0.4s ease;
+        padding: 18px;
+        transition: opacity 0.4s ease, transform 0.4s ease;
     }
 
     .product-card:hover .product-image {
-        opacity: 0.7;
+        opacity: 0.86;
+        transform: scale(1.03);
     }
 
     .product-badge {
         position: absolute;
-        top: 10px;
-        left: 10px;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        color: white;
-        padding: 6px 10px;
-        border-radius: 4px;
+        top: 14px;
+        left: 14px;
+        background: rgba(255,255,255,0.92);
+        color: var(--primary-dark);
+        padding: 7px 12px;
+        border-radius: 999px;
         font-size: 11px;
-        font-weight: 700;
+        font-weight: 800;
         z-index: 2;
+        box-shadow: 0 10px 20px rgba(15,23,42,0.08);
+    }
+
+    .product-floating-action {
+        position: absolute;
+        right: 14px;
+        top: 14px;
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.92);
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text);
+        z-index: 2;
+        box-shadow: 0 10px 20px rgba(15,23,42,0.08);
     }
 
     .product-info {
-        padding: 12px;
+        padding: 16px;
         flex: 1;
         display: flex;
         flex-direction: column;
     }
 
     .product-name {
-        font-size: 13px;
-        font-weight: 600;
+        font-size: 15px;
+        font-weight: 800;
         line-height: 1.4;
         color: var(--text);
         margin-bottom: 8px;
@@ -250,29 +397,43 @@
     }
 
     .product-category {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        width: fit-content;
+        min-height: 28px;
+        padding: 0 10px;
+        border-radius: 999px;
+        background: #fff4f1;
         font-size: 11px;
-        color: var(--text-light);
-        margin-bottom: 8px;
+        font-weight: 700;
+        color: var(--primary-dark);
+        margin-bottom: 10px;
     }
 
     .product-price {
-        font-size: 16px;
+        font-size: 22px;
         font-weight: 700;
         color: var(--primary);
-        margin-bottom: auto;
-        margin-bottom: 10px;
-        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+        letter-spacing: 0.2px;
+    }
+
+    .product-subprice {
+        font-size: 12px;
+        color: var(--text-light);
+        margin-bottom: 14px;
     }
 
     .product-button {
         width: 100%;
-        padding: 10px;
+        min-height: 46px;
         background: linear-gradient(135deg, var(--primary), var(--primary-dark));
         color: white;
         border: none;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: 600;
+        border-radius: 16px;
+        font-size: 13px;
+        font-weight: 800;
         cursor: pointer;
         transition: 0.3s;
         text-decoration: none;
@@ -284,7 +445,7 @@
 
     .product-button:hover {
         background: var(--primary-dark);
-        transform: scale(1.01);
+        transform: translateY(-1px);
     }
 
     /* PAGINATION */
@@ -328,9 +489,11 @@
     /* EMPTY STATE */
     .empty-state {
         text-align: center;
-        padding: 60px 20px;
+        padding: 72px 24px;
         background: white;
-        border-radius: 8px;
+        border-radius: 24px;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        border: 1px solid rgba(15,23,42,0.06);
     }
 
     .empty-icon {
@@ -368,34 +531,25 @@
     /* RESPONSIVE */
     @@media (max-width: 1024px) {
         .product-grid {
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 15px;
-        }
-
-        .category-list {
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
         }
     }
 
     @@media (max-width: 768px) {
+        .banner-caption {
+            left: 22px;
+            right: 22px;
+            bottom: 24px;
+        }
+
+        .banner-title {
+            font-size: 28px;
+        }
+
         .product-grid {
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
-        }
-
-        .category-list {
-            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-            gap: 10px;
-        }
-
-        .category-item {
-            min-height: 90px;
-            padding: 8px;
-            font-size: 11px;
-        }
-
-        .category-icon {
-            font-size: 24px;
         }
 
         .filter-bar {
@@ -417,10 +571,6 @@
         .product-image-wrapper {
             height: 150px;
         }
-
-        .category-list {
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-        }
     }
 </style>
 
@@ -428,15 +578,39 @@
     <!-- BANNER -->
     <div class="banner-section">
         <div id="bannerCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="4000">
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="0" class="active" aria-current="true"></button>
+                <button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="1"></button>
+                <button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="2"></button>
+            </div>
             <div class="carousel-inner">
                 <div class="carousel-item active">
                     <img src="~/images/banner/banner1.jpg" class="banner-img" alt="Banner">
+                    <div class="banner-caption">
+                        <div class="banner-kicker">New collection</div>
+                        <div class="banner-title">Gaming gear mạnh, đẹp và sẵn sàng cho mọi setup.</div>
+                        <div class="banner-desc">Khám phá laptop, màn hình, phụ kiện và thiết bị gaming với giao diện mua sắm nhanh, rõ và hiện đại.</div>
+                        <div class="banner-actions">
+                            <a asp-controller="Home" asp-action="Index" class="banner-btn banner-btn-primary">Mua ngay</a>
+                            <a asp-controller="Product" asp-action="Index" class="banner-btn banner-btn-secondary">Xem sản phẩm</a>
+                        </div>
+                    </div>
                 </div>
                 <div class="carousel-item">
                     <img src="~/images/banner/banner2.jpg" class="banner-img" alt="Banner">
+                    <div class="banner-caption">
+                        <div class="banner-kicker">Performance first</div>
+                        <div class="banner-title">Tối ưu góc máy chiến game với thiết bị đúng chất.</div>
+                        <div class="banner-desc">Từ SSD, chuột, bàn phím đến màn hình gaming, mọi thứ đều được gom lại trong một trải nghiệm mua sắm gọn gàng.</div>
+                    </div>
                 </div>
                 <div class="carousel-item">
                     <img src="~/images/banner/banner3.jpg" class="banner-img" alt="Banner">
+                    <div class="banner-caption">
+                        <div class="banner-kicker">Fast checkout</div>
+                        <div class="banner-title">Chọn nhanh, lọc gọn, đặt hàng mượt hơn.</div>
+                        <div class="banner-desc">Hệ thống lọc sản phẩm, giỏ hàng theo tài khoản và giao diện thanh toán đã được tối ưu để dùng thực tế.</div>
+                    </div>
                 </div>
             </div>
             <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
@@ -453,6 +627,7 @@
 <div class="container mt-5">
     <div class="category-section">
         <div class="category-title">🎮 DANH MỤC SẢN PHẨM</div>
+        <div class="category-subtitle">Chọn nhanh nhóm sản phẩm bạn cần</div>
         <div style="padding: 0 20px;">
             <form id="categoryForm" method="get" asp-controller="Home" asp-action="Index">
                 <input type="hidden" name="searchString" id="formSearchString" value="@ViewBag.SearchString">
@@ -543,14 +718,13 @@
                         <option value="price_desc">💰 Giá cao</option>
                     }
                 </select>
-                </select>
             </form>
         </div>
 
         <div class="result-count">
-            <strong>@ViewBag.TotalProduct</strong> sản phẩm
-            @if (ViewBag.SelectedCategoryId != null) { <span>• Bộ lọc: Danh mục</span> }
-            @if (!string.IsNullOrEmpty(ViewBag.SearchString)) { <span>• Tìm: <strong>"@ViewBag.SearchString"</strong></span> }
+            <span class="result-pill"><strong>@ViewBag.TotalProduct</strong> sản phẩm</span>
+            @if (ViewBag.SelectedCategoryId != null) { <span class="result-pill">Đang lọc theo danh mục</span> }
+            @if (!string.IsNullOrEmpty(ViewBag.SearchString)) { <span class="result-pill">Từ khóa: <strong>"@ViewBag.SearchString"</strong></span> }
         </div>
     </div>
 </div>
@@ -572,7 +746,8 @@
                             }
                             <img src="@images[0]" class="product-image" alt="@product.Name" onerror="this.src='/images/no-image.png'">
                         </a>
-                        <span class="product-badge">-15%</span>
+                        <span class="product-badge">Gaming Choice</span>
+                        <span class="product-floating-action"><i class="bi bi-eye"></i></span>
                     </div>
 
                     <div class="product-info">
@@ -588,6 +763,8 @@
                         <div class="product-price">
                             @Math.Round(product.Price, 0).ToString("N0", new CultureInfo("vi-VN")) ₫
                         </div>
+
+                        <div class="product-subprice">Hàng chính hãng • Bảo hành rõ ràng</div>
 
                         <a asp-controller="ShoppingCart" asp-action="AddToCart" asp-route-productId="@product.Id" class="product-button">
                             🛒 Thêm vào giỏ

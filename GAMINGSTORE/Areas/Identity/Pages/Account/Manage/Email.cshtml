@@ -1,0 +1,272 @@
+@page
+@model EmailModel
+@{
+    ViewData["Title"] = "Cập nhật email";
+    ViewData["ActivePage"] = ManageNavPages.Email;
+}
+
+<style>
+    .manage-shell {
+        max-width: 1060px;
+        margin: 36px auto;
+        padding: 0 24px 0 42px;
+    }
+
+    .manage-header,
+    .manage-nav-card,
+    .manage-content-card,
+    .email-note {
+        background: #fff;
+        border-radius: 22px;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+    }
+
+    .manage-header {
+        padding: 28px;
+        margin-bottom: 24px;
+        background: radial-gradient(circle at top right, rgba(238, 77, 45, 0.16), transparent 30%), linear-gradient(135deg, #fff7f3, #ffffff);
+        border: 1px solid rgba(238, 77, 45, 0.08);
+    }
+
+    .manage-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 34px;
+        padding: 0 14px;
+        border-radius: 999px;
+        background: rgba(238, 77, 45, 0.1);
+        color: #d63d1f;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        margin-bottom: 14px;
+    }
+
+    .manage-title {
+        font-size: 30px;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 10px;
+    }
+
+    .manage-text {
+        color: #6b7280;
+        font-size: 15px;
+        line-height: 1.75;
+        max-width: 680px;
+        margin: 0;
+    }
+
+    .manage-grid {
+        display: grid;
+        grid-template-columns: 280px minmax(0, 1fr);
+        gap: 20px;
+    }
+
+    .manage-nav-card {
+        padding: 16px;
+        height: fit-content;
+    }
+
+    .manage-content-card {
+        padding: 24px;
+    }
+
+    .content-title {
+        font-size: 24px;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 8px;
+    }
+
+    .content-subtitle {
+        color: #6b7280;
+        font-size: 14px;
+        margin-bottom: 22px;
+    }
+
+    .status-wrap {
+        margin-bottom: 18px;
+    }
+
+    .validation-summary-box {
+        border-radius: 14px;
+        padding: 12px 14px;
+        background: #fff1f0;
+        border: 1px solid #ffd7d2;
+        margin-bottom: 20px;
+    }
+
+    .field-grid {
+        display: grid;
+        gap: 18px;
+    }
+
+    .field-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 8px;
+    }
+
+    .field-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 56px;
+        padding: 0 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: #fff;
+        transition: all 0.25s ease;
+    }
+
+    .field-wrap:focus-within {
+        border-color: #ee4d2d;
+        box-shadow: 0 0 0 4px rgba(238, 77, 45, 0.12);
+    }
+
+    .field-wrap.disabled {
+        background: #f8fafc;
+    }
+
+    .field-wrap i {
+        color: #9ca3af;
+    }
+
+    .field-wrap input {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        background: transparent;
+    }
+
+    .field-wrap input:focus {
+        box-shadow: none;
+    }
+
+    .email-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 10px;
+    }
+
+    .save-btn {
+        border: none;
+        border-radius: 16px;
+        padding: 14px 20px;
+        background: linear-gradient(135deg, #ee4d2d, #d63d1f);
+        color: #fff;
+        font-weight: 800;
+        font-size: 15px;
+        min-width: 220px;
+        box-shadow: 0 14px 28px rgba(238, 77, 45, 0.18);
+    }
+
+    .email-note {
+        padding: 18px;
+        background: linear-gradient(180deg, #212245, #2f325f);
+        color: #fff;
+        margin-top: 18px;
+    }
+
+    .email-note-title {
+        font-size: 16px;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
+
+    .email-note p {
+        margin: 0;
+        color: rgba(255,255,255,0.78);
+        line-height: 1.75;
+        font-size: 14px;
+    }
+
+    @@media (max-width: 991px) {
+        .manage-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .manage-shell {
+            padding: 0 14px;
+        }
+
+        .manage-header,
+        .manage-content-card {
+            padding: 22px;
+        }
+
+        .manage-title {
+            font-size: 26px;
+        }
+    }
+</style>
+
+<div class="manage-shell">
+    <div class="manage-header">
+        <div class="manage-tag"><i class="bi bi-envelope-paper"></i> Account email</div>
+        <div class="manage-title">Cập nhật email đăng nhập của bạn</div>
+        <p class="manage-text">Email này được dùng làm định danh đăng nhập chính cho tài khoản GAMINGSTORE. Khi thay đổi, tên đăng nhập cũng sẽ được đồng bộ theo email mới.</p>
+    </div>
+
+    <div class="manage-grid">
+        <aside class="manage-nav-card">
+            <partial name="_ManageNav" />
+        </aside>
+
+        <section>
+            <div class="manage-content-card">
+                <div class="content-title">Thông tin email</div>
+                <div class="content-subtitle">Kiểm tra email hiện tại và nhập email mới nếu bạn cần thay đổi địa chỉ đăng nhập.</div>
+
+                <div class="status-wrap">
+                    <partial name="_StatusMessage" for="StatusMessage" />
+                </div>
+
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger validation-summary-box" role="alert"></div>
+
+                    <div class="field-grid">
+                        <div>
+                            <label class="field-label">Email hiện tại</label>
+                            <div class="field-wrap disabled">
+                                <i class="bi bi-envelope-check"></i>
+                                <input value="@Model.Email" class="form-control" disabled />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label asp-for="Input.NewEmail" class="field-label">Email mới</label>
+                            <div class="field-wrap">
+                                <i class="bi bi-envelope"></i>
+                                <input asp-for="Input.NewEmail" class="form-control" placeholder="name@example.com" />
+                            </div>
+                            <span asp-validation-for="Input.NewEmail" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="email-actions">
+                        <button type="submit" class="save-btn">Lưu email mới</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="email-note">
+                <div class="email-note-title">Lưu ý</div>
+                <p>Hãy dùng email bạn đang truy cập thường xuyên để tránh mất quyền truy cập tài khoản hoặc gián đoạn trong quá trình nhận thông báo đơn hàng.</p>
+            </div>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

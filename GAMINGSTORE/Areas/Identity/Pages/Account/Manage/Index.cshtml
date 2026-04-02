@@ -1,29 +1,395 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Profile";
+    ViewData["Title"] = "Quản lý tài khoản";
     ViewData["ActivePage"] = ManageNavPages.Index;
 }
-<a asp-controller="Home" asp-action="Index" class="btn btn-secondary mb-3">
-    ⬅️ Về trang chủ
-</a>
-<h3>@ViewData["Title"]</h3>
-<partial name="_StatusMessage" for="StatusMessage" />
-<div class="row">
-    <div class="col-md-6">
-        <form id="profile-form" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-            <div class="form-floating mb-3">
-                <input asp-for="Username" class="form-control" placeholder="Please choose your username." disabled />
-                <label asp-for="Username" class="form-label"></label>
+
+<style>
+    .account-shell {
+        max-width: 1060px;
+        margin: 36px auto;
+        padding: 0 24px 0 42px;
+    }
+
+    .account-hero {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+
+    .hero-panel,
+    .hero-mini,
+    .account-nav-card,
+    .account-content-card {
+        background: #fff;
+        border-radius: 22px;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+    }
+
+    .hero-panel {
+        padding: 28px 28px 26px;
+        background:
+            radial-gradient(circle at top right, rgba(238, 77, 45, 0.16), transparent 32%),
+            linear-gradient(135deg, #fff7f3, #ffffff);
+        border: 1px solid rgba(238, 77, 45, 0.08);
+    }
+
+    .hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: rgba(238, 77, 45, 0.1);
+        color: #d63d1f;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        margin-bottom: 16px;
+    }
+
+    .hero-title {
+        font-size: 34px;
+        line-height: 1.12;
+        font-weight: 800;
+        color: #1f2937;
+        margin-bottom: 12px;
+    }
+
+    .hero-text {
+        color: #6b7280;
+        font-size: 15px;
+        line-height: 1.75;
+        max-width: 620px;
+        margin-bottom: 22px;
+    }
+
+    .hero-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .hero-stat {
+        background: #fff;
+        border: 1px solid #f1f5f9;
+        border-radius: 18px;
+        padding: 16px;
+    }
+
+    .hero-stat-label {
+        font-size: 12px;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+        font-weight: 700;
+    }
+
+    .hero-stat-value {
+        font-size: 16px;
+        font-weight: 800;
+        color: #111827;
+        word-break: break-word;
+    }
+
+    .hero-mini {
+        padding: 26px 22px;
+        background: linear-gradient(180deg, #212245, #2f325f);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .mini-avatar {
+        width: 62px;
+        height: 62px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,255,255,0.12);
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 18px;
+    }
+
+    .mini-title {
+        font-size: 22px;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
+
+    .mini-text {
+        color: rgba(255,255,255,0.78);
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    .account-grid {
+        display: grid;
+        grid-template-columns: 280px minmax(0, 1fr);
+        gap: 20px;
+    }
+
+    .account-nav-card {
+        padding: 16px;
+        height: fit-content;
+    }
+
+    .account-content-card {
+        padding: 24px;
+    }
+
+    .content-title {
+        font-size: 24px;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 8px;
+    }
+
+    .content-subtitle {
+        color: #6b7280;
+        font-size: 14px;
+        margin-bottom: 22px;
+    }
+
+    .status-wrap {
+        margin-bottom: 18px;
+    }
+
+    .validation-summary-box {
+        border-radius: 14px;
+        padding: 12px 14px;
+        background: #fff1f0;
+        border: 1px solid #ffd7d2;
+        margin-bottom: 20px;
+    }
+
+    .profile-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .profile-field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .profile-field.full {
+        grid-column: 1 / -1;
+    }
+
+    .profile-label {
+        font-size: 13px;
+        font-weight: 700;
+        color: #374151;
+    }
+
+    .profile-input-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 56px;
+        padding: 0 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: #fff;
+        transition: all 0.25s ease;
+    }
+
+    .profile-input-wrap:focus-within {
+        border-color: #ee4d2d;
+        box-shadow: 0 0 0 4px rgba(238, 77, 45, 0.12);
+    }
+
+    .profile-input-wrap i {
+        color: #9ca3af;
+        font-size: 16px;
+    }
+
+    .profile-input-wrap input {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        background: transparent;
+    }
+
+    .profile-input-wrap input:focus {
+        box-shadow: none;
+    }
+
+    .profile-input-wrap.disabled {
+        background: #f8fafc;
+    }
+
+    .account-save-btn {
+        border: none;
+        border-radius: 16px;
+        padding: 14px 20px;
+        background: linear-gradient(135deg, #ee4d2d, #d63d1f);
+        color: #fff;
+        font-weight: 800;
+        font-size: 15px;
+        min-width: 220px;
+        box-shadow: 0 14px 28px rgba(238, 77, 45, 0.18);
+        transition: all 0.3s ease;
+    }
+
+    .account-save-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 34px rgba(238, 77, 45, 0.25);
+    }
+
+    @@media (max-width: 991px) {
+        .account-hero,
+        .account-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .hero-stats,
+        .profile-form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .account-content-card,
+        .hero-panel,
+        .hero-mini {
+            padding: 22px;
+        }
+
+        .hero-title {
+            font-size: 28px;
+        }
+
+        .account-shell {
+            padding: 0 14px;
+        }
+    }
+</style>
+
+@{
+    var avatarLetter = string.IsNullOrWhiteSpace(Model.Username) ? "G" : Model.Username.Substring(0, 1).ToUpper();
+    var memberSince = DateTime.Now.ToString("MM/yyyy");
+}
+
+<div class="account-shell">
+    <div class="account-hero">
+        <div class="hero-panel">
+            <div class="hero-tag">
+                <i class="bi bi-person-gear"></i>
+                Manage your account
             </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Please enter your phone number."/>
-                <label asp-for="Input.PhoneNumber" class="form-label"></label>
-                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+            <div class="hero-title">Quản lý hồ sơ và thông tin liên hệ của bạn trên GAMINGSTORE.</div>
+            <div class="hero-text">
+                Tại đây bạn có thể cập nhật họ tên, số điện thoại, địa chỉ liên hệ và những thông tin hồ sơ quan trọng liên quan đến tài khoản mua sắm của mình.
             </div>
-            <button id="update-profile-button" type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
-        </form>
+
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-label">Tên đăng nhập</div>
+                    <div class="hero-stat-value">@Model.Username</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-label">Họ và tên</div>
+                    <div class="hero-stat-value">@Model.Input.FullName</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-label">Cập nhật hồ sơ</div>
+                    <div class="hero-stat-value">@memberSince</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-mini">
+            <div>
+                <div class="mini-avatar">@avatarLetter</div>
+                <div class="mini-title">@Model.Input.FullName</div>
+                <div class="mini-text">
+                    Hồ sơ tài khoản được đồng bộ với hệ thống Identity của ứng dụng và dùng để quản lý các thao tác mua sắm, đăng nhập và bảo mật.
+                </div>
+            </div>
+            <div class="mini-text">
+                Mẹo: luôn cập nhật số điện thoại chính xác để hỗ trợ xử lý đơn hàng nhanh hơn.
+            </div>
+        </div>
+    </div>
+
+    <div class="account-grid">
+        <aside class="account-nav-card">
+            <partial name="_ManageNav" />
+        </aside>
+
+        <section class="account-content-card">
+            <div class="content-title">Thông tin hồ sơ</div>
+            <div class="content-subtitle">Cập nhật thông tin cơ bản để hệ thống hỗ trợ bạn tốt hơn trong quá trình mua hàng.</div>
+
+            <div class="status-wrap">
+                <partial name="_StatusMessage" for="StatusMessage" />
+            </div>
+
+            <form id="profile-form" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger validation-summary-box" role="alert"></div>
+
+                <div class="profile-form-grid">
+                    <div class="profile-field">
+                        <label asp-for="Username" class="profile-label">Tên đăng nhập</label>
+                        <div class="profile-input-wrap disabled">
+                            <i class="bi bi-person-circle"></i>
+                            <input asp-for="Username" class="form-control" placeholder="Tên đăng nhập" disabled />
+                        </div>
+                    </div>
+
+                    <div class="profile-field">
+                        <label asp-for="Input.FullName" class="profile-label">Họ và tên</label>
+                        <div class="profile-input-wrap">
+                            <i class="bi bi-person-vcard"></i>
+                            <input asp-for="Input.FullName" class="form-control" placeholder="Nhập họ và tên của bạn" />
+                        </div>
+                        <span asp-validation-for="Input.FullName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="profile-field">
+                        <label asp-for="Input.PhoneNumber" class="profile-label">Số điện thoại</label>
+                        <div class="profile-input-wrap">
+                            <i class="bi bi-telephone"></i>
+                            <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Nhập số điện thoại của bạn" />
+                        </div>
+                        <span asp-validation-for="Input.PhoneNumber" class="text-danger small"></span>
+                    </div>
+
+                    <div class="profile-field">
+                        <label asp-for="Input.Age" class="profile-label">Độ tuổi</label>
+                        <div class="profile-input-wrap">
+                            <i class="bi bi-calendar2-heart"></i>
+                            <input asp-for="Input.Age" class="form-control" placeholder="Ví dụ: 22" />
+                        </div>
+                        <span asp-validation-for="Input.Age" class="text-danger small"></span>
+                    </div>
+
+                    <div class="profile-field">
+                        <label asp-for="Input.Address" class="profile-label">Địa chỉ</label>
+                        <div class="profile-input-wrap">
+                            <i class="bi bi-geo-alt"></i>
+                            <input asp-for="Input.Address" class="form-control" placeholder="Nhập địa chỉ liên hệ" />
+                        </div>
+                        <span asp-validation-for="Input.Address" class="text-danger small"></span>
+                    </div>
+
+                    <div class="profile-field full">
+                        <button id="update-profile-button" type="submit" class="account-save-btn">Lưu thay đổi</button>
+                    </div>
+                </div>
+            </form>
+        </section>
     </div>
 </div>
 

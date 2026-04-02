@@ -8,12 +8,21 @@
         position: relative;
         cursor: pointer;
         color: white;
+        padding: 6px 10px 6px 6px;
+        border-radius: 16px;
+        background: rgba(255,255,255,0.14);
+        backdrop-filter: blur(10px);
+        transition: all 0.25s ease;
+    }
+
+    .user-box:hover {
+        background: rgba(255,255,255,0.22);
     }
 
     .user-avatar {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
+        width: 34px;
+        height: 34px;
+        border-radius: 12px;
         background: white;
         color: #ee4d2d;
         display: flex;
@@ -30,14 +39,15 @@
         transition: all 0.35s ease;
         position: absolute;
         right: 0;
-        top: 100%;
+        top: calc(100% + 10px);
         background: white;
         color: black;
-        min-width: 180px;
-        border-radius: 8px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        min-width: 220px;
+        border-radius: 16px;
+        box-shadow: 0 18px 35px rgba(15, 23, 42, 0.16);
         overflow: hidden;
         z-index: 9999;
+        border: 1px solid rgba(15,23,42,0.08);
     }
 
     /* hover thì hiện */
@@ -62,21 +72,53 @@
     .user-dropdown button {
         display: block;
         width: 100%;
-        padding: 10px;
+        padding: 12px 14px;
         text-align: left;
         border: none;
         background: none;
-        color: black;
+        color: #1f2937;
         text-decoration: none;
         transition: all 0.2s;
+        font-weight: 600;
     }
 
         /* hover item */
         .user-dropdown a:hover,
         .user-dropdown button:hover {
-            background: #f5f5f5;
-            padding-left: 15px;
+            background: #fff4f1;
+            padding-left: 18px;
         }
+
+    .auth-btn {
+        padding: 11px 16px;
+        border-radius: 14px;
+        font-weight: 700;
+        border: none;
+        transition: all 0.25s ease;
+        text-decoration: none;
+    }
+
+    .auth-btn-login {
+        background: white;
+        color: #d63d1f;
+    }
+
+    .auth-btn-login:hover {
+        color: #c13517;
+        transform: translateY(-1px);
+    }
+
+    .auth-btn-register {
+        background: rgba(255,255,255,0.15);
+        color: white;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18);
+    }
+
+    .auth-btn-register:hover {
+        background: rgba(255,255,255,0.25);
+        color: white;
+        transform: translateY(-1px);
+    }
 </style>
 
 <ul class="navbar-nav">
@@ -126,13 +168,13 @@
     {
         <li class="nav-item d-flex gap-2">
 
-            <a class="btn btn-light"
+            <a class="auth-btn auth-btn-login"
                asp-area="Identity"
                asp-page="/Account/Login">
                 Đăng nhập
             </a>
 
-            <a class="btn btn-outline-light"
+            <a class="auth-btn auth-btn-register"
                asp-area="Identity"
                asp-page="/Account/Register">
                 Đăng ký

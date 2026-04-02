@@ -1,0 +1,255 @@
+@page
+@model PersonalDataModel
+@{
+    ViewData["Title"] = "Dữ liệu cá nhân";
+    ViewData["ActivePage"] = ManageNavPages.PersonalData;
+}
+
+<style>
+    .manage-shell {
+        max-width: 1060px;
+        margin: 36px auto;
+        padding: 0 24px 0 42px;
+    }
+
+    .manage-header,
+    .manage-nav-card,
+    .manage-content-card,
+    .danger-card {
+        background: #fff;
+        border-radius: 22px;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+    }
+
+    .manage-header {
+        padding: 28px;
+        margin-bottom: 24px;
+        background: radial-gradient(circle at top right, rgba(238, 77, 45, 0.12), transparent 28%), linear-gradient(135deg, #fffaf7, #ffffff);
+        border: 1px solid rgba(238, 77, 45, 0.08);
+    }
+
+    .manage-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 34px;
+        padding: 0 14px;
+        border-radius: 999px;
+        background: rgba(238, 77, 45, 0.1);
+        color: #d63d1f;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        margin-bottom: 14px;
+    }
+
+    .manage-title {
+        font-size: 30px;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 10px;
+    }
+
+    .manage-text {
+        color: #6b7280;
+        font-size: 15px;
+        line-height: 1.75;
+        max-width: 680px;
+        margin: 0;
+    }
+
+    .manage-grid {
+        display: grid;
+        grid-template-columns: 280px minmax(0, 1fr);
+        gap: 20px;
+    }
+
+    .manage-nav-card {
+        padding: 16px;
+        height: fit-content;
+    }
+
+    .manage-content-card,
+    .danger-card {
+        padding: 24px;
+    }
+
+    .content-title {
+        font-size: 24px;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 8px;
+    }
+
+    .content-subtitle {
+        color: #6b7280;
+        font-size: 14px;
+        margin-bottom: 22px;
+    }
+
+    .data-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .data-item {
+        border: 1px solid #edf2f7;
+        border-radius: 18px;
+        padding: 18px;
+        background: #fbfcfd;
+    }
+
+    .data-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: #9ca3af;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
+
+    .data-value {
+        color: #111827;
+        font-weight: 700;
+        line-height: 1.7;
+        word-break: break-word;
+    }
+
+    .data-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 24px;
+    }
+
+    .action-btn {
+        min-height: 48px;
+        padding: 0 18px;
+        border-radius: 16px;
+        font-weight: 800;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+    }
+
+    .action-btn-download {
+        background: linear-gradient(135deg, #ee4d2d, #d63d1f);
+        color: #fff;
+        box-shadow: 0 14px 28px rgba(238, 77, 45, 0.18);
+    }
+
+    .action-btn-danger {
+        background: #fff1f0;
+        color: #b42318;
+    }
+
+    .danger-card {
+        margin-top: 18px;
+        border: 1px solid #ffd7d2;
+        background: linear-gradient(180deg, #fff7f6, #ffffff);
+    }
+
+    .danger-title {
+        font-size: 18px;
+        font-weight: 800;
+        color: #b42318;
+        margin-bottom: 10px;
+    }
+
+    .danger-text {
+        color: #6b7280;
+        line-height: 1.75;
+        margin: 0 0 16px;
+    }
+
+    @@media (max-width: 991px) {
+        .manage-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .manage-shell {
+            padding: 0 14px;
+        }
+
+        .manage-header,
+        .manage-content-card,
+        .danger-card {
+            padding: 22px;
+        }
+
+        .manage-title {
+            font-size: 26px;
+        }
+
+        .data-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="manage-shell">
+    <div class="manage-header">
+        <div class="manage-tag"><i class="bi bi-database-gear"></i> Personal data</div>
+        <div class="manage-title">Xem và quản lý dữ liệu cá nhân</div>
+        <p class="manage-text">Trang này tổng hợp các thông tin tài khoản mà hệ thống hiện đang lưu trữ, đồng thời cung cấp các thao tác tải xuống hoặc xóa dữ liệu tài khoản khi cần.</p>
+    </div>
+
+    <div class="manage-grid">
+        <aside class="manage-nav-card">
+            <partial name="_ManageNav" />
+        </aside>
+
+        <section>
+            <div class="manage-content-card">
+                <div class="content-title">Dữ liệu hiện có</div>
+                <div class="content-subtitle">Bạn có thể đối chiếu nhanh những trường thông tin quan trọng đã lưu trong hệ thống.</div>
+
+                <div class="data-grid">
+                    <div class="data-item">
+                        <div class="data-label">Tên đăng nhập</div>
+                        <div class="data-value">@Model.UserName</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Họ và tên</div>
+                        <div class="data-value">@(string.IsNullOrWhiteSpace(Model.FullName) ? "Chưa cập nhật" : Model.FullName)</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Email</div>
+                        <div class="data-value">@(string.IsNullOrWhiteSpace(Model.Email) ? "Chưa cập nhật" : Model.Email)</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Số điện thoại</div>
+                        <div class="data-value">@(string.IsNullOrWhiteSpace(Model.PhoneNumber) ? "Chưa cập nhật" : Model.PhoneNumber)</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Địa chỉ</div>
+                        <div class="data-value">@(string.IsNullOrWhiteSpace(Model.Address) ? "Chưa cập nhật" : Model.Address)</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Độ tuổi</div>
+                        <div class="data-value">@(string.IsNullOrWhiteSpace(Model.Age) ? "Chưa cập nhật" : Model.Age)</div>
+                    </div>
+                </div>
+
+                <div class="data-actions">
+                    <form method="post" asp-page="./DownloadPersonalData">
+                        <button type="submit" class="action-btn action-btn-download">Tải dữ liệu cá nhân</button>
+                    </form>
+                    <a asp-page="./DeletePersonalData" class="action-btn action-btn-danger">Xóa tài khoản</a>
+                </div>
+            </div>
+
+            <div class="danger-card">
+                <div class="danger-title">Cảnh báo về thao tác xóa dữ liệu</div>
+                <p class="danger-text">Khi xóa tài khoản, bạn sẽ mất quyền truy cập vào dữ liệu đăng nhập hiện tại. Nếu chỉ cần chỉnh sửa thông tin, hãy quay lại trang hồ sơ thay vì xóa tài khoản.</p>
+                <a asp-page="./Index" class="action-btn action-btn-download">Quay lại hồ sơ</a>
+            </div>
+        </section>
+    </div>
+</div>

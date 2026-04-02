@@ -52,6 +52,10 @@ namespace GAMINGSTORE.Areas.Identity.Pages.Account.Manage
         /// </summary>
         public class InputModel
         {
+            [Required]
+            [Display(Name = "Full name")]
+            public string FullName { get; set; }
+
             /// <summary>
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
@@ -59,6 +63,12 @@ namespace GAMINGSTORE.Areas.Identity.Pages.Account.Manage
             [Phone]
             [Display(Name = "Phone number")]
             public string PhoneNumber { get; set; }
+
+            [Display(Name = "Address")]
+            public string Address { get; set; }
+
+            [Display(Name = "Age")]
+            public string Age { get; set; }
         }
 
         private async Task LoadAsync(ApplicationUser user)
@@ -70,7 +80,10 @@ namespace GAMINGSTORE.Areas.Identity.Pages.Account.Manage
 
             Input = new InputModel
             {
-                PhoneNumber = phoneNumber
+                FullName = user.FullName,
+                PhoneNumber = phoneNumber,
+                Address = user.Address,
+                Age = user.Age
             };
         }
 
@@ -111,8 +124,38 @@ namespace GAMINGSTORE.Areas.Identity.Pages.Account.Manage
                 }
             }
 
+            var profileChanged = false;
+
+            if (user.FullName != Input.FullName)
+            {
+                user.FullName = Input.FullName;
+                profileChanged = true;
+            }
+
+            if (user.Address != Input.Address)
+            {
+                user.Address = Input.Address;
+                profileChanged = true;
+            }
+
+            if (user.Age != Input.Age)
+            {
+                user.Age = Input.Age;
+                profileChanged = true;
+            }
+
+            if (profileChanged)
+            {
+                var updateResult = await _userManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
+                {
+                    StatusMessage = "Unexpected error when trying to update your profile.";
+                    return RedirectToPage();
+                }
+            }
+
             await _signInManager.RefreshSignInAsync(user);
-            StatusMessage = "Your profile has been updated";
+            StatusMessage = "Thông tin tài khoản đã được cập nhật.";
             return RedirectToPage();
         }
     }
