@@ -1,6 +1,6 @@
 ﻿namespace GAMINGSTORE.Models
 {
-    public static class SD
+    public static class RoleNames
     {
         public const string Role_Customer = "Customer";
         public const string Role_Company = "Company";

@@ -1,101 +1,519 @@
-﻿@model GAMINGSTORE.Models.Product
+﻿@model GAMINGSTORE.ViewModels.ProductDetailsViewModel
+@using System.Globalization
 
 @{
-    ViewData["Title"] = Model.Name;
+    ViewData["Title"] = Model.Product.Name;
+    var product = Model.Product;
+    var imageUrls = Model.ImageUrls;
+    var categoryNames = product.Categories.Any()
+        ? string.Join(" • ", product.Categories.Select(c => c.Name))
+        : Model.PrimaryCategory;
 
-    // Tách chuỗi ảnh (ngăn cách bởi dấu ;) thành một mảng
-    var imageUrls = string.IsNullOrEmpty(Model.ImageUrl)
-        ? new string[] { "/images/no-image.png" }
-        : Model.ImageUrl.Split(';', StringSplitOptions.RemoveEmptyEntries);
+    string GetFirstImage(string? imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+        {
+            return "/images/no-image.png";
+        }
+
+        return imageUrl
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .FirstOrDefault() ?? "/images/no-image.png";
+    }
 }
 
 <style>
-    /* CSS cho khu vực Slider ảnh */
-    .product-gallery {
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-        padding: 15px;
+    :root {
+        --detail-primary: #ee4d2d;
+        --detail-primary-dark: #c43a20;
+        --detail-text: #18212f;
+        --detail-muted: #64748b;
+        --detail-surface: #ffffff;
+        --detail-line: rgba(15, 23, 42, 0.08);
+        --detail-soft: #fff5f1;
+        --detail-bg: #f6f7fb;
     }
 
-    .main-image-container {
-        height: 420px;
-        background-color: #fff;
-        border-radius: 8px;
+    body {
+        background:
+            radial-gradient(circle at top right, rgba(238, 77, 45, 0.10), transparent 24%),
+            linear-gradient(180deg, #fffaf8 0%, var(--detail-bg) 36%, #f2f4f8 100%);
     }
 
-        .main-image-container .carousel-item {
-            height: 100%;
-            text-align: center;
-        }
+    .detail-shell {
+        padding: 28px 0 56px;
+    }
 
-        .main-image-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            object-position: center;
-            margin: 0 auto;
-        }
+    .detail-breadcrumb {
+        margin-bottom: 22px;
+    }
 
-    /* CSS 2 nút trượt ảnh */
+    .detail-breadcrumb .breadcrumb {
+        margin: 0;
+        gap: 6px;
+        font-size: 13px;
+    }
+
+    .detail-breadcrumb a {
+        color: var(--detail-muted);
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .detail-hero {
+        background: linear-gradient(145deg, rgba(255,255,255,0.94), rgba(255,255,255,0.86));
+        border: 1px solid rgba(255,255,255,0.7);
+        border-radius: 30px;
+        box-shadow: 0 28px 60px rgba(15, 23, 42, 0.10);
+        overflow: hidden;
+        margin-bottom: 26px;
+    }
+
+    .detail-gallery {
+        padding: 24px;
+        background: linear-gradient(180deg, #fff, #f8fafc);
+        height: 100%;
+    }
+
+    .detail-main-image {
+        height: 470px;
+        border-radius: 26px;
+        background:
+            radial-gradient(circle at top left, rgba(238, 77, 45, 0.10), transparent 30%),
+            linear-gradient(180deg, #ffffff, #f4f7fb);
+        border: 1px solid var(--detail-line);
+        overflow: hidden;
+    }
+
+    .detail-main-image .carousel-item,
+    .detail-main-image img {
+        height: 100%;
+    }
+
+    .detail-main-image img {
+        width: 100%;
+        object-fit: contain;
+        padding: 24px;
+    }
+
     .gallery-control-icon {
-        background-color: rgba(0,0,0,0.2);
+        background: rgba(15, 23, 42, 0.52);
         border-radius: 50%;
-        padding: 20px;
+        padding: 18px;
     }
 
-    .carousel-control-prev:hover .gallery-control-icon,
-    .carousel-control-next:hover .gallery-control-icon {
-        background-color: rgba(0,0,0,0.5);
-    }
-
-    /* CSS cho dãy ảnh nhỏ (Thumbnails) */
-    .thumbnail-container {
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        margin-top: 15px;
-        overflow-x: auto;
+    .detail-thumbnails {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
+        gap: 12px;
+        margin-top: 16px;
     }
 
     .thumbnail-btn {
-        border: 2px solid transparent;
+        border: 1px solid var(--detail-line);
         background: #fff;
-        border-radius: 8px;
-        padding: 5px;
-        width: 75px;
-        height: 75px;
-        cursor: pointer;
-        transition: 0.3s;
+        border-radius: 18px;
+        padding: 8px;
+        height: 82px;
+        transition: 0.25s ease;
     }
 
-        .thumbnail-btn img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
+    .thumbnail-btn img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .thumbnail-btn.active,
+    .thumbnail-btn:hover {
+        border-color: rgba(238, 77, 45, 0.4);
+        box-shadow: 0 10px 24px rgba(238, 77, 45, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .detail-summary {
+        padding: 34px 32px;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        color: var(--detail-text);
+    }
+
+    .detail-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        width: fit-content;
+        padding: 9px 14px;
+        border-radius: 999px;
+        background: var(--detail-soft);
+        color: var(--detail-primary-dark);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.7px;
+        text-transform: uppercase;
+        margin-bottom: 18px;
+    }
+
+    .detail-title {
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.04;
+        font-weight: 900;
+        margin-bottom: 14px;
+    }
+
+    .detail-category-line {
+        color: var(--detail-muted);
+        font-size: 14px;
+        line-height: 1.7;
+        margin-bottom: 22px;
+    }
+
+    .detail-price-band {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 14px;
+        margin-bottom: 22px;
+    }
+
+    .price-card,
+    .meta-card {
+        padding: 20px 22px;
+        border-radius: 22px;
+        background: #fff;
+        border: 1px solid var(--detail-line);
+    }
+
+    .price-label,
+    .meta-label {
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        color: var(--detail-muted);
+        margin-bottom: 8px;
+    }
+
+    .price-value {
+        color: var(--detail-primary);
+        font-size: clamp(28px, 3vw, 38px);
+        font-weight: 900;
+        line-height: 1;
+    }
+
+    .meta-value {
+        font-size: 15px;
+        line-height: 1.7;
+        font-weight: 700;
+        color: var(--detail-text);
+    }
+
+    .detail-description {
+        padding: 18px 0 24px;
+        border-top: 1px solid rgba(15, 23, 42, 0.06);
+        border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+        margin-bottom: 22px;
+    }
+
+    .detail-description p {
+        margin: 0;
+        color: #334155;
+        font-size: 15px;
+        line-height: 1.85;
+        white-space: pre-wrap;
+        text-align: justify;
+    }
+
+    .detail-actions {
+        display: flex;
+        align-items: stretch;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: auto;
+    }
+
+    .quantity-box {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid var(--detail-line);
+        background: #fff;
+        border-radius: 18px;
+        overflow: hidden;
+        min-width: 148px;
+    }
+
+    .quantity-box button {
+        width: 48px;
+        border: none;
+        background: transparent;
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--detail-text);
+    }
+
+    .quantity-box input {
+        width: 52px;
+        border: none;
+        text-align: center;
+        font-weight: 800;
+        background: transparent;
+    }
+
+    .detail-buy-btn {
+        border: none;
+        border-radius: 18px;
+        padding: 0 24px;
+        min-height: 58px;
+        background: linear-gradient(135deg, var(--detail-primary), var(--detail-primary-dark));
+        color: #fff;
+        font-weight: 800;
+        font-size: 15px;
+        box-shadow: 0 20px 36px rgba(238, 77, 45, 0.26);
+        flex: 1 1 280px;
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 24px;
+    }
+
+    .detail-panel {
+        background: rgba(255,255,255,0.92);
+        border: 1px solid rgba(255,255,255,0.75);
+        border-radius: 28px;
+        box-shadow: 0 24px 48px rgba(15, 23, 42, 0.08);
+        padding: 28px;
+    }
+
+    .panel-kicker {
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.75px;
+        color: var(--detail-primary-dark);
+        margin-bottom: 8px;
+    }
+
+    .panel-title {
+        font-size: 28px;
+        font-weight: 900;
+        color: var(--detail-text);
+        margin-bottom: 22px;
+    }
+
+    .highlight-list {
+        display: grid;
+        gap: 14px;
+    }
+
+    .highlight-item {
+        display: grid;
+        grid-template-columns: 46px 1fr;
+        gap: 14px;
+        padding: 18px;
+        border-radius: 22px;
+        background: linear-gradient(180deg, #fff, #fff8f6);
+        border: 1px solid rgba(238, 77, 45, 0.10);
+    }
+
+    .highlight-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(238, 77, 45, 0.10);
+        color: var(--detail-primary);
+        font-size: 20px;
+    }
+
+    .highlight-item h4 {
+        margin: 0 0 6px;
+        font-size: 16px;
+        font-weight: 800;
+        color: var(--detail-text);
+    }
+
+    .highlight-item p {
+        margin: 0;
+        color: #475569;
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    .spec-table {
+        display: grid;
+        gap: 12px;
+    }
+
+    .spec-row {
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        gap: 16px;
+        padding: 16px 18px;
+        border-radius: 20px;
+        background: #fff;
+        border: 1px solid var(--detail-line);
+    }
+
+    .spec-label {
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.65px;
+        color: var(--detail-muted);
+    }
+
+    .spec-value {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--detail-text);
+        line-height: 1.6;
+    }
+
+    .related-section {
+        margin-top: 28px;
+    }
+
+    .related-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 18px;
+    }
+
+    .related-card {
+        display: flex;
+        flex-direction: column;
+        min-height: 100%;
+        border-radius: 24px;
+        overflow: hidden;
+        background: #fff;
+        border: 1px solid rgba(15, 23, 42, 0.07);
+        box-shadow: 0 18px 34px rgba(15, 23, 42, 0.08);
+        text-decoration: none;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .related-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 26px 40px rgba(15, 23, 42, 0.12);
+    }
+
+    .related-thumb {
+        height: 210px;
+        background: linear-gradient(180deg, #fff, #f8fafc);
+        padding: 18px;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+    }
+
+    .related-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .related-body {
+        padding: 18px;
+        color: var(--detail-text);
+    }
+
+    .related-category {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        color: var(--detail-primary-dark);
+        margin-bottom: 8px;
+    }
+
+    .related-name {
+        font-size: 17px;
+        font-weight: 800;
+        line-height: 1.4;
+        margin-bottom: 12px;
+    }
+
+    .related-price {
+        font-size: 20px;
+        font-weight: 900;
+        color: var(--detail-primary);
+        margin-bottom: 14px;
+    }
+
+    .related-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--detail-text);
+    }
+
+    .empty-related {
+        padding: 22px;
+        border-radius: 22px;
+        background: #fff;
+        border: 1px dashed rgba(15, 23, 42, 0.12);
+        color: #475569;
+        font-size: 15px;
+        line-height: 1.8;
+    }
+
+    @@media (max-width: 991.98px) {
+        .detail-price-band,
+        .detail-grid {
+            grid-template-columns: 1fr;
         }
 
-        .thumbnail-btn.active, .thumbnail-btn:hover {
-            border-color: #ee4d2d; /* Đổi viền thành màu đỏ của shop */
+        .detail-summary {
+            padding-top: 8px;
         }
+    }
+
+    @@media (max-width: 767.98px) {
+        .detail-shell {
+            padding-top: 18px;
+        }
+
+        .detail-gallery,
+        .detail-summary,
+        .detail-panel {
+            padding: 20px;
+        }
+
+        .detail-main-image {
+            height: 320px;
+        }
+
+        .spec-row {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .detail-title {
+            font-size: 28px;
+        }
+    }
 </style>
 
-<div class="container my-5">
-    <nav aria-label="breadcrumb" class="mb-4">
+<div class="container detail-shell">
+    <nav aria-label="breadcrumb" class="detail-breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none text-danger fw-bold">Cửa hàng</a></li>
-            <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index">Sản phẩm</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@product.Name</li>
         </ol>
     </nav>
 
-    <div class="row">
-
-        <div class="col-md-5 mb-4 mb-md-0">
-            <div class="product-gallery">
-
+    <section class="detail-hero">
+        <div class="row g-0">
+            <div class="col-lg-5">
+                <div class="detail-gallery">
                 <div id="productCarousel" class="carousel slide" data-bs-ride="false">
-                    <div class="carousel-inner main-image-container">
-                        @for (int i = 0; i < imageUrls.Length; i++)
+                    <div class="carousel-inner detail-main-image">
+                        @for (int i = 0; i < imageUrls.Count; i++)
                         {
                             <div class="carousel-item @(i == 0 ? "active" : "") h-100">
                                 <img src="@imageUrls[i]" class="d-block w-100 h-100" alt="Ảnh sản phẩm @i">
@@ -103,7 +521,7 @@
                         }
                     </div>
 
-                    @if (imageUrls.Length > 1)
+                    @if (imageUrls.Count > 1)
                     {
                         <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
                             <span class="carousel-control-prev-icon gallery-control-icon" aria-hidden="true"></span>
@@ -116,10 +534,10 @@
                     }
                 </div>
 
-                @if (imageUrls.Length > 1)
+                @if (imageUrls.Count > 1)
                 {
-                    <div class="thumbnail-container pb-2">
-                        @for (int i = 0; i < imageUrls.Length; i++)
+                    <div class="detail-thumbnails">
+                        @for (int i = 0; i < imageUrls.Count; i++)
                         {
                             <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="@i" class="thumbnail-btn @(i == 0 ? "active" : "")" aria-current="@(i == 0 ? "true" : "false")">
                                 <img src="@imageUrls[i]" alt="Thumbnail @i" />
@@ -127,46 +545,126 @@
                         }
                     </div>
                 }
+                </div>
             </div>
-        </div>
 
-        <div class="col-md-7">
-            <div class="ps-md-4 d-flex flex-column h-100">
-                <h2 class="fw-bold mb-3">@Model.Name</h2>
+            <div class="col-lg-7">
+                <div class="detail-summary">
+                    <div class="detail-kicker">
+                        <i class="bi bi-stars"></i>
+                        Chi tiết sản phẩm
+                    </div>
 
-                <div class="bg-light p-3 rounded mb-4">
-                    <h3 class="text-danger fw-bold mb-0">
-                        @Model.Price.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))
-                    </h3>
-                </div>
+                    <h1 class="detail-title">@product.Name</h1>
 
-                <div class="mb-4 flex-grow-1">
-                    <h5 class="fw-bold text-uppercase border-bottom pb-2 mb-3">Thông tin chi tiết</h5>
-                    <p class="text-muted" style="line-height: 1.8; text-align: justify; white-space: pre-wrap;">
-                        @(string.IsNullOrEmpty(Model.Description) ? "Đang cập nhật mô tả..." : Model.Description)
-                    </p>
-                </div>
+                    <div class="detail-category-line">
+                        <strong>Nhóm sản phẩm:</strong> @categoryNames
+                    </div>
 
-                <div class="mt-auto border-top pt-4">
-                    <form asp-controller="ShoppingCart" asp-action="AddToCart" method="get" class="d-flex align-items-center gap-3">
-                        <input type="hidden" name="productId" value="@Model.Id" />
+                    <div class="detail-price-band">
+                        <div class="price-card">
+                            <div class="price-label">Giá bán hiện tại</div>
+                            <div class="price-value">@product.Price.ToString("C0", new CultureInfo("vi-VN"))</div>
+                        </div>
+                        <div class="meta-card">
+                            <div class="meta-label">Phân khúc</div>
+                            <div class="meta-value">@Model.Specifications.FirstOrDefault(spec => spec.Label == "Phân khúc giá")?.Value</div>
+                        </div>
+                    </div>
 
-                        <div class="input-group shadow-sm" style="width: 140px;">
-                            <button class="btn btn-outline-secondary fw-bold" type="button" onclick="decreaseQty()">-</button>
-                            <input type="number" id="quantity" name="quantity" class="form-control text-center fw-bold bg-white" value="1" min="1" readonly>
-                            <button class="btn btn-outline-secondary fw-bold" type="button" onclick="increaseQty()">+</button>
+                    <div class="detail-description">
+                        <p>@(string.IsNullOrWhiteSpace(product.Description) ? "Sản phẩm đang được cập nhật mô tả chi tiết. Bạn vẫn có thể xem nhanh nhóm danh mục, mức giá và các lựa chọn tương tự bên dưới." : product.Description)</p>
+                    </div>
+
+                    <form asp-controller="ShoppingCart" asp-action="AddToCart" method="get" class="detail-actions">
+                        <input type="hidden" name="productId" value="@product.Id" />
+
+                        <div class="quantity-box">
+                            <button class="fw-bold" type="button" onclick="decreaseQty()">-</button>
+                            <input type="number" id="quantity" name="quantity" value="1" min="1" readonly>
+                            <button class="fw-bold" type="button" onclick="increaseQty()">+</button>
                         </div>
 
-                        <button type="submit" class="btn btn-danger btn-lg px-4 flex-grow-1 shadow-sm fw-bold">
-                            <i class="bi bi-cart-plus-fill me-2"></i> Thêm vào giỏ hàng
+                        <button type="submit" class="detail-buy-btn">
+                            <i class="bi bi-cart-plus-fill me-2"></i>Thêm vào giỏ hàng
                         </button>
                     </form>
                 </div>
+            </div>
+        </div>
+    </section>
 
+    <section class="detail-grid">
+        <div class="detail-panel">
+            <div class="panel-kicker">Điểm nổi bật</div>
+            <h2 class="panel-title">Đặc điểm nổi bật</h2>
+
+            <div class="highlight-list">
+                @for (int i = 0; i < Model.Highlights.Count; i++)
+                {
+                    <article class="highlight-item">
+                        <div class="highlight-icon">
+                            <i class="bi @(i switch { 0 => "bi-lightning-charge", 1 => "bi-graph-up-arrow", 2 => "bi-diagram-3", _ => "bi-patch-check" })"></i>
+                        </div>
+                        <div>
+                            <h4>@($"Điểm mạnh {i + 1}")</h4>
+                            <p>@Model.Highlights[i]</p>
+                        </div>
+                    </article>
+                }
             </div>
         </div>
 
-    </div>
+        <div class="detail-panel">
+            <div class="panel-kicker">Product Snapshot</div>
+            <h2 class="panel-title">Thông số tổng quan</h2>
+
+            <div class="spec-table">
+                @foreach (var spec in Model.Specifications)
+                {
+                    <div class="spec-row">
+                        <div class="spec-label">@spec.Label</div>
+                        <div class="spec-value">@spec.Value</div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <section class="detail-panel related-section">
+        <div class="panel-kicker">Khám phá thêm</div>
+        <h2 class="panel-title">Sản phẩm tương tự</h2>
+
+        @if (Model.RelatedProducts.Count == 0)
+        {
+            <div class="empty-related">
+                Hiện chưa có thêm sản phẩm cùng nhóm để gợi ý. Khi catalog mở rộng hơn, khu vực này sẽ tự hiển thị các mẫu gần danh mục và mức giá của sản phẩm hiện tại.
+            </div>
+        }
+        else
+        {
+            <div class="related-grid">
+                @foreach (var relatedProduct in Model.RelatedProducts)
+                {
+                    <a class="related-card" asp-action="Details" asp-route-id="@relatedProduct.Id">
+                        <div class="related-thumb">
+                            <img src="@GetFirstImage(relatedProduct.ImageUrl)" alt="@relatedProduct.Name">
+                        </div>
+                        <div class="related-body">
+                            <div class="related-category">
+                                @(relatedProduct.Categories.Any() ? string.Join(" • ", relatedProduct.Categories.Select(c => c.Name)) : "Sản phẩm cùng nhóm")
+                            </div>
+                            <div class="related-name">@relatedProduct.Name</div>
+                            <div class="related-price">@relatedProduct.Price.ToString("C0", new CultureInfo("vi-VN"))</div>
+                            <div class="related-cta">
+                                Xem chi tiết <i class="bi bi-arrow-right-short"></i>
+                            </div>
+                        </div>
+                    </a>
+                }
+            </div>
+        }
+    </section>
 </div>
 
 @section Scripts {

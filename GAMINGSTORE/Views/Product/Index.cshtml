@@ -1,412 +1,571 @@
 ﻿@model IEnumerable<GAMINGSTORE.Models.Product>
+@using System.Globalization
 
 @{
     ViewData["Title"] = "Quản Lý Sản Phẩm";
+
+    string GetFirstImage(string? imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+        {
+            return "/images/no-image.png";
+        }
+
+        return imageUrl
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .FirstOrDefault() ?? "/images/no-image.png";
+    }
+
+    string GetShortDescription(string? description)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+        {
+            return "Sản phẩm đang hiển thị trên catalog và sẵn sàng được chỉnh sửa thêm nội dung nếu cần.";
+        }
+
+        var normalized = description.Trim();
+        return normalized.Length > 110 ? normalized[..107].TrimEnd() + "..." : normalized;
+    }
+
+    var totalProducts = Model.Count();
+    var categorizedProducts = Model.Count(p => p.Categories?.Any() == true);
+    var averagePrice = totalProducts > 0 ? Model.Average(p => p.Price) : 0m;
 }
 
 <style>
     :root {
-        --primary: #ee4d2d;
-        --primary-dark: #d63d1f;
-        --secondary: #f5f5f5;
-        --text: #212245;
-        --text-light: #666;
-        --border: #e5e5e5;
-        --success: #27ae60;
-        --danger: #e74c3c;
-    }
-
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+        --admin-primary: #ee4d2d;
+        --admin-primary-dark: #c43a20;
+        --admin-text: #18212f;
+        --admin-muted: #64748b;
+        --admin-line: rgba(15, 23, 42, 0.08);
+        --admin-bg: #f5f7fb;
+        --admin-danger: #dc2626;
     }
 
     body {
-        background: var(--secondary);
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        color: var(--text);
+        background:
+            radial-gradient(circle at top right, rgba(238, 77, 45, 0.10), transparent 24%),
+            linear-gradient(180deg, #fffaf8 0%, var(--admin-bg) 38%, #eff2f7 100%);
     }
 
-    .admin-header {
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        color: white;
-        padding: 30px 0;
-        margin-bottom: 40px;
-        box-shadow: 0 4px 12px rgba(238, 77, 45, 0.2);
+    .admin-shell {
+        padding: 28px 0 60px;
     }
 
-    .admin-header h1 {
-        font-size: 32px;
-        font-weight: 700;
+    .admin-hero {
+        background: linear-gradient(145deg, rgba(255,255,255,0.96), rgba(255,255,255,0.88));
+        border: 1px solid rgba(255,255,255,0.76);
+        border-radius: 32px;
+        box-shadow: 0 28px 60px rgba(15, 23, 42, 0.09);
+        padding: 30px;
+        margin-bottom: 24px;
+    }
+
+    .admin-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 14px;
+        border-radius: 999px;
+        background: #fff4f1;
+        color: var(--admin-primary-dark);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.7px;
+        text-transform: uppercase;
+        margin-bottom: 16px;
+    }
+
+    .admin-title-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .admin-title {
+        font-size: clamp(32px, 4vw, 46px);
+        line-height: 1.03;
+        font-weight: 900;
+        color: var(--admin-text);
         margin-bottom: 10px;
     }
 
-    .admin-header p {
-        font-size: 14px;
-        opacity: 0.9;
+    .admin-desc {
+        max-width: 760px;
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.8;
+        color: var(--admin-muted);
     }
 
-    .admin-container {
-        background: white;
-        border-radius: 8px;
-        padding: 30px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    }
-
-    .admin-toolbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-
-    .btn-create {
+    .admin-create-btn {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        padding: 12px 24px;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
+        justify-content: center;
+        gap: 10px;
+        min-height: 52px;
+        padding: 0 22px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, var(--admin-primary), var(--admin-primary-dark));
+        color: #fff;
         text-decoration: none;
-        transition: all 0.3s ease;
-    }
-
-    .btn-create:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(238, 77, 45, 0.3);
-    }
-
-    .products-count {
         font-size: 14px;
-        color: var(--text-light);
-        font-weight: 600;
+        font-weight: 800;
+        box-shadow: 0 18px 34px rgba(238, 77, 45, 0.22);
     }
 
-    .products-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
+    .admin-create-btn:hover {
+        color: #fff;
+        transform: translateY(-1px);
     }
 
-    .products-table thead {
-        background: var(--secondary);
-        border-bottom: 2px solid var(--border);
+    .admin-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 24px;
     }
 
-    .products-table th {
-        padding: 15px;
-        text-align: left;
-        font-weight: 700;
-        font-size: 13px;
-        color: var(--text);
+    .admin-stat-card {
+        padding: 20px 22px;
+        border-radius: 24px;
+        background: #fff;
+        border: 1px solid var(--admin-line);
+    }
+
+    .admin-stat-label {
+        font-size: 12px;
+        font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.7px;
+        color: var(--admin-muted);
+        margin-bottom: 8px;
     }
 
-    .products-table tbody tr {
-        border-bottom: 1px solid var(--border);
-        transition: background-color 0.2s ease;
+    .admin-stat-value {
+        font-size: clamp(26px, 3vw, 34px);
+        line-height: 1;
+        font-weight: 900;
+        color: var(--admin-text);
     }
 
-    .products-table tbody tr:hover {
-        background-color: #fafafa;
-    }
-
-    .products-table td {
-        padding: 15px;
+    .admin-stat-desc {
+        margin-top: 8px;
         font-size: 13px;
-        color: var(--text);
+        line-height: 1.7;
+        color: var(--admin-muted);
     }
 
-    .product-name {
-        font-weight: 600;
-        color: var(--text);
-        max-width: 300px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+    .catalog-panel {
+        background: rgba(255,255,255,0.94);
+        border: 1px solid rgba(255,255,255,0.74);
+        border-radius: 30px;
+        box-shadow: 0 24px 52px rgba(15, 23, 42, 0.08);
+        padding: 26px;
     }
 
-    .product-price {
-        font-weight: 700;
-        color: var(--primary);
-        font-size: 14px;
-    }
-
-    .product-thumbnail {
-        width: 60px;
-        height: 60px;
-        border-radius: 6px;
-        object-fit: contain;
-        background: var(--secondary);
-        padding: 4px;
-    }
-
-    .product-categories {
-        font-size: 12px;
-        color: var(--text-light);
-        max-width: 200px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .product-actions {
+    .catalog-toolbar {
         display: flex;
-        gap: 8px;
         align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
     }
 
-    .btn-action {
+    .catalog-heading {
+        font-size: 28px;
+        font-weight: 900;
+        color: var(--admin-text);
+        margin: 0;
+    }
+
+    .catalog-subheading {
+        margin: 6px 0 0;
+        font-size: 14px;
+        color: var(--admin-muted);
+    }
+
+    .catalog-pill {
         display: inline-flex;
         align-items: center;
-        gap: 4px;
-        padding: 8px 12px;
-        border: 1px solid var(--border);
-        background: white;
-        color: var(--text);
-        border-radius: 4px;
+        gap: 8px;
+        min-height: 38px;
+        padding: 0 14px;
+        border-radius: 999px;
+        background: #fff4f1;
+        color: var(--admin-primary-dark);
         font-size: 12px;
-        font-weight: 600;
+        font-weight: 800;
+    }
+
+    .admin-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+    }
+
+    .admin-product-card {
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        border: 1px solid var(--admin-line);
+        border-radius: 26px;
+        overflow: hidden;
+        box-shadow: 0 18px 38px rgba(15, 23, 42, 0.07);
+        transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+    }
+
+    .admin-product-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(238, 77, 45, 0.2);
+        box-shadow: 0 28px 46px rgba(15, 23, 42, 0.12);
+    }
+
+    .admin-product-thumb {
+        position: relative;
+        height: 220px;
+        background: linear-gradient(180deg, #fff8f5, #f8fafc);
+    }
+
+    .admin-product-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 18px;
+    }
+
+    .admin-product-badge {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 32px;
+        padding: 0 12px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.94);
+        color: var(--admin-primary-dark);
+        font-size: 11px;
+        font-weight: 800;
+        box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+    }
+
+    .admin-product-id {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px;
+        padding: 0 12px;
+        border-radius: 999px;
+        background: rgba(24, 33, 47, 0.78);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .admin-product-body {
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    .admin-product-name {
+        font-size: 18px;
+        font-weight: 900;
+        line-height: 1.4;
+        color: var(--admin-text);
+        margin-bottom: 10px;
+    }
+
+    .admin-product-categories {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+
+    .admin-category-chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 28px;
+        padding: 0 10px;
+        border-radius: 999px;
+        background: #fff4f1;
+        color: var(--admin-primary-dark);
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .admin-product-description {
+        font-size: 13px;
+        line-height: 1.72;
+        color: var(--admin-muted);
+        min-height: 66px;
+        margin-bottom: 16px;
+    }
+
+    .admin-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .admin-meta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 30px;
+        padding: 0 10px;
+        border-radius: 999px;
+        background: #f8fafc;
+        color: #475569;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .admin-product-price {
+        font-size: 24px;
+        font-weight: 900;
+        color: var(--admin-primary);
+        margin-bottom: 4px;
+    }
+
+    .admin-product-note {
+        font-size: 12px;
+        color: var(--admin-muted);
+        margin-bottom: 18px;
+    }
+
+    .admin-actions {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: auto;
+    }
+
+    .admin-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 44px;
+        border-radius: 15px;
         text-decoration: none;
-        cursor: pointer;
-        transition: all 0.2s ease;
+        font-size: 13px;
+        font-weight: 800;
+        transition: 0.25s ease;
     }
 
-    .btn-action:hover {
-        border-color: var(--primary);
-        color: var(--primary);
+    .admin-action-view {
+        background: #fff;
+        color: var(--admin-text);
+        border: 1px solid var(--admin-line);
     }
 
-    .btn-edit {
-        border-color: #3498db;
-        color: #3498db;
+    .admin-action-view:hover {
+        background: #f8fafc;
+        color: var(--admin-text);
     }
 
-    .btn-edit:hover {
-        background-color: rgba(52, 152, 219, 0.1);
-        border-color: #3498db;
-        color: #3498db;
+    .admin-action-edit {
+        background: rgba(37, 99, 235, 0.10);
+        color: #2563eb;
+        border: 1px solid rgba(37, 99, 235, 0.18);
     }
 
-    .btn-details {
-        border-color: var(--success);
-        color: var(--success);
+    .admin-action-edit:hover {
+        color: #1d4ed8;
+        background: rgba(37, 99, 235, 0.14);
     }
 
-    .btn-details:hover {
-        background-color: rgba(39, 174, 96, 0.1);
-        border-color: var(--success);
-        color: var(--success);
+    .admin-action-delete {
+        background: rgba(220, 38, 38, 0.10);
+        color: var(--admin-danger);
+        border: 1px solid rgba(220, 38, 38, 0.18);
     }
 
-    .btn-delete {
-        border-color: var(--danger);
-        color: var(--danger);
-    }
-
-    .btn-delete:hover {
-        background-color: rgba(231, 76, 60, 0.1);
-        border-color: var(--danger);
-        color: var(--danger);
+    .admin-action-delete:hover {
+        color: #b91c1c;
+        background: rgba(220, 38, 38, 0.14);
     }
 
     .empty-state {
         text-align: center;
-        padding: 60px 20px;
-        background: var(--secondary);
-        border-radius: 8px;
-        margin-top: 20px;
+        padding: 76px 24px;
+        background: #fff;
+        border: 1px dashed var(--admin-line);
+        border-radius: 28px;
     }
 
-    .empty-icon {
-        font-size: 60px;
-        margin-bottom: 15px;
+    .empty-state i {
+        font-size: 68px;
+        color: var(--admin-muted);
     }
 
     .empty-title {
-        font-size: 18px;
-        font-weight: 600;
-        margin-bottom: 8px;
+        font-size: 22px;
+        font-weight: 900;
+        color: var(--admin-text);
+        margin: 18px 0 10px;
     }
 
     .empty-desc {
-        color: var(--text-light);
-        margin-bottom: 20px;
+        font-size: 14px;
+        line-height: 1.8;
+        color: var(--admin-muted);
+        max-width: 520px;
+        margin: 0 auto 18px;
     }
 
-    @@media (max-width: 768px) {
-        .admin-header h1 {
-            font-size: 24px;
+    @@media (max-width: 991.98px) {
+        .admin-stats {
+            grid-template-columns: 1fr;
         }
 
-        .admin-toolbar {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .btn-create {
-            width: 100%;
-            justify-content: center;
-        }
-
-        .products-table {
-            font-size: 12px;
-        }
-
-        .products-table th,
-        .products-table td {
-            padding: 10px;
-        }
-
-        .product-thumbnail {
-            width: 50px;
-            height: 50px;
-        }
-
-        .product-actions {
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .btn-action {
-            width: 100%;
-            justify-content: center;
-            padding: 6px 8px;
-        }
-
-        .product-name,
-        .product-categories {
-            max-width: 150px;
+        .admin-actions {
+            grid-template-columns: 1fr;
         }
     }
 
-    @@media (max-width: 480px) {
-        .admin-container {
-            padding: 15px;
+    @@media (max-width: 767.98px) {
+        .admin-shell {
+            padding-top: 20px;
         }
 
-        .products-table th {
-            font-size: 11px;
-            padding: 10px;
+        .admin-hero,
+        .catalog-panel {
+            padding: 20px;
         }
 
-        .products-table td {
-            padding: 8px;
-            font-size: 11px;
+        .admin-grid {
+            grid-template-columns: 1fr;
         }
 
-        .product-thumbnail {
-            width: 45px;
-            height: 45px;
-        }
-
-        .btn-action {
-            padding: 6px 8px;
-            font-size: 10px;
-        }
-
-        .products-count {
-            font-size: 12px;
+        .admin-product-thumb {
+            height: 200px;
         }
     }
 </style>
 
-<!-- HEADER -->
-<div class="admin-header">
-    <div class="container">
-        <h1>📦 Quản Lý Sản Phẩm</h1>
-        <p>Quản lý toàn bộ sản phẩm trên hệ thống GAMINGSTORE</p>
-    </div>
-</div>
+<div class="container admin-shell">
+    <section class="admin-hero">
+        <div class="admin-kicker"><i class="bi bi-box-seam"></i> Product Control Center</div>
 
-<!-- CONTENT -->
-<div class="container">
-    <div class="admin-container">
-        <!-- TOOLBAR -->
-        <div class="admin-toolbar">
-            <a asp-action="Create" class="btn-create">➕ Thêm Sản Phẩm Mới</a>
-            <div class="products-count">
-                📊 Tổng cộng: <strong>@Model.Count()</strong> sản phẩm
+        <div class="admin-title-row">
+            <div>
+                <h1 class="admin-title">Quản lý sản phẩm theo cùng ngôn ngữ thiết kế của storefront.</h1>
+                <p class="admin-desc">Khu quản trị giờ không còn là bảng thô. Bạn có thể quét nhanh ảnh, danh mục, giá, mô tả ngắn và thao tác sửa, xem, xóa ngay trên từng card mà vẫn đồng bộ với trải nghiệm ngoài trang bán hàng.</p>
             </div>
+
+            <a asp-action="Create" class="admin-create-btn">
+                <i class="bi bi-plus-circle"></i> Thêm sản phẩm mới
+            </a>
         </div>
 
-        <!-- TABLE -->
+        <div class="admin-stats">
+            <div class="admin-stat-card">
+                <div class="admin-stat-label">Tổng sản phẩm</div>
+                <div class="admin-stat-value">@totalProducts</div>
+                <div class="admin-stat-desc">Số sản phẩm hiện có trong catalog quản lý.</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-label">Đã phân loại</div>
+                <div class="admin-stat-value">@categorizedProducts</div>
+                <div class="admin-stat-desc">Sản phẩm đã gắn ít nhất một danh mục để hiển thị storefront.</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-label">Giá trung bình</div>
+                <div class="admin-stat-value">@averagePrice.ToString("N0", new CultureInfo("vi-VN")) ₫</div>
+                <div class="admin-stat-desc">Snapshot nhanh giúp bạn rà mặt bằng giá hiện tại.</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="catalog-panel">
+        <div class="catalog-toolbar">
+            <div>
+                <h2 class="catalog-heading">Catalog quản trị</h2>
+                <p class="catalog-subheading">Xem nhanh toàn bộ sản phẩm với card trực quan, phù hợp khi rà ảnh, nội dung và mức giá.</p>
+            </div>
+            <div class="catalog-pill"><i class="bi bi-grid-3x3-gap"></i> @totalProducts sản phẩm đang hiển thị</div>
+        </div>
+
         @if (Model.Any())
         {
-            <table class="products-table">
-                <thead>
-                    <tr>
-                        <th style="width: 80px;">Hình ảnh</th>
-                        <th style="width: 30%;">Tên sản phẩm</th>
-                        <th style="width: 120px;">Giá</th>
-                        <th style="width: 25%;">Danh mục</th>
-                        <th style="width: 150px;">Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var product in Model)
-                    {
-                        <tr>
-                            <td>
-                                @if (!string.IsNullOrEmpty(product.ImageUrl))
+            <div class="admin-grid">
+                @foreach (var product in Model)
+                {
+                    <article class="admin-product-card">
+                        <div class="admin-product-thumb">
+                            <img src="@GetFirstImage(product.ImageUrl)" alt="@product.Name" onerror="this.src='/images/no-image.png'">
+                            <span class="admin-product-badge"><i class="bi bi-stars"></i> @(product.Categories?.FirstOrDefault()?.Name ?? "Chưa phân loại")</span>
+                            <span class="admin-product-id">GS-@product.Id.ToString("0000")</span>
+                        </div>
+
+                        <div class="admin-product-body">
+                            <div class="admin-product-name">@product.Name</div>
+
+                            <div class="admin-product-categories">
+                                @if (product.Categories?.Any() == true)
                                 {
-                                    var images = product.ImageUrl.Split(';', StringSplitOptions.RemoveEmptyEntries);
-                                    <img src="@images[0]" alt="@product.Name" class="product-thumbnail" onerror="this.src='/images/no-image.png'">
+                                    @foreach (var category in product.Categories.Take(3))
+                                    {
+                                        <span class="admin-category-chip">@category.Name</span>
+                                    }
                                 }
                                 else
                                 {
-                                    <img src="/images/no-image.png" alt="No image" class="product-thumbnail">
+                                    <span class="admin-category-chip">Chưa phân loại</span>
                                 }
-                            </td>
-                            <td>
-                                <div class="product-name" title="@product.Name">@product.Name</div>
-                            </td>
-                            <td>
-                                <div class="product-price">
-                                    @Math.Round(product.Price, 0).ToString("N0", new System.Globalization.CultureInfo("vi-VN")) ₫
-                                </div>
-                            </td>
-                            <td>
-                                <div class="product-categories" title="@string.Join(", ", product.Categories?.Select(c => c.Name) ?? new List<string>())">
-                                    @if (product.Categories?.Any() == true)
-                                    {
-                                        @string.Join(" • ", product.Categories.Select(c => c.Name))
-                                    }
-                                    else
-                                    {
-                                        <span style="color: var(--text-light);">Chưa phân loại</span>
-                                    }
-                                </div>
-                            </td>
-                            <td>
-                                <div class="product-actions">
-                                    <a asp-action="Edit" asp-route-id="@product.Id" class="btn-action btn-edit">✏️ Sửa</a>
-                                    <a asp-action="Details" asp-route-id="@product.Id" class="btn-action btn-details">👁️ Xem</a>
-                                    <a asp-action="Delete" asp-route-id="@product.Id" class="btn-action btn-delete">🗑️ Xóa</a>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                            </div>
+
+                            <div class="admin-product-description">@GetShortDescription(product.Description)</div>
+
+                            <div class="admin-meta">
+                                <span class="admin-meta-pill"><i class="bi bi-image"></i> @(string.IsNullOrWhiteSpace(product.ImageUrl) ? "Chưa có ảnh" : "Đã có ảnh")</span>
+                                <span class="admin-meta-pill"><i class="bi bi-diagram-3"></i> @(product.Categories?.Count ?? 0) danh mục</span>
+                            </div>
+
+                            <div class="admin-product-price">@Math.Round(product.Price, 0).ToString("N0", new CultureInfo("vi-VN")) ₫</div>
+                            <div class="admin-product-note">Card quản trị đồng bộ với phong cách giao diện bán hàng hiện tại.</div>
+
+                            <div class="admin-actions">
+                                <a asp-action="Details" asp-route-id="@product.Id" class="admin-action admin-action-view">
+                                    <i class="bi bi-eye"></i> Xem
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@product.Id" class="admin-action admin-action-edit">
+                                    <i class="bi bi-pencil-square"></i> Sửa
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@product.Id" class="admin-action admin-action-delete">
+                                    <i class="bi bi-trash3"></i> Xóa
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                }
+            </div>
         }
         else
         {
             <div class="empty-state">
-                <div class="empty-icon">📭</div>
-                <div class="empty-title">Chưa có sản phẩm</div>
-                <div class="empty-desc">Hãy thêm sản phẩm mới để bắt đầu</div>
-                <a asp-action="Create" class="btn-create">➕ Thêm Sản Phẩm Đầu Tiên</a>
+                <i class="bi bi-inboxes"></i>
+                <div class="empty-title">Chưa có sản phẩm nào trong catalog</div>
+                <div class="empty-desc">Hãy thêm sản phẩm đầu tiên để bắt đầu quản lý hình ảnh, nội dung, danh mục và mức giá trong cùng một khu vực trực quan hơn.</div>
+                <a asp-action="Create" class="admin-create-btn">
+                    <i class="bi bi-plus-circle"></i> Thêm sản phẩm đầu tiên
+                </a>
             </div>
         }
-    </div>
+    </section>
 </div>
