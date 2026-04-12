@@ -26,6 +26,19 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .WithMany(c => c.Products)
                 .UsingEntity(j => j.ToTable("CategoryProduct"));
             
+            // Configure IdentityUser properties to allow NULL for OAuth users
+            modelBuilder.Entity<ApplicationUser>()
+                .Property(u => u.PasswordHash)
+                .IsRequired(false);
+            
+            modelBuilder.Entity<ApplicationUser>()
+                .Property(u => u.SecurityStamp)
+                .IsRequired(false);
+            
+            modelBuilder.Entity<ApplicationUser>()
+                .Property(u => u.ConcurrencyStamp)
+                .IsRequired(false);
+            
             base.OnModelCreating(modelBuilder);
         }
     }
