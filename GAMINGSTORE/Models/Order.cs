@@ -17,6 +17,8 @@ namespace GAMINGSTORE.Models
         public string? Notes { get; set; }
         [ValidateNever]
         public string PaymentMethod { get; set; }
+        public string? PhoneNumber { get; set; }
+        public bool IsPaid { get; set; } = false;
         [ForeignKey("UserId")]
         public ApplicationUser ApplicationUser { get; set; }
         public List<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();

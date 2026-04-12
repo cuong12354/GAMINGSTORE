@@ -1,0 +1,333 @@
+@using GAMINGSTORE.Models
+@model Order
+
+@{
+    ViewData["Title"] = "Phiếu thanh toán";
+}
+
+<style>
+    .slip-container {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .slip-button {
+        margin-bottom: 20px;
+    }
+
+    .slip-button button {
+        padding: 10px 20px;
+        background: #5a7ba8;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .slip-button button:hover {
+        background: #4a6a98;
+    }
+
+    .slip-paper {
+        background: white;
+        border: 2px dashed #5a7ba8;
+        border-radius: 12px;
+        padding: 40px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .slip-header {
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #e0e3e8;
+        padding-bottom: 20px;
+    }
+
+    .slip-logo {
+        font-size: 32px;
+        font-weight: 800;
+        color: #5a7ba8;
+        margin-bottom: 5px;
+    }
+
+    .slip-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 5px;
+    }
+
+    .slip-subtitle {
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .slip-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+
+    .slip-section {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .slip-section h3 {
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #374151;
+        margin-bottom: 5px;
+    }
+
+    .slip-item {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        color: #4b5563;
+    }
+
+    .slip-item-label {
+        font-weight: 600;
+    }
+
+    .slip-item-value {
+        text-align: right;
+        font-weight: 700;
+    }
+
+    .slip-divider {
+        border-top: 1px solid #e0e3e8;
+        margin: 30px 0;
+    }
+
+    .slip-items {
+        margin-bottom: 20px;
+    }
+
+    .slip-items-title {
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 10px;
+        font-size: 13px;
+        text-transform: uppercase;
+    }
+
+    .items-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .item-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        color: #4b5563;
+        padding: 8px;
+        background: #f9fafb;
+        border-radius: 6px;
+    }
+
+    .item-name {
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .item-qty {
+        color: #9ca3af;
+    }
+
+    .item-price {
+        font-weight: 700;
+        color: #5a7ba8;
+    }
+
+    .slip-total {
+        display: flex;
+        justify-content: space-between;
+        font-size: 18px;
+        font-weight: 800;
+        color: #5a7ba8;
+        padding: 15px;
+        background: #f0f4f8;
+        border-radius: 8px;
+        margin-top: 15px;
+    }
+
+    .slip-footer {
+        text-align: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e0e3e8;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .slip-signature {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        margin-top: 40px;
+        text-align: center;
+    }
+
+    .signature-box {
+        border-top: 1px solid #111827;
+        padding-top: 10px;
+    }
+
+    .signature-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    @@media print {
+        .slip-button {
+            display: none;
+        }
+        
+        .slip-paper {
+            box-shadow: none;
+            border: 1px solid #e0e3e8;
+            padding: 20px;
+        }
+    }
+</style>
+
+<div class="slip-container">
+    <div class="slip-button">
+        <button onclick="window.print()">🖨️ In phiếu thanh toán</button>
+    </div>
+
+    <div class="slip-paper">
+        <!-- Header -->
+        <div class="slip-header">
+            <div class="slip-logo">GAMINGSTORE</div>
+            <div class="slip-title">PHIẾU THANH TOÁN</div>
+            <div class="slip-subtitle">Payment Invoice #@Model.Id</div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="slip-content">
+            <div class="slip-section">
+                <h3>Thông tin đơn hàng</h3>
+                <div class="slip-item">
+                    <span class="slip-item-label">Mã đơn hàng:</span>
+                    <span class="slip-item-value">GS-@Model.Id</span>
+                </div>
+                <div class="slip-item">
+                    <span class="slip-item-label">Ngày lập:</span>
+                    <span class="slip-item-value">@Model.OrderDate.ToString("dd/MM/yyyy")</span>
+                </div>
+                <div class="slip-item">
+                    <span class="slip-item-label">Trạng thái:</span>
+                    <span class="slip-item-value">@GetStatusDisplay(Model.Status)</span>
+                </div>
+            </div>
+
+            <div class="slip-section">
+                <h3>Thông tin khách hàng</h3>
+                <div class="slip-item">
+                    <span class="slip-item-label">Họ tên:</span>
+                    <span class="slip-item-value">@Model.CustomerName</span>
+                </div>
+                <div class="slip-item">
+                    <span class="slip-item-label">Điện thoại:</span>
+                    <span class="slip-item-value">@Model.PhoneNumber</span>
+                </div>
+                <div class="slip-item">
+                    <span class="slip-item-label">Địa chỉ:</span>
+                    <span class="slip-item-value">@Model.ShippingAddress</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="slip-divider"></div>
+
+        <!-- Items -->
+        <div class="slip-items">
+            <div class="slip-items-title">Chi tiết đơn hàng</div>
+            <div class="items-list">
+                @foreach (var detail in Model.OrderDetails ?? new List<OrderDetail>())
+                {
+                    <div class="item-row">
+                        <div>
+                            <div class="item-name">@detail.ProductName</div>
+                            <div class="item-qty">x @detail.Quantity</div>
+                        </div>
+                        <div class="item-price">
+                            @(detail.Price * detail.Quantity).ToString("N0", System.Globalization.CultureInfo.CreateSpecificCulture("vi-VN"))₫
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Total -->
+        <div class="slip-total">
+            <span>Tổng tiền:</span>
+            <span>@Model.TotalPrice.ToString("N0", System.Globalization.CultureInfo.CreateSpecificCulture("vi-VN"))₫</span>
+        </div>
+
+        <!-- Payment Info -->
+        <div class="slip-content" style="margin-top: 30px;">
+            <div class="slip-section">
+                <h3>Phương thức thanh toán</h3>
+                <div class="slip-item">
+                    <span class="slip-item-label">Loại thanhthu:</span>
+                    <span class="slip-item-value">@Model.PaymentMethod</span>
+                </div>
+                <div class="slip-item">
+                    <span class="slip-item-label">Trạng thái:</span>
+                    <span class="slip-item-value">@(Model.IsPaid ? "✓ Đã thanh toán" : "⏳ Chưa thanh toán")</span>
+                </div>
+            </div>
+
+            <div class="slip-section">
+                <h3>Ghi chú</h3>
+                <div class="slip-item">
+                    <span class="slip-item-value">@(string.IsNullOrEmpty(Model.Notes) ? "-" : Model.Notes)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="slip-footer">
+            Phiếu này được in tự động từ hệ thống GAMINGSTORE. Vui lòng giữ lại để tra cứu sau này.
+        </div>
+
+        <!-- Signatures -->
+        <div class="slip-signature">
+            <div class="signature-box">
+                <div style="height: 30px;"></div>
+                <div class="signature-label">Người nhận</div>
+            </div>
+            <div class="signature-box">
+                <div style="height: 30px;"></div>
+                <div class="signature-label">Người bán</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    private string GetStatusDisplay(string status)
+    {
+        return status switch
+        {
+            "Pending" => "Chờ xác nhận",
+            "Confirmed" => "Đã xác nhận",
+            "Shipped" => "Đang giao",
+            "Delivered" => "Đã giao",
+            "Cancelled" => "Đã hủy",
+            _ => status
+        };
+    }
+}

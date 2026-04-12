@@ -1,0 +1,259 @@
+@using GAMINGSTORE.Models
+@model IEnumerable<Order>
+
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+    var stats = ViewData["Stats"] as dynamic;
+}
+
+<style>
+    .admin-container {
+        max-width: 1400px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .admin-header {
+        margin-bottom: 40px;
+    }
+
+    .admin-header h1 {
+        font-size: 32px;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 10px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: #fff;
+        border: 1px solid #e0e3e8;
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .stat-label {
+        color: #6b7280;
+        font-size: 13px;
+        text-transform: uppercase;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .stat-value {
+        font-size: 28px;
+        font-weight: 800;
+        color: #5a7ba8;
+    }
+
+    .orders-table-container {
+        background: #fff;
+        border: 1px solid #e0e3e8;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .orders-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .orders-table thead {
+        background: #f9fafb;
+        border-bottom: 2px solid #e0e3e8;
+    }
+
+    .orders-table th {
+        padding: 15px;
+        text-align: left;
+        font-weight: 700;
+        color: #374151;
+        font-size: 13px;
+        text-transform: uppercase;
+    }
+
+    .orders-table td {
+        padding: 15px;
+        border-bottom: 1px solid #eff2f7;
+        color: #4b5563;
+    }
+
+    .orders-table tbody tr:hover {
+        background: #f9fafb;
+    }
+
+    .orders-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .order-id {
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .customer-name {
+        font-weight: 600;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        text-align: center;
+        min-width: 100px;
+    }
+
+    .status-pending { background: #fef08a; color: #854d0e; }
+    .status-confirmed { background: #dbeafe; color: #1e3a8a; }
+    .status-shipped { background: #e0e7ff; color: #3730a3; }
+    .status-delivered { background: #dcfce7; color: #166534; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
+
+    .amount {
+        font-weight: 700;
+        color: #5a7ba8;
+        text-align: right;
+    }
+
+    .view-link {
+        color: #5a7ba8;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .view-link:hover {
+        text-decoration: underline;
+    }
+
+    .filter-section {
+        margin-bottom: 25px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 10px 16px;
+        border: 1px solid #e0e3e8;
+        background: #fff;
+        border-radius: 6px;
+        color: #6b7280;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 13px;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .filter-btn:hover, .filter-btn.active {
+        border-color: #5a7ba8;
+        background: #5a7ba8;
+        color: #fff;
+    }
+</style>
+
+<div class="admin-container">
+    <div class="admin-header">
+        <h1>📊 Quản lý đơn hàng</h1>
+    </div>
+
+    @if (stats != null)
+    {
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Tổng đơn hàng</div>
+                <div class="stat-value">@stats.TotalOrders</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Chờ xác nhận</div>
+                <div class="stat-value" style="color: #f59e0b;">@stats.PendingOrders</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Đã hoàn thành</div>
+                <div class="stat-value" style="color: #10b981;">@stats.CompletedOrders</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Tổng doanh thu</div>
+                <div class="stat-value">@stats.TotalRevenue.ToString("N0", System.Globalization.CultureInfo.CreateSpecificCulture("vi-VN"))₫</div>
+            </div>
+        </div>
+    }
+
+    <div class="filter-section">
+        <a href="@Url.Action("AllOrders", "OrderHistory")" class="filter-btn @(ViewData["CurrentStatus"] == null ? "active" : "")">
+            Tất cả
+        </a>
+        @foreach (var st in (string[])ViewData["StatusFilter"])
+        {
+            var isActive = ViewData["CurrentStatus"]?.ToString() == st;
+            <a href="@Url.Action("AllOrders", "OrderHistory", new { status = st })" 
+               class="filter-btn @(isActive ? "active" : "")">
+                @GetStatusDisplay(st)
+            </a>
+        }
+    </div>
+
+    <div class="orders-table-container">
+        <table class="orders-table">
+            <thead>
+                <tr>
+                    <th>Đơn hàng</th>
+                    <th>Khách hàng</th>
+                    <th>Ngày đặt</th>
+                    <th>Trạng thái</th>
+                    <th>Số lượng</th>
+                    <th>Tổng tiền</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model)
+                {
+                    <tr>
+                        <td class="order-id">#@order.Id</td>
+                        <td class="customer-name">@order.CustomerName</td>
+                        <td>@order.OrderDate.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            <span class="status-badge status-@order.Status?.ToLower()">
+                                @GetStatusDisplay(order.Status)
+                            </span>
+                        </td>
+                        <td>@order.OrderDetails?.Count() items</td>
+                        <td class="amount">
+                            @order.TotalPrice.ToString("N0", System.Globalization.CultureInfo.CreateSpecificCulture("vi-VN"))₫
+                        </td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@order.Id" class="view-link">Xem chi tiết</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@functions {
+    private string GetStatusDisplay(string status)
+    {
+        return status switch
+        {
+            "Pending" => "Chờ xác nhận",
+            "Confirmed" => "Đã xác nhận",
+            "Shipped" => "Đang giao",
+            "Delivered" => "Đã giao",
+            "Cancelled" => "Đã hủy",
+            _ => status
+        };
+    }
+}

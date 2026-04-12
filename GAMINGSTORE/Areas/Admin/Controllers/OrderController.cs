@@ -19,14 +19,14 @@ namespace GAMINGSTORE.Areas.Admin.Controllers
         // DANH SÁCH ĐƠN
         public async Task<IActionResult> Index()
         {
-            var orders = await _context.Order.ToListAsync();
+            var orders = await _context.Orders.ToListAsync();
             return View(orders);
         }
 
         // CHI TIẾT
         public async Task<IActionResult> Details(int id)
         {
-            var order = await _context.Order
+            var order = await _context.Orders
                 .Include(o => o.OrderDetails)
                 .ThenInclude(d => d.Product)
                 .FirstOrDefaultAsync(o => o.Id == id);
@@ -37,7 +37,7 @@ namespace GAMINGSTORE.Areas.Admin.Controllers
         // XÁC NHẬN THANH TOÁN
         public async Task<IActionResult> ConfirmPayment(int id)
         {
-            var order = await _context.Order.FindAsync(id);
+            var order = await _context.Orders.FindAsync(id);
 
             if (order != null)
             {
@@ -51,7 +51,7 @@ namespace GAMINGSTORE.Areas.Admin.Controllers
         // GIAO HÀNG
         public async Task<IActionResult> Shipping(int id)
         {
-            var order = await _context.Order.FindAsync(id);
+            var order = await _context.Orders.FindAsync(id);
 
             if (order != null)
             {

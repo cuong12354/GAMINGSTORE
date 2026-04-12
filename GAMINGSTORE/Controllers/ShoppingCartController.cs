@@ -55,7 +55,7 @@ public class ShoppingCartController : Controller
             Quantity = i.Quantity,
             Price = i.Price
         }).ToList();
-        _context.Order.Add(order);
+        _context.Orders.Add(order);
         await _context.SaveChangesAsync();
         HttpContext.Session.RemoveShoppingCart(User);
         return View("OrderCompleted", order.Id); // Trang xác nhận hoàn thành đơn hàng

@@ -1,0 +1,197 @@
+@using GAMINGSTORE.Models
+@model Order
+
+@{
+    ViewData["Title"] = "Thanh toán qua chuyển khoản";
+}
+
+<style>
+    .payment-container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 0 20px;
+    }
+
+    .payment-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 40px;
+        color: white;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    }
+
+    .payment-title {
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 10px;
+    }
+
+    .payment-subtitle {
+        font-size: 14px;
+        opacity: 0.9;
+        margin-bottom: 30px;
+    }
+
+    .qr-code {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        margin: 30px 0;
+        display: inline-block;
+    }
+
+    .qr-code img {
+        width: 250px;
+        height: 250px;
+    }
+
+    .bank-info {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        text-align: left;
+    }
+
+    .bank-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        font-size: 14px;
+    }
+
+    .bank-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .bank-label {
+        opacity: 0.8;
+    }
+
+    .bank-value {
+        font-weight: 700;
+        font-family: monospace;
+    }
+
+    .copy-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        transition: all 0.3s;
+        margin-top: 10px;
+    }
+
+    .copy-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-confirm {
+        background: white;
+        color: #667eea;
+    }
+
+    .btn-confirm:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-back {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .btn-back:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .note {
+        background: #fef3c7;
+        color: #92400e;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+</style>
+
+<div class="payment-container">
+    <div class="payment-card">
+        <div class="payment-title">💳 Thanh toán qua chuyển khoản</div>
+        <div class="payment-subtitle">Đơn hàng #@Model.Id</div>
+
+        <div class="qr-code">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=@($"BANKTRANSFER:{Model.Id}:{Model.TotalPrice}")" alt="QR Code" />
+        </div>
+
+        <div class="bank-info">
+            <div class="bank-item">
+                <span class="bank-label">Ngân hàng:</span>
+                <span class="bank-value">GAMINGSTORE BANK</span>
+            </div>
+            <div class="bank-item">
+                <span class="bank-label">Số tài khoản:</span>
+                <span class="bank-value">1234567890</span>
+            </div>
+            <div class="bank-item">
+                <span class="bank-label">Chủ tài khoản:</span>
+                <span class="bank-value">GAMINGSTORE CO.</span>
+            </div>
+            <div class="bank-item">
+                <span class="bank-label">Số tiền:</span>
+                <span class="bank-value">@Model.TotalPrice.ToString("N0", System.Globalization.CultureInfo.CreateSpecificCulture("vi-VN"))₫</span>
+            </div>
+            <div class="bank-item">
+                <span class="bank-label">Nội dung:</span>
+                <span class="bank-value">GS@Model.Id</span>
+            </div>
+        </div>
+
+        <button class="copy-btn" onclick="copyToClipboard()">📋 Sao chép thông tin</button>
+
+        <div class="note">
+            ⏰ <strong>Lưu ý:</strong> Vui lòng chuyển khoản trong vòng 15 phút. Hệ thống sẽ tự động xác nhận thanh toán sau khi quá trình chuyển khoản hoàn tất.
+        </div>
+
+        <div class="action-buttons">
+            <form asp-action="ConfirmPayment" asp-route-orderId="@Model.Id" method="post">
+                <button type="submit" class="btn btn-confirm">✓ Đã thanh toán</button>
+            </form>
+            <a asp-action="Index" asp-controller="OrderHistory" class="btn btn-back">← Quay lại</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyToClipboard() {
+        const text = "Ngân hàng: GAMINGSTORE BANK\nSố tài khoản: 1234567890\nChủ tài khoản: GAMINGSTORE CO.\nSố tiền: @Model.TotalPrice.ToString("N0", System.Globalization.CultureInfo.CreateSpecificCulture("vi-VN"))₫\nNội dung: GS@Model.Id";
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Đã sao chép thông tin chuyển khoản!");
+        });
+    }
+</script>
