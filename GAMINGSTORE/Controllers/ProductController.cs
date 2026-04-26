@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Text.Json;
 
 namespace GAMINGSTORE.Controllers
 {
@@ -16,19 +17,22 @@ namespace GAMINGSTORE.Controllers
         private readonly IRecommendationService _recommendationService;
         private readonly IReviewRepository _reviewRepository;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IAuditService _auditService;
 
         public ProductController(
             IProductRepository productRepository,
             ICategoryRepository categoryRepository,
             IRecommendationService recommendationService,
             IReviewRepository reviewRepository,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IAuditService auditService)
         {
             _productRepository = productRepository;
             _categoryRepository = categoryRepository;
             _recommendationService = recommendationService;
             _reviewRepository = reviewRepository;
             _userManager = userManager;
+            _auditService = auditService;
         }
 
         // ================= DANH SÁCH =================
@@ -79,6 +83,16 @@ namespace GAMINGSTORE.Controllers
                 }
 
                 await _productRepository.AddAsync(product);
+
+                // 📋 Log audit
+                var userId = _userManager.GetUserId(User);
+                var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+                var userAgent = Request.Headers["User-Agent"].ToString();
+                await _auditService.LogActionAsync(userId, "Create", "Product", product.Id,
+                    $"Tạo sản phẩm: {product.Name}", null,
+                    JsonSerializer.Serialize(product),
+                    ipAddress, userAgent);
+
                 return RedirectToAction(nameof(Index));
             }
 
@@ -148,6 +162,9 @@ namespace GAMINGSTORE.Controllers
             if (id != product.Id)
                 return NotFound();
 
+            // 📋 Lấy sản phẩm cũ để ghi log thay đổi
+            var oldProduct = await _productRepository.GetByIdAsync(id);
+
             if (ModelState.IsValid)
             {
                 var existingProduct = await _productRepository.GetByIdAsync(id);
@@ -180,6 +197,16 @@ namespace GAMINGSTORE.Controllers
 
                 await _productRepository.UpdateAsync(existingProduct);
 
+                // 📋 Log audit
+                var userId = _userManager.GetUserId(User);
+                var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+                var userAgent = Request.Headers["User-Agent"].ToString();
+                await _auditService.LogActionAsync(userId, "Update", "Product", id,
+                    $"Cập nhật sản phẩm: {existingProduct.Name}",
+                    JsonSerializer.Serialize(oldProduct),
+                    JsonSerializer.Serialize(existingProduct),
+                    ipAddress, userAgent);
+
                 return RedirectToAction(nameof(Index));
             }
 
@@ -206,7 +233,23 @@ namespace GAMINGSTORE.Controllers
         [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            // 📋 Lấy sản phẩm trước khi xóa để ghi log
+            var product = await _productRepository.GetByIdAsync(id);
+
             await _productRepository.DeleteAsync(id);
+
+            // 📋 Log audit
+            if (product != null)
+            {
+                var userId = _userManager.GetUserId(User);
+                var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+                var userAgent = Request.Headers["User-Agent"].ToString();
+                await _auditService.LogActionAsync(userId, "Delete", "Product", id,
+                    $"Xóa sản phẩm: {product.Name}",
+                    JsonSerializer.Serialize(product),
+                    null, ipAddress, userAgent);
+            }
+
             return RedirectToAction(nameof(Index));
         }
 
