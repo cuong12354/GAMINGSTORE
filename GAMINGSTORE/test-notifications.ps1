@@ -12,7 +12,7 @@ Write-Host "TEST 1: Checking API Connectivity..." -ForegroundColor Yellow
 
 try {
     $response = Invoke-WebRequest -Uri "$baseUrl/api/notification/unread-count" -Method GET -ErrorAction Stop
-    Write-Host "OK - API endpoint accessible" -ForegroundColor Green
+    Write-Host "OK - API endpoint accessible (Status: $($response.StatusCode))" -ForegroundColor Green
 } catch {
     Write-Host "ERROR - API endpoint error" -ForegroundColor Red
     exit 1
