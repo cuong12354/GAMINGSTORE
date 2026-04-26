@@ -1,0 +1,155 @@
+@using GAMINGSTORE.Models
+
+@model List<AuditLog>
+
+@{
+    ViewData["Title"] = "Lịch sử thay đổi";
+}
+
+<style>
+    .history-header {
+        background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%);
+        color: white;
+        padding: 24px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+
+    .history-card {
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+        border-left: 4px solid #d92e2e;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .change-item {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        gap: 16px;
+        padding: 8px 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .change-item:last-child {
+        border-bottom: none;
+    }
+
+    .change-label {
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .change-value {
+        color: #6b7280;
+        font-family: monospace;
+        background: #f9fafb;
+        padding: 8px 12px;
+        border-radius: 6px;
+    }
+
+    .old-value {
+        text-decoration: line-through;
+        color: #dc2626;
+    }
+
+    .new-value {
+        color: #059669;
+    }
+
+    .action-meta {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #e5e7eb;
+        font-size: 13px;
+    }
+
+    .meta-item {
+        color: #6b7280;
+    }
+
+    .meta-label {
+        font-weight: 600;
+        color: #1f2937;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="history-header">
+        <h2>📜 Lịch Sử Thay Đổi</h2>
+        <p style="margin: 8px 0 0 0;">@ViewBag.EntityName #@ViewBag.EntityId</p>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <div style="text-align: center; padding: 40px; background: white; border-radius: 12px;">
+            <i class="bi bi-inbox" style="font-size: 48px; color: #d92e2e; opacity: 0.5;"></i>
+            <h5 style="margin-top: 16px;">Không có thay đổi</h5>
+            <p style="color: #6b7280;">Entity này chưa có lịch sử thay đổi nào</p>
+        </div>
+    }
+    else
+    {
+        @foreach (var log in Model)
+        {
+            <div class="history-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span style="display: inline-block; background: @(log.ActionType == "Create" ? "#d1fae5" : log.ActionType == "Delete" ? "#fee2e2" : "#dbeafe"); color: @(log.ActionType == "Create" ? "#065f46" : log.ActionType == "Delete" ? "#7f1d1d" : "#1e40af"); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                            @(log.ActionType == "Create" ? "✨ TẠO MỚI" : log.ActionType == "Delete" ? "🗑️ XOÁ" : "✏️ CẬP NHẬT")
+                        </span>
+                        <span style="margin-left: 12px; color: #6b7280; font-size: 13px;">
+                            bởi <strong>@log.User?.UserName</strong>
+                        </span>
+                    </div>
+                    <span style="color: #9ca3af; font-size: 12px;">@log.CreatedDate.ToString("dd/MM/yyyy HH:mm:ss")</span>
+                </div>
+
+                @if (!string.IsNullOrEmpty(log.Description))
+                {
+                    <p style="margin-top: 12px; color: #6b7280; font-size: 13px;">📝 @log.Description</p>
+                }
+
+                @if (!string.IsNullOrEmpty(log.OldValues) || !string.IsNullOrEmpty(log.NewValues))
+                {
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+                        <h6 style="margin-bottom: 12px;">Thay đổi chi tiết:</h6>
+                        @if (!string.IsNullOrEmpty(log.OldValues))
+                        {
+                            <div class="change-item">
+                                <div class="change-label">Giá trị cũ:</div>
+                                <div class="change-value old-value">@log.OldValues</div>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(log.NewValues))
+                        {
+                            <div class="change-item">
+                                <div class="change-label">Giá trị mới:</div>
+                                <div class="change-value new-value">@log.NewValues</div>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <div class="action-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">🌐 IP Address:</span>
+                        @(string.IsNullOrEmpty(log.IpAddress) ? "N/A" : log.IpAddress)
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">🔗 User Agent:</span>
+                        @(string.IsNullOrEmpty(log.UserAgent) ? "N/A" : log.UserAgent)
+                    </div>
+                </div>
+            </div>
+        }
+    }
+
+    <div style="margin-top: 20px;">
+        <a href="@Url.Action("Index")" class="btn btn-secondary">← Quay lại</a>
+    </div>
+</div>

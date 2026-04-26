@@ -28,6 +28,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<NotificationTemplate> NotificationTemplates { get; set; }
     public DbSet<CustomerNotification> CustomerNotifications { get; set; }
     public DbSet<NotificationLog> NotificationLogs { get; set; }
+    public DbSet<AuditLog> AuditLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -86,6 +87,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .HasMany(o => o.ReturnRequests)
                 .WithOne(r => r.Order)
                 .HasForeignKey(r => r.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ApplicationUser>()
+                .HasMany(u => u.AuditLogs)
+                .WithOne(a => a.User)
+                .HasForeignKey(a => a.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
             
             base.OnModelCreating(modelBuilder);

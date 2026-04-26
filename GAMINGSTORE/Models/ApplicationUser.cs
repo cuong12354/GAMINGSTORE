@@ -28,6 +28,7 @@ namespace GAMINGSTORE.Models
         public List<ReturnRequest>? ReturnRequests { get; set; }
         public List<Order>? Orders { get; set; }
         public List<LoyaltyPoint>? LoyaltyPoints { get; set; }
+        public List<AuditLog>? AuditLogs { get; set; }
 
         // Statistics
         public int TotalOrders { get; set; } = 0;
