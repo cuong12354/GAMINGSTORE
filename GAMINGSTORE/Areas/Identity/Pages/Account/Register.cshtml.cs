@@ -121,13 +121,10 @@ namespace GAMINGSTORE.Areas.Identity.Pages.Account
                 _roleManager.CreateAsync(new IdentityRole(RoleNames.Role_Admin)).GetAwaiter().GetResult();
                 _roleManager.CreateAsync(new IdentityRole(RoleNames.Role_Company)).GetAwaiter().GetResult();
             }
+            // ✅ Xóa RoleList - tất cả user mới sẽ có role "Customer"
             Input = new()
             {
-                RoleList = _roleManager.Roles.Select(x => x.Name).Select(i => new SelectListItem
-                {
-                    Text = i,
-                    Value = i
-                })
+                RoleList = new List<SelectListItem>()
             };
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();

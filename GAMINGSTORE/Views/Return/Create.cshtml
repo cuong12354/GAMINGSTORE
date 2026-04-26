@@ -1,0 +1,224 @@
+@{
+    ViewData["Title"] = "Tạo Yêu Cầu Trả Hàng";
+    var orderId = ViewBag.OrderId;
+    var refundAmount = ViewBag.RefundAmount;
+}
+
+<style>
+    .create-return-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .create-return-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .create-return-header h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .create-return-form {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #333;
+    }
+
+    .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .info-box {
+        background: #f5f5f5;
+        border-left: 4px solid #667eea;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+    }
+
+    .info-box-title {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 8px;
+    }
+
+    .info-box-content {
+        font-size: 14px;
+        color: #666;
+        line-height: 1.6;
+    }
+
+    .info-box-content li {
+        margin: 5px 0;
+    }
+
+    .refund-amount-box {
+        background: #e8f5e9;
+        border-left: 4px solid #4caf50;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+    }
+
+    .refund-amount-label {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 5px;
+    }
+
+    .refund-amount-value {
+        font-size: 28px;
+        font-weight: bold;
+        color: #2e7d32;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 30px;
+    }
+
+    .btn-submit {
+        flex: 1;
+        padding: 14px 20px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-submit:hover {
+        background: #764ba2;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-cancel {
+        flex: 1;
+        padding: 14px 20px;
+        background: #f0f0f0;
+        color: #333;
+        border: none;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 16px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-cancel:hover {
+        background: #e0e0e0;
+        text-decoration: none;
+    }
+
+    .warning-box {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+    }
+
+    .warning-box-title {
+        font-weight: bold;
+        color: #856404;
+        margin-bottom: 8px;
+    }
+
+    .warning-box-content {
+        font-size: 14px;
+        color: #856404;
+        line-height: 1.6;
+    }
+</style>
+
+<div class="create-return-container">
+    <div class="create-return-header">
+        <h1>📝 Tạo Yêu Cầu Trả Hàng</h1>
+    </div>
+
+    <form method="post" asp-action="Create" class="create-return-form">
+        <input type="hidden" name="orderId" value="@orderId" />
+
+        <div class="info-box">
+            <div class="info-box-title">ℹ️ Chính Sách Trả Hàng</div>
+            <div class="info-box-content">
+                <ul style="margin: 0; padding-left: 20px;">
+                    <li>Thời gian trả hàng: Trong vòng 30 ngày kể từ khi nhận hàng</li>
+                    <li>Điều kiện: Sản phẩm chưa sử dụng, đầy đủ bao bì</li>
+                    <li>Hoàn tiền: Sẽ được xử lý trong 7-10 ngày làm việc</li>
+                    <li>Thời gian: Chúng tôi sẽ xem xét yêu cầu của bạn trong 3-5 ngày</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="warning-box">
+            <div class="warning-box-title">⚠️ Lưu Ý</div>
+            <div class="warning-box-content">
+                Bạn chỉ có thể tạo một yêu cầu trả hàng cho mỗi đơn hàng. Hãy cung cấp thông tin chính xác để tránh trì hoãn xử lý.
+            </div>
+        </div>
+
+        <div class="refund-amount-box">
+            <div class="refund-amount-label">Số tiền sẽ được hoàn lại:</div>
+            <div class="refund-amount-value">₫@refundAmount.ToString("N0")</div>
+        </div>
+
+        <div class="form-group">
+            <label for="reason">
+                🔍 Lý do trả hàng <span style="color: red;">*</span>
+            </label>
+            <textarea 
+                id="reason" 
+                name="reason" 
+                required
+                placeholder="Vui lòng cho biết lý do bạn muốn trả hàng&#10;- Sản phẩm bị lỗi / hỏng&#10;- Nhận nhầm sản phẩm&#10;- Sản phẩm không như mô tả&#10;- Lý do khác..."
+            ></textarea>
+            <span style="font-size: 12px; color: #999;">Mô tả chi tiết sẽ giúp chúng tôi xử lý nhanh hơn</span>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-submit">✓ Gửi Yêu Cầu</button>
+            <a href="@Url.Action("Index", "OrderHistory")" class="btn-cancel">← Hủy</a>
+        </div>
+    </form>
+</div>

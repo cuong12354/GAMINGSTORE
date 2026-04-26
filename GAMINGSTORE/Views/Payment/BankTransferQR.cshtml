@@ -1,197 +1,356 @@
-@using GAMINGSTORE.Models
 @model Order
-
 @{
-    ViewData["Title"] = "Thanh toán qua chuyển khoản";
+    ViewData["Title"] = $"Mã QR thanh toán chuyển khoản - Đơn hàng #{Model.Id}";
 }
 
 <style>
-    .payment-container {
-        max-width: 600px;
-        margin: 50px auto;
-        padding: 0 20px;
+    .qr-payment-container {
+        padding: 40px 0;
     }
 
-    .payment-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 16px;
+    .qr-card {
+        background: linear-gradient(135deg, var(--secondary-black) 0%, rgba(220, 38, 38, 0.05) 100%);
+        border: 2px solid var(--border-red);
+        border-radius: 12px;
         padding: 40px;
-        color: white;
+        margin-bottom: 30px;
         text-align: center;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
     }
 
-    .payment-title {
-        font-size: 24px;
-        font-weight: 800;
-        margin-bottom: 10px;
-    }
-
-    .payment-subtitle {
-        font-size: 14px;
-        opacity: 0.9;
+    .qr-header {
         margin-bottom: 30px;
     }
 
-    .qr-code {
+    .qr-header h1 {
+        color: var(--primary-red);
+        font-size: 28px;
+        margin-bottom: 10px;
+    }
+
+    .qr-header p {
+        color: rgba(243, 244, 246, 0.7);
+        font-size: 16px;
+    }
+
+    .qr-code-display {
         background: white;
         padding: 20px;
         border-radius: 12px;
-        margin: 30px 0;
         display: inline-block;
-    }
-
-    .qr-code img {
-        width: 250px;
-        height: 250px;
-    }
-
-    .bank-info {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 20px;
         margin: 20px 0;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+    }
+
+    .qr-code-display img {
+        width: 300px;
+        height: 300px;
+        border: 2px solid var(--primary-red);
+    }
+
+    .bank-details {
+        background: linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(251, 191, 36, 0.05) 100%);
+        border: 1px solid var(--border-red);
+        border-radius: 12px;
+        padding: 25px;
+        margin: 30px 0;
         text-align: left;
     }
 
-    .bank-item {
+    .bank-details h3 {
+        color: var(--accent-gold);
+        margin-bottom: 20px;
+        text-transform: uppercase;
+        font-size: 14px;
+        letter-spacing: 1px;
+    }
+
+    .detail-row {
         display: flex;
         justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(220, 38, 38, 0.2);
+        font-size: 16px;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .detail-label {
+        color: rgba(243, 244, 246, 0.7);
+        font-weight: 600;
+        min-width: 200px;
+    }
+
+    .detail-value {
+        color: var(--text-light);
+        font-weight: 700;
+        font-family: 'Courier New', monospace;
+        text-align: right;
+    }
+
+    .detail-value.highlight {
+        color: var(--primary-red);
+        font-size: 18px;
+    }
+
+    .order-summary {
+        background: linear-gradient(135deg, rgba(220, 38, 38, 0.15) 0%, rgba(251, 191, 36, 0.1) 100%);
+        border-left: 4px solid var(--primary-red);
+        border-radius: 8px;
+        padding: 20px;
+        margin: 30px 0;
+    }
+
+    .order-summary h4 {
+        color: var(--accent-gold);
         margin-bottom: 15px;
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 1px;
+    }
+
+    .order-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+
+    .info-item {
+        text-align: center;
+    }
+
+    .info-label {
+        color: rgba(243, 244, 246, 0.6);
+        font-size: 12px;
+        margin-bottom: 5px;
+    }
+
+    .info-value {
+        color: var(--text-light);
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .info-value.amount {
+        color: var(--primary-red);
+        font-size: 24px;
+    }
+
+    .warning-box {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid #ef4444;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 20px 0;
+        color: #fca5a5;
         font-size: 14px;
     }
 
-    .bank-item:last-child {
-        margin-bottom: 0;
-    }
-
-    .bank-label {
-        opacity: 0.8;
-    }
-
-    .bank-value {
-        font-weight: 700;
-        font-family: monospace;
-    }
-
-    .copy-btn {
-        background: rgba(255, 255, 255, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        color: white;
-        padding: 8px 16px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 12px;
-        font-weight: 600;
-        transition: all 0.3s;
-        margin-top: 10px;
-    }
-
-    .copy-btn:hover {
-        background: rgba(255, 255, 255, 0.3);
+    .warning-box strong {
+        color: #fca5a5;
     }
 
     .action-buttons {
         display: flex;
-        gap: 10px;
-        justify-content: center;
+        gap: 12px;
         margin-top: 30px;
-    }
-
-    .btn {
-        padding: 12px 24px;
-        border: none;
-        border-radius: 8px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.3s;
-        text-decoration: none;
-        display: inline-block;
+        justify-content: center;
     }
 
     .btn-confirm {
-        background: white;
-        color: #667eea;
+        background: linear-gradient(135deg, var(--primary-red), var(--primary-dark-red));
+        border: none;
+        color: white;
+        padding: 12px 32px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
     }
 
     .btn-confirm:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
     }
 
     .btn-back {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.5);
+        background: linear-gradient(135deg, var(--secondary-black), rgba(220, 38, 38, 0.1));
+        border: 2px solid var(--primary-red);
+        color: var(--primary-red);
+        padding: 12px 32px;
+        border-radius: 8px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-block;
+        cursor: pointer;
+        transition: all 0.3s ease;
     }
 
     .btn-back:hover {
-        background: rgba(255, 255, 255, 0.3);
+        background: linear-gradient(135deg, rgba(220, 38, 38, 0.1), var(--secondary-black));
+        color: var(--text-light);
     }
 
-    .note {
-        background: #fef3c7;
-        color: #92400e;
-        padding: 15px;
-        border-radius: 8px;
-        margin-top: 20px;
-        font-size: 14px;
-        line-height: 1.6;
+    .timer {
+        color: var(--accent-gold);
+        font-weight: 700;
+        margin: 10px 0;
+    }
+
+    .print-btn {
+        background: var(--accent-gold);
+        border: none;
+        color: var(--primary-black);
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 12px;
+        margin-top: 15px;
+    }
+
+    .print-btn:hover {
+        opacity: 0.9;
+    }
+
+    @@media print {
+        .action-buttons,
+        .navigation {
+            display: none;
+        }
+
+        body {
+            background: white;
+        }
+
+        .qr-card {
+            border: 1px solid #999;
+        }
     }
 </style>
 
-<div class="payment-container">
-    <div class="payment-card">
-        <div class="payment-title">💳 Thanh toán qua chuyển khoản</div>
-        <div class="payment-subtitle">Đơn hàng #@Model.Id</div>
+<div class="qr-payment-container">
+    <div class="container">
+        <!-- Header -->
+        <div class="qr-card">
+            <div class="qr-header">
+                <h1><i class="bi bi-qr-code"></i> Mã QR Chuyển Khoản Ngân Hàng</h1>
+                <p>Quét mã bằng ứng dụng ngân hàng của bạn để thanh toán</p>
+            </div>
 
-        <div class="qr-code">
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=@($"BANKTRANSFER:{Model.Id}:{Model.TotalPrice}")" alt="QR Code" />
+            <!-- QR Code Display -->
+            <div class="qr-code-display">
+                <img src="@ViewBag.QRCodeImage" alt="QR Code" />
+            </div>
+
+            <button class="print-btn" onclick="window.print()">
+                <i class="bi bi-printer"></i> In mã QR
+            </button>
         </div>
 
-        <div class="bank-info">
-            <div class="bank-item">
-                <span class="bank-label">Ngân hàng:</span>
-                <span class="bank-value">GAMINGSTORE BANK</span>
-            </div>
-            <div class="bank-item">
-                <span class="bank-label">Số tài khoản:</span>
-                <span class="bank-value">1234567890</span>
-            </div>
-            <div class="bank-item">
-                <span class="bank-label">Chủ tài khoản:</span>
-                <span class="bank-value">GAMINGSTORE CO.</span>
-            </div>
-            <div class="bank-item">
-                <span class="bank-label">Số tiền:</span>
-                <span class="bank-value">@Model.TotalPrice.ToString("N0", System.Globalization.CultureInfo.CreateSpecificCulture("vi-VN"))₫</span>
-            </div>
-            <div class="bank-item">
-                <span class="bank-label">Nội dung:</span>
-                <span class="bank-value">GS@Model.Id</span>
+        <!-- Order Summary -->
+        <div class="order-summary">
+            <h4>Thông Tin Đơn Hàng</h4>
+            <div class="order-info">
+                <div class="info-item">
+                    <div class="info-label">Mã Đơn Hàng</div>
+                    <div class="info-value">#@Model.Id</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Số Lượng Sản Phẩm</div>
+                    <div class="info-value">@(Model.OrderDetails?.Count ?? 0) sản phẩm</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Số Tiền Thanh Toán</div>
+                    <div class="info-value amount">@Model.TotalPrice.ToString("N0", System.Globalization.CultureInfo.CreateSpecificCulture("vi-VN"))₫</div>
+                </div>
             </div>
         </div>
 
-        <button class="copy-btn" onclick="copyToClipboard()">📋 Sao chép thông tin</button>
+        <!-- Bank Details -->
+        <div class="bank-details">
+            <h3><i class="bi bi-bank"></i> Thông Tin Chuyển Khoản</h3>
 
-        <div class="note">
-            ⏰ <strong>Lưu ý:</strong> Vui lòng chuyển khoản trong vòng 15 phút. Hệ thống sẽ tự động xác nhận thanh toán sau khi quá trình chuyển khoản hoàn tất.
+            <div class="detail-row">
+                <div class="detail-label"><strong>Ngân Hàng</strong></div>
+                <div class="detail-value">@ViewBag.BankCode</div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-label"><strong>Số Tài Khoản</strong></div>
+                <div class="detail-value">@ViewBag.AccountNumber</div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-label"><strong>Tên Tài Khoản</strong></div>
+                <div class="detail-value">@ViewBag.AccountName</div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-label"><strong>Số Tiền</strong></div>
+                <div class="detail-value highlight">@ViewBag.Amount₫</div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-label"><strong>Nội Dung Chuyển</strong></div>
+                <div class="detail-value">@ViewBag.Description</div>
+            </div>
         </div>
 
+        <!-- Instructions -->
+        <div class="order-summary">
+            <h4>Hướng Dẫn Thanh Toán</h4>
+            <ol style="color: rgba(243, 244, 246, 0.8); line-height: 1.8; margin-left: 20px;">
+                <li>Mở ứng dụng ngân hàng của bạn (MB Bank, VietcomBank, Agribank, v.v.)</li>
+                <li>Chọn tính năng "Quét mã QR" hoặc "QR Pay"</li>
+                <li>Di chuyển camera lại gần mã QR ở trên</li>
+                <li>Kiểm tra thông tin thanh toán và xác nhận</li>
+                <li>Nhập mật khẩu hoặc xác thực 2FA để hoàn tất</li>
+                <li>Đơn hàng sẽ được cập nhật trạng thái sau khi xác nhận thanh toán</li>
+            </ol>
+        </div>
+
+        <!-- Warning -->
+        <div class="warning-box">
+            <strong><i class="bi bi-exclamation-triangle"></i> Lưu Ý:</strong>
+            <ul style="margin: 10px 0; margin-left: 20px;">
+                <li>Hãy chắc chắn nhập chính xác nội dung chuyển: <strong>@ViewBag.Description</strong></li>
+                <li>Số tiền chuyển phải chính xác: <strong>@ViewBag.Amount₫</strong></li>
+                <li>Không hủy thanh toán sau khi đã xác nhận</li>
+                <li>Liên hệ support nếu gặp vấn đề: support@gamingstore.vn</li>
+            </ul>
+        </div>
+
+        <!-- Action Buttons -->
         <div class="action-buttons">
-            <form asp-action="ConfirmPayment" asp-route-orderId="@Model.Id" method="post">
-                <button type="submit" class="btn btn-confirm">✓ Đã thanh toán</button>
+            <a href="/OrderHistory/Details/@Model.Id" class="btn-back">
+                <i class="bi bi-arrow-left"></i> Quay lại chi tiết đơn hàng
+            </a>
+
+            <form method="post" action="/Payment/ConfirmBankTransfer" style="display: inline;">
+                <input type="hidden" name="orderId" value="@Model.Id" />
+                <button type="submit" class="btn-confirm">
+                    <i class="bi bi-check-circle"></i> Đã Thanh Toán
+                </button>
             </form>
-            <a asp-action="Index" asp-controller="OrderHistory" class="btn btn-back">← Quay lại</a>
         </div>
     </div>
 </div>
 
 <script>
-    function copyToClipboard() {
-        const text = "Ngân hàng: GAMINGSTORE BANK\nSố tài khoản: 1234567890\nChủ tài khoản: GAMINGSTORE CO.\nSố tiền: @Model.TotalPrice.ToString("N0", System.Globalization.CultureInfo.CreateSpecificCulture("vi-VN"))₫\nNội dung: GS@Model.Id";
-        navigator.clipboard.writeText(text).then(() => {
-            alert("Đã sao chép thông tin chuyển khoản!");
-        });
-    }
+    // Auto-update order status every 30 seconds
+    setInterval(async () => {
+        try {
+            const response = await fetch(`/OrderHistory/GetOrderStatus/@Model.Id`);
+            const data = await response.json();
+            
+            if (data.status !== 'Pending') {
+                // Status updated
+                window.location.href = `/OrderHistory/Details/@Model.Id`;
+            }
+        } catch (e) {
+            console.log('Checking order status...');
+        }
+    }, 30000);
 </script>

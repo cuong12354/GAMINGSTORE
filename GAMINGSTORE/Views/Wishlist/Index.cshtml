@@ -1,0 +1,222 @@
+@using GAMINGSTORE.Models
+@model IEnumerable<Wishlist>
+
+@{
+    ViewData["Title"] = "Danh Sách Yêu Thích";
+}
+
+<style>
+    .wishlist-container {
+        padding: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .wishlist-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    .wishlist-header h1 {
+        font-size: 32px;
+        font-weight: 900;
+        color: #1f2937;
+        margin: 0;
+    }
+    .wishlist-badge {
+        background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 14px;
+    }
+    .wishlist-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+    .wishlist-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: white;
+    }
+    .wishlist-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    }
+    .wishlist-image {
+        width: 100%;
+        height: 200px;
+        background: #f0f0f0;
+        object-fit: cover;
+        overflow: hidden;
+        position: relative;
+    }
+    .wishlist-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .wishlist-content {
+        padding: 16px;
+    }
+    .wishlist-name {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 8px;
+        font-size: 15px;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .wishlist-category {
+        font-size: 12px;
+        color: #6b7280;
+        margin-bottom: 12px;
+    }
+    .wishlist-price {
+        font-size: 20px;
+        font-weight: 900;
+        color: #d92e2e;
+        margin-bottom: 12px;
+    }
+    .wishlist-date {
+        font-size: 12px;
+        color: #9ca3af;
+        margin-bottom: 12px;
+    }
+    .wishlist-actions {
+        display: flex;
+        gap: 8px;
+    }
+    .btn-add-cart {
+        flex: 1;
+        background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%);
+        color: white;
+        border: none;
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 13px;
+        transition: all 0.2s;
+    }
+    .btn-add-cart:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(217, 46, 46, 0.3);
+    }
+    .btn-remove {
+        background: #fee;
+        border: 1px solid #fca5a5;
+        color: #dc2626;
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 13px;
+        transition: all 0.2s;
+    }
+    .btn-remove:hover {
+        background: #fca5a5;
+        border-color: #dc2626;
+    }
+    .empty-wishlist {
+        text-align: center;
+        padding: 60px 20px;
+    }
+    .empty-wishlist-icon {
+        font-size: 64px;
+        margin-bottom: 20px;
+    }
+    .empty-wishlist-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 12px;
+    }
+    .empty-wishlist-text {
+        color: #6b7280;
+        margin-bottom: 24px;
+    }
+    .btn-explore {
+        display: inline-block;
+        background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .btn-explore:hover {
+        transform: scale(1.05);
+    }
+</style>
+
+<div class="wishlist-container">
+    <div class="wishlist-header">
+        <h1>❤️ Danh Sách Yêu Thích</h1>
+        <div class="wishlist-badge">@Model.Count() sản phẩm</div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="wishlist-grid">
+            @foreach (var item in Model.OrderByDescending(w => w.AddedDate))
+            {
+                <div class="wishlist-card">
+                    <div class="wishlist-image">
+                        @if (item.Product?.Images?.FirstOrDefault() != null)
+                        {
+                            <img src="@item.Product.Images.First().Url" alt="@item.Product.Name" />
+                        }
+                        else
+                        {
+                            <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%); color: white; font-size: 48px;">
+                                🎮
+                            </div>
+                        }
+                    </div>
+                    
+                    <div class="wishlist-content">
+                        <div class="wishlist-name">@item.Product?.Name</div>
+                        <div class="wishlist-category">@item.Product?.Categories?.FirstOrDefault()?.Name</div>
+                        <div class="wishlist-price">@item.Product?.Price.ToString("C")</div>
+                        <div class="wishlist-date">Thêm: @item.AddedDate.ToString("dd/MM/yyyy")</div>
+                        
+                        <div class="wishlist-actions">
+                            <a href="@Url.Action("AddToCart", "ShoppingCart", new { productId = item.ProductId })" class="btn-add-cart">
+                                🛒 Thêm Vào Giỏ
+                            </a>
+                            <form method="post" action="@Url.Action("Remove", "Wishlist")" style="flex-basis: auto;">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button type="submit" class="btn-remove" title="Xóa khỏi danh sách yêu thích">
+                                    🗑️
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-wishlist">
+            <div class="empty-wishlist-icon">😢</div>
+            <div class="empty-wishlist-title">Danh sách yêu thích của bạn trống</div>
+            <div class="empty-wishlist-text">Hãy thêm một số sản phẩm yêu thích của bạn!</div>
+            <a href="@Url.Action("Index", "Product")" class="btn-explore">
+                Khám Phá Sản Phẩm
+            </a>
+        </div>
+    }
+</div>

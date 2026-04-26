@@ -71,7 +71,10 @@ namespace GAMINGSTORE.Controllers
             }
 
             var budget = ExtractBudget(normalizedMessage);
-            var matchedProducts = ScoreProducts(products, normalizedMessage, budget);
+            
+            // Try to match by category first
+            var categoryMatch = FindBestCategoryMatch(normalizedMessage, categories);
+            var matchedProducts = ScoreProducts(products, normalizedMessage, budget, categoryMatch);
 
             if (budget.HasValue && !matchedProducts.Any())
             {
@@ -105,7 +108,7 @@ namespace GAMINGSTORE.Controllers
             });
         }
 
-        private static List<Product> ScoreProducts(IEnumerable<Product> products, string normalizedMessage, decimal? budget)
+        private static List<Product> ScoreProducts(IEnumerable<Product> products, string normalizedMessage, decimal? budget, Category? categoryMatch = null)
         {
             var keywords = normalizedMessage
                 .Split(new[] { ' ', ',', '.', ';', ':', '-', '_', '/', '\\' }, StringSplitOptions.RemoveEmptyEntries)
@@ -117,7 +120,7 @@ namespace GAMINGSTORE.Controllers
                 .Select(product => new
                 {
                     Product = product,
-                    Score = CalculateScore(product, normalizedMessage, keywords, budget)
+                    Score = CalculateScore(product, normalizedMessage, keywords, budget, categoryMatch)
                 })
                 .Where(item => item.Score > 0)
                 .OrderByDescending(item => item.Score)
@@ -128,12 +131,22 @@ namespace GAMINGSTORE.Controllers
             return scoredProducts;
         }
 
-        private static int CalculateScore(Product product, string normalizedMessage, List<string> keywords, decimal? budget)
+        private static int CalculateScore(Product product, string normalizedMessage, List<string> keywords, decimal? budget, Category? categoryMatch = null)
         {
             var score = 0;
             var productName = Normalize(product.Name);
             var description = Normalize(product.Description);
             var categoryNames = product.Categories?.Select(c => Normalize(c.Name)).Where(name => !string.IsNullOrWhiteSpace(name)).ToList() ?? new List<string>();
+
+            // Boost score if product belongs to matched category
+            if (categoryMatch != null)
+            {
+                var matchedCategoryNorm = Normalize(categoryMatch.Name);
+                if (product.Categories?.Any(c => Normalize(c.Name) == matchedCategoryNorm) == true)
+                {
+                    score += 15; // High boost for category match
+                }
+            }
 
             foreach (var keyword in keywords)
             {
@@ -167,6 +180,49 @@ namespace GAMINGSTORE.Controllers
             }
 
             return score;
+        }
+
+        private static Category? FindBestCategoryMatch(string normalizedMessage, IEnumerable<Category> categories)
+        {
+            if (!categories.Any())
+            {
+                return null;
+            }
+
+            var bestMatch = default(Category);
+            var bestMatchScore = 0;
+
+            foreach (var category in categories)
+            {
+                var categoryNorm = Normalize(category.Name);
+                var messageWords = normalizedMessage.Split(new[] { ' ', ',', '.', ';', ':', '-', '_', '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
+                var categoryWords = categoryNorm.Split(new[] { ' ', ',', '.', ';', ':', '-', '_', '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
+
+                var matchScore = 0;
+
+                // Check if whole category name is in message
+                if (normalizedMessage.Contains(categoryNorm))
+                {
+                    matchScore += 20;
+                }
+
+                // Check individual words
+                foreach (var catWord in categoryWords)
+                {
+                    if (messageWords.Any(word => word == catWord || (word.Length > 2 && catWord.Contains(word))))
+                    {
+                        matchScore += 5;
+                    }
+                }
+
+                if (matchScore > bestMatchScore)
+                {
+                    bestMatchScore = matchScore;
+                    bestMatch = category;
+                }
+            }
+
+            return bestMatchScore >= 5 ? bestMatch : null;
         }
 
         private static decimal? ExtractBudget(string normalizedMessage)

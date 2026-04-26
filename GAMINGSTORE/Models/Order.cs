@@ -12,16 +12,23 @@ namespace GAMINGSTORE.Models
         public decimal TotalPrice { get; set; }
         [Required]
         public string CustomerName { get; set; }
+        public string? Phone { get; set; }
         [Required]
         public string ShippingAddress { get; set; }
         public string? Notes { get; set; }
         [ValidateNever]
         public string PaymentMethod { get; set; }
-        public string? PhoneNumber { get; set; }
-        public bool IsPaid { get; set; } = false;
         [ForeignKey("UserId")]
         public ApplicationUser ApplicationUser { get; set; }
         public List<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
         public string? Status { get; set; }
+
+        // New Features
+        public string? CouponCode { get; set; }
+        public decimal DiscountAmount { get; set; } = 0;
+        public List<OrderTracking>? TrackingHistory { get; set; }
+        public List<ReturnRequest> ReturnRequests { get; set; } = new List<ReturnRequest>();
+        public DateTime? DeliveredDate { get; set; }
+        public int? EstimatedDaysToDeliver { get; set; }
     }
 }

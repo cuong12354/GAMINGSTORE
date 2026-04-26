@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
@@ -13,6 +13,9 @@
         background: rgba(255,255,255,0.14);
         backdrop-filter: blur(10px);
         transition: all 0.25s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
 
     .user-box:hover {
@@ -24,14 +27,136 @@
         height: 34px;
         border-radius: 12px;
         background: white;
-        color: #ee4d2d;
+        color: #d92e2e;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: bold;
     }
 
+    /* ===== NOTIFICATION BELL ===== */
+    .notification-box {
+        position: relative;
+        cursor: pointer;
+        color: white;
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        background: rgba(255,255,255,0.16);
+        backdrop-filter: blur(10px);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
+        transition: all 0.25s ease;
+        font-size: 22px;
+    }
+
+    .notification-box:hover {
+        transform: translateY(-3px) scale(1.08);
+        background: rgba(255,255,255,0.28);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2), 0 6px 16px rgba(0,0,0,0.12);
+    }
+
+    .notification-box:active {
+        transform: translateY(-1px) scale(1.02);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12), 0 2px 4px rgba(0,0,0,0.08);
+    }
+
+    .notification-dropdown {
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px);
+        transition: all 0.35s ease;
+        position: absolute;
+        right: -80px;
+        top: calc(100% + 10px);
+        background: white;
+        color: black;
+        min-width: 350px;
+        max-width: 400px;
+        border-radius: 16px;
+        box-shadow: 0 18px 35px rgba(15, 23, 42, 0.16);
+        overflow: hidden;
+        z-index: 9999;
+        border: 1px solid rgba(15,23,42,0.08);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .notification-box:hover .notification-dropdown {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .notification-header {
+        padding: 12px 14px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f9fafb;
+    }
+
+    .notification-header h6 {
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .notification-header button {
+        background: none;
+        border: none;
+        color: #3b82f6;
+        font-size: 12px;
+        cursor: pointer;
+        text-decoration: underline;
+    }
+
+    .notification-list {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .notification-item {
+        padding: 12px 14px;
+        border-bottom: 1px solid #f3f4f6;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: #fafbfc;
+    }
+
+    .notification-item:hover {
+        background: #f0f4f8;
+        padding-left: 18px;
+    }
+
+    .notification-item.unread {
+        background: #eff6ff;
+        border-left: 4px solid #3b82f6;
+    }
+
+    .notification-item.unread:hover {
+        background: #e0f2fe;
+    }
+
+    .notification-item-title {
+        font-weight: 600;
+        color: #1f2937;
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+
+    .notification-item-message {
+        color: #6b7280;
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+
+    .notification-item-time {
+        color: #9ca3af;
+        font-size: 12px;
+    }
+
     /* ===== DROPDOWN MƯỢT ===== */
+
     .user-dropdown {
         opacity: 0;
         visibility: hidden;
@@ -100,7 +225,7 @@
 
     .auth-btn-login {
         background: white;
-        color: #d63d1f;
+        color: #b82222;
     }
 
     .auth-btn-login:hover {
@@ -121,14 +246,31 @@
     }
 </style>
 
-<ul class="navbar-nav">
+<div class="d-flex align-items-center gap-2" style="color: white;">
     @if (SignInManager.IsSignedIn(User))
     {
         var username = UserManager.GetUserName(User);
         var firstChar = username.Substring(0, 1).ToUpper();
 
-        <li class="nav-item">
-            <div class="user-box d-flex align-items-center gap-2">
+        <!-- Notification Bell -->
+        <div class="notification-box d-flex align-items-center justify-content-center" id="notificationBell" style="position: relative; cursor: pointer;">
+            <i class="bi bi-bell-fill" style="font-size: 1.3rem; cursor: pointer; color: white;"></i>
+            <span class="notification-badge" id="unreadCount" style="display: none; position: absolute; top: -5px; right: -8px; background: #e74c3c; color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold;">0</span>
+
+            <!-- Notification Dropdown -->
+            <div class="notification-dropdown" id="notificationDropdown">
+                <div class="notification-header">
+                    <h6 class="mb-0">🔔 Thông báo</h6>
+                    <button type="button" class="btn-close btn-sm" id="markAllAsRead" style="display: none;">Đánh dấu tất cả là đã đọc</button>
+                </div>
+                <div class="notification-list" id="notificationList">
+                    <p class="text-muted text-center py-3">Không có thông báo mới</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-item">
+            <div class="user-box d-flex align-items-center" style="gap: 8px;">
 
                 <!-- Avatar -->
                 <div class="user-avatar">
@@ -145,9 +287,41 @@
                         👤 Tài khoản
                     </a>
 
-                    <a href="#">
-                        📦 Đơn hàng
+                    <a asp-controller="Loyalty" asp-action="Index">
+                        ⭐ Chương trình thành viên
                     </a>
+
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a href="/OrderHistory/AllOrders">
+                            📊 Tất cả lịch sử mua hàng
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="/OrderHistory/Index">
+                            📦 Lịch sử mua hàng của tôi
+                        </a>
+                    }
+
+                    <a asp-controller="Return" asp-action="Index">
+                        🔄 Lịch sử trả hàng
+                    </a>
+
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a href="/Product/Index">
+                            ⚙️ Quản lý sản phẩm
+                        </a>
+
+                        <a href="/OrderManagement/Index">
+                            📦 Quản lý đơn hàng
+                        </a>
+
+                        <a href="/Return/Pending">
+                            📋 Quản lý trả hàng
+                        </a>
+                    }
 
                     <!-- LOGOUT FIX -->
                     <form asp-area="Identity"
@@ -162,11 +336,10 @@
 
                 </div>
             </div>
-        </li>
+        </div>
     }
     else
     {
-        <li class="nav-item d-flex gap-2">
 
             <a class="auth-btn auth-btn-login"
                asp-area="Identity"
@@ -179,7 +352,85 @@
                asp-page="/Account/Register">
                 Đăng ký
             </a>
-
-        </li>
     }
-</ul>
+</div>
+
+@if (SignInManager.IsSignedIn(User))
+{
+    <script>
+        // Load notifications on page load and then every 30 seconds
+        document.addEventListener('DOMContentLoaded', function () {
+            loadNotifications();
+            setInterval(loadNotifications, 30000); // Reload every 30 seconds
+        });
+
+        async function loadNotifications() {
+            try {
+                const response = await fetch('/api/notification/recent?count=5');
+                if (!response.ok) return;
+
+                const notifications = await response.json();
+                const unreadResponse = await fetch('/api/notification/unread-count');
+                const unreadData = await unreadResponse.json();
+
+                const notificationList = document.getElementById('notificationList');
+                const unreadCount = document.getElementById('unreadCount');
+
+                if (notifications.length === 0) {
+                    notificationList.innerHTML = '<p class="text-muted text-center py-3">Không có thông báo mới</p>';
+                    unreadCount.style.display = 'none';
+                    document.getElementById('markAllAsRead').style.display = 'none';
+                } else {
+                    let html = '';
+                    notifications.forEach(notification => {
+                        const time = new Date(notification.createdDate).toLocaleString('vi-VN');
+                        const unreadClass = !notification.isRead ? 'unread' : '';
+                        html += `<div class="notification-item ${unreadClass}" onclick="viewNotification(${notification.id}, '${notification.relatedEntityId}')">
+                            <div class="notification-item-title">${notification.title}</div>
+                            <div class="notification-item-message">${notification.message}</div>
+                            <div class="notification-item-time">${time}</div>
+                        </div>`;
+                    });
+                    notificationList.innerHTML = html;
+
+                    // Show unread count badge
+                    if (unreadData.unreadCount > 0) {
+                        unreadCount.textContent = unreadData.unreadCount;
+                        unreadCount.style.display = 'flex';
+                        document.getElementById('markAllAsRead').style.display = 'block';
+                    } else {
+                        unreadCount.style.display = 'none';
+                        document.getElementById('markAllAsRead').style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+            }
+        }
+
+        async function viewNotification(notificationId, relatedEntityId) {
+            // Mark as read
+            try {
+                await fetch(`/api/notification/mark-as-read/${notificationId}`, { method: 'POST' });
+                loadNotifications();
+
+                // Navigate to related page if applicable
+                if (relatedEntityId && relatedEntityId.startsWith('ReturnRequest-')) {
+                    const returnId = relatedEntityId.replace('ReturnRequest-', '');
+                    window.location.href = `/Return/Details/${returnId}`;
+                }
+            } catch (error) {
+                console.error('Error marking notification as read:', error);
+            }
+        }
+
+        document.getElementById('markAllAsRead')?.addEventListener('click', async function() {
+            try {
+                await fetch('/api/notification/mark-all-as-read', { method: 'POST' });
+                loadNotifications();
+            } catch (error) {
+                console.error('Error marking all as read:', error);
+            }
+        });
+    </script>
+}

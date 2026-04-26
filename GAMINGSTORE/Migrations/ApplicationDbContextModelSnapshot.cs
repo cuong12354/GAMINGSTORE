@@ -51,9 +51,27 @@ namespace GAMINGSTORE.Migrations
                     b.Property<string>("Age")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("City")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CompanyName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Country")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CurrentPoints")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -63,13 +81,26 @@ namespace GAMINGSTORE.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("FullName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Gender")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsVip")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTime?>("MemberSinceDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("MemberTierId")
+                        .HasColumnType("int");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -88,8 +119,35 @@ namespace GAMINGSTORE.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("PostalCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProfileImage")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("State")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("TierUpgradeDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TotalOrders")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalPointsEarned")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalPointsRedeemed")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalReviews")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalSpent")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
@@ -99,6 +157,8 @@ namespace GAMINGSTORE.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MemberTierId");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -129,6 +189,348 @@ namespace GAMINGSTORE.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("GAMINGSTORE.Models.Coupon", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("CurrentUsageCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("DiscountPercent")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MaxUsageCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("MinimumOrderValue")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Coupons");
+                });
+
+            modelBuilder.Entity("GAMINGSTORE.Models.CustomerNotification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ReadDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RelatedEntityId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CustomerNotifications");
+                });
+
+            modelBuilder.Entity("GAMINGSTORE.Models.Inventory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("LastRestockDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastSoldDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("MinimumStockLevel")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReservedQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StockQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("WarehouseLocation")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId")
+                        .IsUnique();
+
+                    b.ToTable("Inventories");
+                });
+
+            modelBuilder.Entity("GAMINGSTORE.Models.LoyaltyPoint", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("MemberTierId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Points")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TransactionType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MemberTierId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("LoyaltyPoints");
+                });
+
+            modelBuilder.Entity("GAMINGSTORE.Models.MemberTier", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("DiscountPercentage")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("MaxPoints")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MinPoints")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MemberTiers");
+                });
+
+            modelBuilder.Entity("GAMINGSTORE.Models.NewsletterSubscription", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("SubscribedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("NewsletterSubscriptions");
+                });
+
+            modelBuilder.Entity("GAMINGSTORE.Models.NotificationLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExternalId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NotificationType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Recipient")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("RetryCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("NotificationLogs");
+                });
+
+            modelBuilder.Entity("GAMINGSTORE.Models.NotificationTemplate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("NotificationTemplates");
+                });
+
             modelBuilder.Entity("GAMINGSTORE.Models.Order", b =>
                 {
                     b.Property<int>("Id")
@@ -137,12 +539,21 @@ namespace GAMINGSTORE.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("CouponCode")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("CustomerName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsPaid")
-                        .HasColumnType("bit");
+                    b.Property<DateTime?>("DeliveredDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("EstimatedDaysToDeliver")
+                        .HasColumnType("int");
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
@@ -154,7 +565,7 @@ namespace GAMINGSTORE.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PhoneNumber")
+                    b.Property<string>("Phone")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ShippingAddress")
@@ -195,7 +606,6 @@ namespace GAMINGSTORE.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("ProductName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Quantity")
@@ -210,7 +620,7 @@ namespace GAMINGSTORE.Migrations
                     b.ToTable("OrderDetails");
                 });
 
-            modelBuilder.Entity("GAMINGSTORE.Models.Product", b =>
+            modelBuilder.Entity("GAMINGSTORE.Models.OrderTracking", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -219,10 +629,53 @@ namespace GAMINGSTORE.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("OrderTrackings");
+                });
+
+            modelBuilder.Entity("GAMINGSTORE.Models.Product", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("AverageRating")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -231,6 +684,13 @@ namespace GAMINGSTORE.Migrations
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ReviewCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SKU")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.HasKey("Id");
 
@@ -256,6 +716,159 @@ namespace GAMINGSTORE.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ProductImages");
+                });
+
+            modelBuilder.Entity("GAMINGSTORE.Models.ProductReview", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("HelpfulCount")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsVerifiedPurchase")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ProductReviews");
+                });
+
+            modelBuilder.Entity("GAMINGSTORE.Models.ProductVariant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Color")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal?>("PriceModifier")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SKU")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Size")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Specification")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("StockQuantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductVariants");
+                });
+
+            modelBuilder.Entity("GAMINGSTORE.Models.ReturnRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdminNotes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("RequestDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("ReturnAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ReturnRequests");
+                });
+
+            modelBuilder.Entity("GAMINGSTORE.Models.Wishlist", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AddedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Wishlists");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -406,10 +1019,86 @@ namespace GAMINGSTORE.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("GAMINGSTORE.Models.ApplicationUser", b =>
+                {
+                    b.HasOne("GAMINGSTORE.Models.MemberTier", "MemberTier")
+                        .WithMany()
+                        .HasForeignKey("MemberTierId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MemberTier");
+                });
+
+            modelBuilder.Entity("GAMINGSTORE.Models.CustomerNotification", b =>
+                {
+                    b.HasOne("GAMINGSTORE.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("GAMINGSTORE.Models.Inventory", b =>
+                {
+                    b.HasOne("GAMINGSTORE.Models.Product", "Product")
+                        .WithOne("Inventory")
+                        .HasForeignKey("GAMINGSTORE.Models.Inventory", "ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("GAMINGSTORE.Models.LoyaltyPoint", b =>
+                {
+                    b.HasOne("GAMINGSTORE.Models.MemberTier", "MemberTier")
+                        .WithMany()
+                        .HasForeignKey("MemberTierId");
+
+                    b.HasOne("GAMINGSTORE.Models.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId");
+
+                    b.HasOne("GAMINGSTORE.Models.ApplicationUser", "User")
+                        .WithMany("LoyaltyPoints")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MemberTier");
+
+                    b.Navigation("Order");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("GAMINGSTORE.Models.NewsletterSubscription", b =>
+                {
+                    b.HasOne("GAMINGSTORE.Models.ApplicationUser", "User")
+                        .WithMany("NewsletterSubscriptions")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("GAMINGSTORE.Models.NotificationLog", b =>
+                {
+                    b.HasOne("GAMINGSTORE.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("GAMINGSTORE.Models.Order", b =>
                 {
                     b.HasOne("GAMINGSTORE.Models.ApplicationUser", "ApplicationUser")
-                        .WithMany()
+                        .WithMany("Orders")
                         .HasForeignKey("UserId");
 
                     b.Navigation("ApplicationUser");
@@ -434,6 +1123,17 @@ namespace GAMINGSTORE.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("GAMINGSTORE.Models.OrderTracking", b =>
+                {
+                    b.HasOne("GAMINGSTORE.Models.Order", "Order")
+                        .WithMany("TrackingHistory")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("GAMINGSTORE.Models.ProductImage", b =>
                 {
                     b.HasOne("GAMINGSTORE.Models.Product", "Product")
@@ -443,6 +1143,74 @@ namespace GAMINGSTORE.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("GAMINGSTORE.Models.ProductReview", b =>
+                {
+                    b.HasOne("GAMINGSTORE.Models.Product", "Product")
+                        .WithMany("Reviews")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GAMINGSTORE.Models.ApplicationUser", "User")
+                        .WithMany("Reviews")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("GAMINGSTORE.Models.ProductVariant", b =>
+                {
+                    b.HasOne("GAMINGSTORE.Models.Product", "Product")
+                        .WithMany("Variants")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("GAMINGSTORE.Models.ReturnRequest", b =>
+                {
+                    b.HasOne("GAMINGSTORE.Models.Order", "Order")
+                        .WithMany("ReturnRequests")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GAMINGSTORE.Models.ApplicationUser", "User")
+                        .WithMany("ReturnRequests")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("GAMINGSTORE.Models.Wishlist", b =>
+                {
+                    b.HasOne("GAMINGSTORE.Models.Product", "Product")
+                        .WithMany("WishlistItems")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GAMINGSTORE.Models.ApplicationUser", "User")
+                        .WithMany("WishlistItems")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -496,14 +1264,41 @@ namespace GAMINGSTORE.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("GAMINGSTORE.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("LoyaltyPoints");
+
+                    b.Navigation("NewsletterSubscriptions");
+
+                    b.Navigation("Orders");
+
+                    b.Navigation("ReturnRequests");
+
+                    b.Navigation("Reviews");
+
+                    b.Navigation("WishlistItems");
+                });
+
             modelBuilder.Entity("GAMINGSTORE.Models.Order", b =>
                 {
                     b.Navigation("OrderDetails");
+
+                    b.Navigation("ReturnRequests");
+
+                    b.Navigation("TrackingHistory");
                 });
 
             modelBuilder.Entity("GAMINGSTORE.Models.Product", b =>
                 {
                     b.Navigation("Images");
+
+                    b.Navigation("Inventory");
+
+                    b.Navigation("Reviews");
+
+                    b.Navigation("Variants");
+
+                    b.Navigation("WishlistItems");
                 });
 #pragma warning restore 612, 618
         }

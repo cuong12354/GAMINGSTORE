@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Globalization;
 
 namespace GAMINGSTORE.Controllers
 {
@@ -20,90 +19,185 @@ namespace GAMINGSTORE.Controllers
             _userManager = userManager;
         }
 
-        // GET: OrderHistory
-        public async Task<IActionResult> Index(string? status = null)
+        /// <summary>
+        /// Hiển thị danh sách lịch sử đơn hàng
+        /// Admin: Xem tất cả đơn hàng | User: Chỉ xem đơn hàng của mình
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-                return RedirectToAction("Login", "Account");
-
-            var orders = _context.Orders
-                .Where(o => o.UserId == user.Id)
-                .Include(o => o.OrderDetails)
-                .OrderByDescending(o => o.OrderDate)
-                .AsQueryable();
-
-            if (!string.IsNullOrEmpty(status))
             {
-                orders = orders.Where(o => o.Status == status);
+                return Challenge();
             }
 
-            var orderList = await orders.ToListAsync();
-            ViewData["CurrentStatus"] = status;
-            ViewData["StatusFilter"] = new[] { "Pending", "Confirmed", "Shipped", "Delivered", "Cancelled" };
+            // ✅ Logic rõ ràng: Admin xem tất cả, User xem của mình
+            IQueryable<Order> query = _context.Orders
+                .Include(o => o.OrderDetails)
+                .ThenInclude(od => od.Product)
+                .Include(o => o.ReturnRequests); // Added to include return requests
 
-            return View(orderList);
+            if (!User.IsInRole("Admin"))
+            {
+                query = query.Where(o => o.UserId == user.Id);
+            }
+
+            var orders = await query.OrderByDescending(o => o.OrderDate).ToListAsync();
+
+            ViewBag.UserFullName = user.FullName;
+            ViewBag.UserEmail = user.Email;
+            ViewBag.IsAdmin = User.IsInRole("Admin");
+
+            return View(orders);
         }
 
-        // GET: OrderHistory/Details/5
-        public async Task<IActionResult> Details(int? id)
+        /// <summary>
+        /// Hiển thị chi tiết của 1 đơn hàng cụ thể
+        /// Admin có thể xem bất kỳ đơn hàng nào, user thường chỉ xem đơn hàng của mình
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null)
-                return NotFound();
-
             var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Challenge();
+            }
+
             var order = await _context.Orders
+                .Where(o => o.Id == id && (User.IsInRole("Admin") || o.UserId == user.Id))
                 .Include(o => o.OrderDetails)
-                .FirstOrDefaultAsync(m => m.Id == id && m.UserId == user.Id);
+                .ThenInclude(od => od.Product)
+                .Include(o => o.ReturnRequests)
+                .FirstOrDefaultAsync();
 
             if (order == null)
+            {
                 return NotFound();
+            }
 
             return View(order);
         }
 
-        // GET: OrderHistory/AllOrders (Admin only)
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> AllOrders(string? status = null)
+        /// <summary>
+        /// Lấy trạng thái tiến độ của đơn hàng (để cập nhật UI)
+        /// Admin: Xem bất kỳ đơn nào | User: Chỉ xem đơn hàng của mình
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> GetOrderStatus(int id)
         {
-            var orders = _context.Orders
-                .Include(o => o.OrderDetails)
-                .Include(o => o.ApplicationUser)
-                .OrderByDescending(o => o.OrderDate)
-                .AsQueryable();
+            var user = await _userManager.GetUserAsync(User);
+            
+            // ✅ Logic rõ ràng: Admin xem tất cả, User xem của mình
+            var order = await _context.Orders
+                .Where(o => o.Id == id && (User.IsInRole("Admin") || o.UserId == user.Id))
+                .FirstOrDefaultAsync();
 
-            if (!string.IsNullOrEmpty(status))
+            if (order == null)
             {
-                orders = orders.Where(o => o.Status == status);
+                return NotFound();
             }
 
-            var stats = new
+            var statusInfo = new
             {
-                TotalOrders = await _context.Orders.CountAsync(),
-                PendingOrders = await _context.Orders.CountAsync(o => o.Status == "Pending"),
-                CompletedOrders = await _context.Orders.CountAsync(o => o.Status == "Delivered"),
-                TotalRevenue = await _context.Orders
-                    .Where(o => o.Status == "Delivered")
-                    .SumAsync(o => o.TotalPrice)
+                orderId = order.Id,
+                status = order.Status,
+                statusDisplay = GetStatusDisplay(order.Status),
+                statusColor = GetStatusColor(order.Status),
+                orderDate = order.OrderDate.ToString("dd/MM/yyyy HH:mm"),
+                totalPrice = order.TotalPrice,
+                customerName = order.CustomerName,
+                shippingAddress = order.ShippingAddress,
+                paymentMethod = order.PaymentMethod,
+                progressPercentage = GetProgressPercentage(order.Status)
             };
 
-            ViewData["Stats"] = stats;
-            ViewData["CurrentStatus"] = status;
-            ViewData["StatusFilter"] = new[] { "Pending", "Confirmed", "Shipped", "Delivered", "Cancelled" };
-
-            return View(await orders.ToListAsync());
+            return Ok(statusInfo);
         }
+
+        /// <summary>
+        /// Cập nhật trạng thái đơn hàng (chỉ Admin)
+        /// </summary>
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateStatus(int id, string status)
+        {
+            var validStatuses = new[] { "Pending", "Confirmed", "Shipped", "Delivered", "Cancelled" };
+            
+            if (!validStatuses.Contains(status))
+            {
+                return BadRequest("Trạng thái không hợp lệ");
+            }
+
+            var order = await _context.Orders.FindAsync(id);
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            order.Status = status;
+            _context.Orders.Update(order);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true, newStatus = status, message = $"Cập nhật trạng thái thành: {GetStatusDisplay(status)}" });
+        }
+
+        /// <summary>
+        /// Hiển thị lịch sử tất cả đơn hàng (chỉ Admin)
+        /// </summary>
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AllOrders()
+        {
+            var orders = await _context.Orders
+                .Include(o => o.OrderDetails)
+                .ThenInclude(od => od.Product)
+                .Include(o => o.ApplicationUser)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+
+            return View(orders);
+        }
+
+        // ===== HELPER METHODS =====
 
         private string GetStatusDisplay(string status)
         {
             return status switch
             {
-                "Pending" => "Chờ xác nhận",
+                "Pending" => "Chờ xử lý",
                 "Confirmed" => "Đã xác nhận",
                 "Shipped" => "Đang giao",
                 "Delivered" => "Đã giao",
                 "Cancelled" => "Đã hủy",
-                _ => status
+                _ => "Không xác định"
+            };
+        }
+
+        private string GetStatusColor(string status)
+        {
+            return status switch
+            {
+                "Pending" => "#fbbf24",      // Gold
+                "Confirmed" => "#3b82f6",    // Blue
+                "Shipped" => "#8b5cf6",      // Purple
+                "Delivered" => "#22c55e",    // Green
+                "Cancelled" => "#dc2626",    // Red
+                _ => "#6b7280"               // Gray
+            };
+        }
+
+        private int GetProgressPercentage(string status)
+        {
+            return status switch
+            {
+                "Pending" => 20,
+                "Confirmed" => 40,
+                "Shipped" => 70,
+                "Delivered" => 100,
+                "Cancelled" => 0,
+                _ => 0
             };
         }
     }

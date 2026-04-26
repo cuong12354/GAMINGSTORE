@@ -1,0 +1,259 @@
+@model List<ReturnRequest>
+
+@{
+    ViewData["Title"] = "Lịch Sử Trả Hàng";
+}
+
+<style>
+    .return-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .return-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .return-header h1 {
+        margin: 0;
+        font-size: 32px;
+        font-weight: bold;
+    }
+
+    .return-header p {
+        margin: 5px 0 0 0;
+        font-size: 14px;
+        opacity: 0.9;
+    }
+
+    .return-list {
+        display: grid;
+        gap: 15px;
+    }
+
+    .return-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .return-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+
+    .return-info {
+        flex: 1;
+    }
+
+    .return-id {
+        font-weight: bold;
+        color: #333;
+        font-size: 16px;
+        margin-bottom: 5px;
+    }
+
+    .return-date {
+        color: #666;
+        font-size: 13px;
+    }
+
+    .return-status {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        margin: 5px 0;
+    }
+
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-approved {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-rejected {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-completed {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .return-amount {
+        font-size: 18px;
+        font-weight: bold;
+        color: #d92e2e;
+        margin-right: 20px;
+    }
+
+    .return-actions {
+        text-align: right;
+    }
+
+    .btn-details {
+        padding: 8px 16px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        display: inline-block;
+    }
+
+    .btn-details:hover {
+        background: #764ba2;
+        text-decoration: none;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #999;
+    }
+
+    .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+    }
+
+    .empty-state-text {
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+
+    .btn-back-shopping {
+        padding: 10px 20px;
+        background: #d92e2e;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 14px;
+        display: inline-block;
+    }
+
+    .btn-back-shopping:hover {
+        background: #b82222;
+        text-decoration: none;
+    }
+
+    .timeline {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        font-size: 12px;
+    }
+
+    .timeline-item {
+        display: flex;
+        align-items: center;
+        color: #999;
+    }
+
+    .timeline-dot {
+        width: 8px;
+        height: 8px;
+        background: #999;
+        border-radius: 50%;
+        margin-right: 5px;
+    }
+</style>
+
+<div class="return-container">
+    <div class="return-header">
+        <h1>🔄 Lịch Sử Trả Hàng</h1>
+        <p>Quản lý các yêu cầu trả hàng và hoàn tiền của bạn</p>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div style="background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 12px; border-radius: 4px; margin-bottom: 20px;">
+            @TempData["Success"]
+        </div>
+    }
+
+    @if (Model.Count == 0)
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon">📦</div>
+            <div class="empty-state-text">Bạn chưa có yêu cầu trả hàng nào</div>
+            <a href="@Url.Action("Index", "OrderHistory")" class="btn-back-shopping">Xem Đơn Hàng</a>
+        </div>
+    }
+    else
+    {
+        <div class="return-list">
+            @foreach (var returnReq in Model)
+            {
+                var statusClass = returnReq.Status switch
+                {
+                    "Pending" => "status-pending",
+                    "Approved" => "status-approved",
+                    "Rejected" => "status-rejected",
+                    "Completed" => "status-completed",
+                    _ => "status-pending"
+                };
+
+                var statusText = returnReq.Status switch
+                {
+                    "Pending" => "⏳ Chờ Xem Xét",
+                    "Approved" => "✅ Phê Duyệt",
+                    "Rejected" => "❌ Từ Chối",
+                    "Completed" => "✔️ Hoàn Tất",
+                    _ => returnReq.Status
+                };
+
+                <div class="return-card">
+                    <div class="return-info">
+                        <div class="return-id">Yêu Cầu #@returnReq.Id - Đơn #@returnReq.OrderId</div>
+                        <div class="return-date">
+                            📅 Gửi: @returnReq.RequestDate.ToString("dd/MM/yyyy HH:mm")
+                        </div>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <span class="timeline-dot"></span>
+                                Lý do: @(returnReq.Reason ?? "Không có")
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <span class="return-status @statusClass">@statusText</span>
+                        </div>
+                    </div>
+                    <div style="text-align: center; padding: 0 20px;">
+                        <div class="return-amount">₫@returnReq.ReturnAmount.ToString("N0")</div>
+                        <div style="font-size: 12px; color: #999;">Hoàn Tiền</div>
+                    </div>
+                    <div class="return-actions">
+                        <a href="@Url.Action("Details", new { id = returnReq.Id })" class="btn-details">
+                            Xem Chi Tiết
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

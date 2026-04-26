@@ -1,0 +1,210 @@
+@using GAMINGSTORE.Models
+@model IEnumerable<ProductReview>
+
+<style>
+    .reviews-section {
+        margin-top: 40px;
+        padding: 30px;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+    }
+    .reviews-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    .rating-summary {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    .rating-score {
+        font-size: 48px;
+        font-weight: 900;
+        color: #d92e2e;
+    }
+    .rating-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .star-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+    }
+    .reviews-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    .review-card {
+        padding: 20px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        background: #f9fafb;
+    }
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+    .review-name {
+        font-weight: 700;
+        color: #1f2937;
+    }
+    .review-date {
+        font-size: 13px;
+        color: #6b7280;
+    }
+    .review-rating {
+        color: #fbbf24;
+        margin-bottom: 8px;
+    }
+    .review-title {
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #1f2937;
+    }
+    .review-comment {
+        color: #4b5563;
+        line-height: 1.6;
+        margin-bottom: 12px;
+    }
+    .review-footer {
+        display: flex;
+        gap: 16px;
+        font-size: 14px;
+    }
+    .helpful-btn {
+        background: transparent;
+        border: 1px solid #d1d5db;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        color: #6b7280;
+        transition: all 0.2s;
+    }
+    .helpful-btn:hover {
+        border-color: #d92e2e;
+        color: #d92e2e;
+    }
+    .delete-btn {
+        background: #fee;
+        border: 1px solid #fca5a5;
+        color: #dc2626;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    .delete-btn:hover {
+        background: #fca5a5;
+        border-color: #dc2626;
+    }
+    .verified-badge {
+        display: inline-block;
+        background: #dbeafe;
+        color: #1e40af;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+    .empty-reviews {
+        text-align: center;
+        padding: 40px;
+        color: #6b7280;
+    }
+</style>
+
+<div class="reviews-section">
+    <div class="reviews-header">
+        <div class="rating-summary">
+            <div class="rating-score">4.5</div>
+            <div class="rating-stats">
+                <div>⭐⭐⭐⭐⭐ (4.5/5)</div>
+                <div style="font-size: 14px; color: #6b7280;">Dựa trên @Model.Count() đánh giá</div>
+            </div>
+        </div>
+        <a href="@Url.Action("Create", "Review", new { productId = ViewBag.ProductId })" 
+           class="btn btn-primary" style="height: fit-content;">
+            ✍️ Viết Đánh Giá
+        </a>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="reviews-list">
+            @foreach (var review in Model.OrderByDescending(r => r.CreatedDate))
+            {
+                <div class="review-card">
+                    <div class="review-header">
+                        <div>
+                            <div class="review-name">
+                                @review.User?.FullName
+                                @if (review.IsVerifiedPurchase)
+                                {
+                                    <span class="verified-badge">✓ Verified Purchase</span>
+                                }
+                            </div>
+                            <div class="review-date">@review.CreatedDate.ToString("dd MMM yyyy")</div>
+                        </div>
+                    </div>
+                    
+                    <div class="review-rating">
+                        @for (int i = 0; i < review.Rating; i++)
+                        {
+                            <span>⭐</span>
+                        }
+                    </div>
+
+                    <div class="review-title">@review.Title</div>
+                    <div class="review-comment">@review.Comment</div>
+
+                    <div class="review-footer">
+                        <button class="helpful-btn" onclick="markHelpful(@review.Id)">
+                            👍 Hữu ích (@review.HelpfulCount)
+                        </button>
+                        @if (User.Identity?.Name == review.User?.Email || User.IsInRole("Admin"))
+                        {
+                            <form method="post" action="@Url.Action("Delete", "Review")" style="display: inline;">
+                                <input type="hidden" name="id" value="@review.Id" />
+                                <button type="submit" class="delete-btn" onclick="return confirm('Xác nhận xóa?')">
+                                    🗑️ Xóa
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-reviews">
+            <p>Chưa có đánh giá nào cho sản phẩm này</p>
+            <a href="@Url.Action("Create", "Review", new { productId = ViewBag.ProductId })" class="btn btn-primary" style="margin-top: 16px;">
+                Hãy là người đầu tiên đánh giá
+            </a>
+        </div>
+    }
+</div>
+
+<script>
+    async function markHelpful(reviewId) {
+        const response = await fetch('@Url.Action("MarkHelpful", "Review")/' + reviewId, { method: 'POST' });
+        const data = await response.json();
+        alert('Cảm ơn bạn đã đánh giá!');
+    }
+</script>

@@ -1,0 +1,91 @@
+@model List<ProductReview>
+
+@if (Model != null && Model.Count > 0)
+{
+    <div class="reviews-section" style="margin-top: 30px; padding: 20px; border-top: 2px solid #d92e2e;">
+        <h3 style="color: #1f2937; margin-bottom: 20px; font-size: 18px; font-weight: 600;">
+            📝 Đánh Giá Từ Khách Hàng (@Model.Count)
+        </h3>
+
+        <div class="reviews-list" style="space-y: 20px;">
+            @foreach (var review in Model.OrderByDescending(r => r.CreatedDate))
+            {
+                <div class="review-item" style="padding: 15px; border: 1px solid rgba(15,23,42,0.08); border-radius: 8px; margin-bottom: 15px; background: #f9fafb;">
+                    <!-- Review Header -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div>
+                            <div style="font-weight: 600; color: #1f2937;">
+                                @if (review.User != null)
+                                {
+                                    <span>@review.User.FullName ?? review.User.UserName</span>
+                                }
+                                else
+                                {
+                                    <span>Khách hàng ẩn danh</span>
+                                }
+                            </div>
+                            <div style="font-size: 12px; color: #6b7280;">
+                                @review.CreatedDate.ToString("dd/MM/yyyy HH:mm")
+                                @if (review.IsVerifiedPurchase)
+                                {
+                                    <span style="background: #dbeafe; color: #0284c7; padding: 2px 8px; border-radius: 4px; margin-left: 8px; font-weight: 500;">
+                                        ✓ Đã mua
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Star Rating -->
+                    <div style="margin-bottom: 10px;">
+                        @{
+                            var stars = "";
+                            for (int i = 0; i < 5; i++)
+                            {
+                                stars += i < review.Rating ? "⭐" : "☆";
+                            }
+                        }
+                        <span style="color: #fbbf24; font-size: 16px;">@Html.Raw(stars)</span>
+                        <span style="color: #6b7280; margin-left: 8px;">@review.Rating/5</span>
+                    </div>
+
+                    <!-- Review Comment -->
+                    <div style="color: #374151; line-height: 1.6; margin-bottom: 10px;">
+                        @review.Comment
+                    </div>
+
+                    <!-- Helpful Button -->
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" 
+                                class="btn-helpful" 
+                                style="background: none; border: 1px solid #d1d5db; padding: 6px 12px; border-radius: 4px; cursor: pointer; color: #6b7280; font-size: 12px; transition: all 0.2s;"
+                                data-review-id="@review.Id">
+                            👍 Hữu ích (@review.HelpfulCount)
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div style="margin-top: 30px; padding: 20px; background: #f3f4f6; border-radius: 8px; text-align: center;">
+        <p style="color: #6b7280;">
+            📝 Chưa có đánh giá nào. <a href="#" style="color: #d92e2e;">Hãy là người đầu tiên!</a>
+        </p>
+    </div>
+}
+
+<style>
+    .review-item:hover {
+        background: #ffffff;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .btn-helpful:hover {
+        border-color: #d92e2e !important;
+        color: #d92e2e !important;
+        background: #fee !important;
+    }
+</style>

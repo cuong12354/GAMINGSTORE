@@ -1,0 +1,299 @@
+@{
+    ViewData["Title"] = "Báo Cáo Khách Hàng";
+}
+
+<style>
+    .report-container {
+        padding: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .report-header {
+        margin-bottom: 30px;
+    }
+    .report-header h1 {
+        font-size: 28px;
+        font-weight: 900;
+        color: #1f2937;
+        margin: 0;
+    }
+    .report-section {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    .section-title {
+        font-size: 18px;
+        font-weight: 900;
+        color: #1f2937;
+        margin: 0 0 20px 0;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    .table-responsive {
+        overflow-x: auto;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+    table thead {
+        background: #f3f4f6;
+    }
+    table th {
+        padding: 12px;
+        text-align: left;
+        font-weight: 700;
+        color: #1f2937;
+        border-bottom: 2px solid #e5e7eb;
+    }
+    table td {
+        padding: 12px;
+        border-bottom: 1px solid #e5e7eb;
+        color: #4b5563;
+    }
+    table tbody tr:hover {
+        background: #f9fafb;
+    }
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .summary-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 16px;
+        text-align: center;
+    }
+    .summary-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #6b7280;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+    .summary-value {
+        font-size: 28px;
+        font-weight: 900;
+        color: #1f2937;
+    }
+    .customer-avatar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .avatar-circle {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 14px;
+    }
+    .tier-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+    .tier-gold {
+        background: #fef3c7;
+        color: #7c2d12;
+    }
+    .tier-silver {
+        background: #e5e7eb;
+        color: #374151;
+    }
+    .tier-bronze {
+        background: #fed7aa;
+        color: #7c2d12;
+    }
+    .filters {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    .filter-btn {
+        background: white;
+        border: 1px solid #e5e7eb;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .filter-btn.active {
+        background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%);
+        color: white;
+        border-color: #d92e2e;
+    }
+    .filter-btn:hover {
+        border-color: #d92e2e;
+    }
+</style>
+
+<div class="report-container">
+    <div class="report-header">
+        <h1>👥 Báo Cáo Khách Hàng</h1>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="summary-label">Tổng Khách Hàng</div>
+            <div class="summary-value">@ViewBag.TotalCustomers</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Khách Hoạt Động (30 Ngày)</div>
+            <div class="summary-value">@ViewBag.ActiveCustomers</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Trung Bình Chi Tiêu</div>
+            <div class="summary-value">@ViewBag.AverageSpent.ToString("C0")</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Tổng Doanh Thu Từ Khách</div>
+            <div class="summary-value">@ViewBag.TotalCustomerRevenue.ToString("C0")</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="report-section">
+        <div class="filters">
+            <button class="filter-btn active">📊 Tất Cả Khách Hàng</button>
+            <button class="filter-btn">🌟 VIP (Chi Tiêu &gt; 5M)</button>
+            <button class="filter-btn">💎 Regular (Chi Tiêu 1-5M)</button>
+            <button class="filter-btn">🆕 Mới (Đăng Ký &lt; 30 Ngày)</button>
+        </div>
+    </div>
+
+    <!-- Top Customers Table -->
+    <div class="report-section">
+        <h3 class="section-title">🏆 Top 20 Khách Hàng (Theo Chi Tiêu)</h3>
+        
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Khách Hàng</th>
+                        <th>Email</th>
+                        <th>Cấp Độ</th>
+                        <th>Đơn Hàng</th>
+                        <th>Tổng Chi Tiêu</th>
+                        <th>Đánh Giá</th>
+                        <th>Ngày Tham Gia</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.TopCustomers != null && ViewBag.TopCustomers.Count > 0)
+                    {
+                        @foreach (var customer in ViewBag.TopCustomers)
+                        {
+                            var tier = customer.TotalSpent > 5000000 ? "gold" 
+                                : customer.TotalSpent > 1000000 ? "silver" 
+                                : "bronze";
+                            var tierText = customer.TotalSpent > 5000000 ? "🌟 VIP" 
+                                : customer.TotalSpent > 1000000 ? "💎 Regular" 
+                                : "🆕 Mới";
+
+                            <tr>
+                                <td>
+                                    <div class="customer-avatar">
+                                        <div class="avatar-circle">
+                                            @customer.FirstName?.First()@customer.LastName?.First()
+                                        </div>
+                                        <strong>@customer.FullName</strong>
+                                    </div>
+                                </td>
+                                <td style="font-size: 12px;">@customer.Email</td>
+                                <td>
+                                    <span class="tier-badge tier-@tier">
+                                        @tierText
+                                    </span>
+                                </td>
+                                <td>@customer.TotalOrders</td>
+                                <td><strong>@customer.TotalSpent.ToString("C0")</strong></td>
+                                <td>
+                                    <div style="display: flex; gap: 2px;">
+                                        @for (int i = 0; i < Math.Min(customer.TotalReviews, 5); i++)
+                                        {
+                                            <span>⭐</span>
+                                        }
+                                    </div>
+                                </td>
+                                <td style="font-size: 12px;">@customer.CreatedDate.ToString("dd/MM/yyyy")</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 30px; color: #9ca3af;">
+                                Chưa có dữ liệu
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Customer Segments -->
+    <div class="report-section">
+        <h3 class="section-title">📈 Phân Khúc Khách Hàng</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+            <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px;">
+                <div style="font-weight: 700; color: #1f2937; margin-bottom: 12px;">🌟 VIP (Chi Tiêu &gt; 5M)</div>
+                <div style="font-size: 28px; font-weight: 900; color: #fbbf24; margin-bottom: 8px;">
+                    @ViewBag.VIPCustomers
+                </div>
+                <div style="font-size: 12px; color: #6b7280;">
+                    Doanh Thu: @ViewBag.VIPRevenue.ToString("C0")
+                </div>
+            </div>
+
+            <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px;">
+                <div style="font-weight: 700; color: #1f2937; margin-bottom: 12px;">💎 Regular (1M - 5M)</div>
+                <div style="font-size: 28px; font-weight: 900; color: #9ca3af; margin-bottom: 8px;">
+                    @ViewBag.RegularCustomers
+                </div>
+                <div style="font-size: 12px; color: #6b7280;">
+                    Doanh Thu: @ViewBag.RegularRevenue.ToString("C0")
+                </div>
+            </div>
+
+            <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px;">
+                <div style="font-weight: 700; color: #1f2937; margin-bottom: 12px;">🆕 Mới (&lt; 1M)</div>
+                <div style="font-size: 28px; font-weight: 900; color: #fed7aa; margin-bottom: 8px;">
+                    @ViewBag.NewCustomers
+                </div>
+                <div style="font-size: 12px; color: #6b7280;">
+                    Doanh Thu: @ViewBag.NewRevenue.ToString("C0")
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display: flex; gap: 12px; margin-top: 30px;">
+        <a href="@Url.Action("Index", "Dashboard", new { area = "Admin" })" class="btn btn-secondary">
+            ← Quay Lại Dashboard
+        </a>
+        <button onclick="window.print()" class="btn btn-secondary">
+            🖨️ In Báo Cáo
+        </button>
+    </div>
+</div>

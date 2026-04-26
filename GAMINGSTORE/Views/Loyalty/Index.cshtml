@@ -1,0 +1,152 @@
+@{
+    ViewData["Title"] = "Chương Trình Thành Viên";
+    var currentPoints = (int)ViewBag.CurrentPoints;
+    var memberTier = ViewBag.MemberTier;
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <h1>🎖️ Chương Trình Thành Viên GAMINGSTORE</h1>
+            <p class="text-muted">Tích lũy điểm từ mỗi lần mua hàng và nâng cấp thành viên</p>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Current Points Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-orange shadow-sm" style="border-left: 5px solid #d92e2e;">
+                <div class="card-body">
+                    <h5 class="card-title">Điểm Của Bạn</h5>
+                    <h2 class="text-orange mb-3" style="color: #d92e2e;">@currentPoints</h2>
+                    <small class="text-muted">Tổng điểm: @ViewBag.MemberTier.Name</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Member Tier Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm" style="border-left: 5px solid #@(memberTier?.Color == "platinum" ? "ffd700" : memberTier?.Color == "gold" ? "ffa500" : memberTier?.Color == "silver" ? "c0c0c0" : "8b4513");">
+                <div class="card-body">
+                    <h5 class="card-title">Hạng Thành Viên</h5>
+                    <h2 class="mb-3">@memberTier?.Name</h2>
+                    <small class="text-muted">Ưu đãi: Giảm @memberTier?.DiscountPercentage%</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Member Tiers Info -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h4>📊 Các Hạng Thành Viên</h4>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">🥉 Đồng</h5>
+                            <p>0 - 999 điểm</p>
+                            <p>Giảm: 0%</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">🥈 Bạc</h5>
+                            <p>1.000 - 4.999 điểm</p>
+                            <p>Giảm: 5%</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">🥇 Vàng</h5>
+                            <p>5.000 - 14.999 điểm</p>
+                            <p>Giảm: 10%</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">💎 Bạch Kim</h5>
+                            <p>15.000+ điểm</p>
+                            <p>Giảm: 15% + VIP</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Points History -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h4>📜 Lịch Sử Giao Dịch Điểm</h4>
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Ngày</th>
+                        <th>Loại Giao Dịch</th>
+                        <th>Điểm</th>
+                        <th>Mô Tả</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.PointsHistory != null && ViewBag.PointsHistory.Length > 0)
+                    {
+                        @foreach (var point in ViewBag.PointsHistory)
+                        {
+                            <tr>
+                                <td>@point.CreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    @if (point.TransactionType == "Purchase")
+                                    {
+                                        <span class="badge bg-success">Mua Hàng</span>
+                                    }
+                                    else if (point.TransactionType == "Redemption")
+                                    {
+                                        <span class="badge bg-warning">Đổi Điểm</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-info">@point.TransactionType</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="@(point.Points > 0 ? "text-success" : "text-danger")">
+                                        @(point.Points > 0 ? "+" : "")@point.Points
+                                    </span>
+                                </td>
+                                <td>@point.Description</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">Chưa có giao dịch nào</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-orange {
+        border-color: #d92e2e !important;
+    }
+
+    .card {
+        border-radius: 12px;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 6px;
+    }
+</style>

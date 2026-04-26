@@ -2,6 +2,8 @@ using GAMINGSTORE.Data;
 using GAMINGSTORE.Models;
 using GAMINGSTORE.Repositories;
 using GAMINGSTORE.Seeding;
+using GAMINGSTORE.Services;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -33,20 +35,13 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddDefaultUI()
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
-// Add Google OAuth
-var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
-var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-
-if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret))
-{
-    builder.Services.AddAuthentication()
-        .AddGoogle(options =>
-        {
-            options.ClientId = googleClientId;
-            options.ClientSecret = googleClientSecret;
-            options.CallbackPath = "/signin-google";
-        });
-}
+// ===== OAUTH2 EXTERNAL LOGIN PROVIDERS =====
+builder.Services.AddAuthentication()
+    .AddGoogle(options =>
+    {
+        options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
+        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
+    });
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -72,6 +67,15 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<IProductRepository, EFProductRepository>();
 builder.Services.AddScoped<ICategoryRepository, EFCategoryRepository>();
+builder.Services.AddScoped<IRecommendationService, RecommendationService>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<IWishlistRepository, WishlistRepository>();
+builder.Services.AddScoped<ICouponRepository, CouponRepository>();
+builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+builder.Services.AddScoped<ILoyaltyService, LoyaltyService>();
+builder.Services.AddScoped<IReturnService, ReturnService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IOrderManagementService, OrderManagementService>();
 
 var app = builder.Build();
 
@@ -108,6 +112,13 @@ app.MapRazorPages();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+    // Seed roles and admin user
+    await RoleSeeding.SeedRolesAndAdminAsync(dbContext, userManager, roleManager);
+    
+    // Seed products and categories
     await DataSeeding.SeedCategoriesAndProducts(dbContext);
 }
 

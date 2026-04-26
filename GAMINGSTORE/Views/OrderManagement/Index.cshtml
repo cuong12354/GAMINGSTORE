@@ -1,0 +1,122 @@
+@model List<Order>
+
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>📦 Quản lý Đơn Hàng</h2>
+            <p class="text-muted">Danh sách tất cả đơn hàng trong hệ thống</p>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (Model.Count == 0)
+    {
+        <div class="alert alert-info">
+            Không có đơn hàng nào.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Khách hàng</th>
+                        <th>Ngày đặt hàng</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model)
+                    {
+                        var statusColor = order.Status switch
+                        {
+                            "Pending" => "warning",
+                            "Confirmed" => "info",
+                            "Shipped" => "primary",
+                            "Delivered" => "success",
+                            "Cancelled" => "danger",
+                            _ => "secondary"
+                        };
+
+                        var statusText = order.Status switch
+                        {
+                            "Pending" => "⏳ Chờ xử lý",
+                            "Confirmed" => "✅ Đã xác nhận",
+                            "Shipped" => "📦 Đang giao",
+                            "Delivered" => "✔️ Đã giao hàng",
+                            "Cancelled" => "❌ Đã hủy",
+                            _ => order.Status
+                        };
+
+                        <tr>
+                            <td>
+                                <strong>#@order.Id</strong>
+                            </td>
+                            <td>
+                                @order.CustomerName
+                            </td>
+                            <td>
+                                @order.OrderDate.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+                            <td>
+                                <strong>@order.TotalPrice.ToString("N0")₫</strong>
+                            </td>
+                            <td>
+                                <span class="badge bg-@statusColor">@statusText</span>
+                            </td>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm btn-primary">
+                                    🔍 Chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<style>
+    .table-hover tbody tr:hover {
+        background-color: #f5f5f5;
+    }
+
+    .badge {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    h2 {
+        color: #1f2937;
+        font-weight: 700;
+    }
+
+    .btn-sm {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.85rem;
+    }
+</style>

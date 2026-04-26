@@ -1,4 +1,4 @@
-﻿@model int
+@model Order
 
 @{
     ViewData["Title"] = "Đặt Hàng Thành Công";
@@ -123,12 +123,12 @@
     }
 
     .btn-primary {
-        background-color: #ee4d2d;
+        background-color: #d92e2e;
         color: white;
     }
 
     .btn-primary:hover {
-        background-color: #d63d1f;
+        background-color: #b82222;
         text-decoration: none;
     }
 
@@ -163,7 +163,7 @@
     }
 
     .step-number {
-        background-color: #ee4d2d;
+        background-color: #d92e2e;
         color: white;
         width: 30px;
         height: 30px;
@@ -194,10 +194,56 @@
 
         <div class="order-id-box">
             <div class="order-id-label">Mã Đơn Hàng</div>
-            <div class="order-id">#@Model</div>
+            <div class="order-id">#@Model.Id</div>
         </div>
 
         <div class="info-list">
+            <div class="info-item">
+                <span class="info-label">👤 Khách Hàng</span>
+                <span class="info-value">@Model.CustomerName</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">📍 Địa Chỉ Giao Hàng</span>
+                <span class="info-value">@Model.ShippingAddress</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">💳 Phương Thức Thanh Toán</span>
+                <span class="info-value">
+                    @if (Model.PaymentMethod == "COD")
+                    {
+                        <span>💵 Thanh toán khi nhận hàng</span>
+                    }
+                    else if (Model.PaymentMethod == "BankTransfer")
+                    {
+                        <span>🏦 Chuyển khoản ngân hàng</span>
+                    }
+                    else
+                    {
+                        <span>@Model.PaymentMethod</span>
+                    }
+                </span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">💰 Tổng Tiền</span>
+                <span class="info-value">@Model.TotalPrice.ToString("N0") ₫</span>
+            </div>
+            @if (Model.DiscountAmount > 0)
+            {
+                <div class="info-item">
+                    <span class="info-label">🎟️ Mã Giảm Giá</span>
+                    <span class="info-value">@Model.CouponCode</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">✂️ Giảm</span>
+                    <span class="info-value" style="color: #28a745;">-@Model.DiscountAmount.ToString("N0") ₫</span>
+                </div>
+            }
+            <div class="info-item" style="border-top: 2px solid #eee; padding-top: 10px; margin-top: 10px;">
+                <span class="info-label" style="font-weight: bold; font-size: 15px;">💳 Thành Tiền</span>
+                <span class="info-value" style="font-weight: bold; font-size: 15px; color: #d92e2e;">
+                    @(Model.TotalPrice + Model.DiscountAmount).ToString("N0") ₫
+                </span>
+            </div>
             <div class="info-item">
                 <span class="info-label">📧 Email xác nhận</span>
                 <span class="info-value">Sẽ được gửi ngay</span>
@@ -210,6 +256,18 @@
                 <span class="info-label">🚚 Giao hàng</span>
                 <span class="info-value">2-3 ngày làm việc</span>
             </div>
+            @if (TempData["PointsEarned"] != null)
+            {
+                <div class="info-item" style="border-top: 2px solid #ffc107; padding-top: 10px; margin-top: 10px; background-color: #fffbf0;">
+                    <span class="info-label" style="color: #ff9800; font-weight: bold;">⭐ Điểm Thưởng</span>
+                    <span class="info-value" style="color: #ff9800; font-weight: bold; font-size: 16px;">
+                        +@TempData["PointsEarned"] điểm
+                    </span>
+                </div>
+                <div class="info-item" style="font-size: 13px; color: #666; margin-top: 5px;">
+                    <span style="color: #666;">💡 Bạn đã kiếm được @TempData["PointsEarned"] điểm thành viên từ đơn hàng này. <a href="@Url.Action("Index", "Loyalty")" style="color: #ff9800; font-weight: bold;">Xem chi tiết →</a></span>
+                </div>
+            }
         </div>
 
         <div class="next-steps">

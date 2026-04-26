@@ -1,0 +1,298 @@
+@{
+    ViewData["Title"] = "Báo Cáo Kho Hàng";
+}
+
+<style>
+    .report-container {
+        padding: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .report-header {
+        margin-bottom: 30px;
+    }
+    .report-header h1 {
+        font-size: 28px;
+        font-weight: 900;
+        color: #1f2937;
+        margin: 0;
+    }
+    .report-section {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    .section-title {
+        font-size: 18px;
+        font-weight: 900;
+        color: #1f2937;
+        margin: 0 0 20px 0;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    .table-responsive {
+        overflow-x: auto;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+    table thead {
+        background: #f3f4f6;
+    }
+    table th {
+        padding: 12px;
+        text-align: left;
+        font-weight: 700;
+        color: #1f2937;
+        border-bottom: 2px solid #e5e7eb;
+    }
+    table td {
+        padding: 12px;
+        border-bottom: 1px solid #e5e7eb;
+        color: #4b5563;
+    }
+    table tbody tr:hover {
+        background: #f9fafb;
+    }
+    .stock-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .progress-bar {
+        flex: 1;
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 4px;
+        overflow: hidden;
+        min-width: 60px;
+    }
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+    }
+    .progress-fill.low {
+        background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+    }
+    .progress-fill.medium {
+        background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+    }
+    .stock-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+    .stock-badge.low {
+        background: #fee;
+        color: #dc2626;
+    }
+    .stock-badge.medium {
+        background: #fef3c7;
+        color: #7c2d12;
+    }
+    .stock-badge.high {
+        background: #dcfce7;
+        color: #15803d;
+    }
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .summary-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 16px;
+        text-align: center;
+    }
+    .summary-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #6b7280;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+    .summary-value {
+        font-size: 28px;
+        font-weight: 900;
+        color: #1f2937;
+    }
+    .filters {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .filter-btn {
+        background: white;
+        border: 1px solid #e5e7eb;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .filter-btn.active {
+        background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%);
+        color: white;
+        border-color: #d92e2e;
+    }
+    .filter-btn:hover {
+        border-color: #d92e2e;
+    }
+</style>
+
+<div class="report-container">
+    <div class="report-header">
+        <h1>📦 Báo Cáo Kho Hàng</h1>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="summary-label">Tổng Sản Phẩm</div>
+            <div class="summary-value">@ViewBag.TotalProducts</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Tồn Kho Thấp</div>
+            <div class="summary-value" style="color: #dc2626;">@ViewBag.LowStockCount</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Tồn Kho Trung Bình</div>
+            <div class="summary-value" style="color: #f59e0b;">@ViewBag.MediumStockCount</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Tồn Kho Cao</div>
+            <div class="summary-value" style="color: #10b981;">@ViewBag.HighStockCount</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="report-section">
+        <div class="filters">
+            <button class="filter-btn active">📊 Tất Cả Sản Phẩm</button>
+            <button class="filter-btn">⚠️ Tồn Kho Thấp</button>
+            <button class="filter-btn">📈 Doanh Số Cao</button>
+            <button class="filter-btn">🔄 Cần Nhập Kho</button>
+        </div>
+    </div>
+
+    <!-- Inventory Table -->
+    <div class="report-section">
+        <h3 class="section-title">📋 Chi Tiết Tồn Kho</h3>
+        
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sản Phẩm</th>
+                        <th>Danh Mục</th>
+                        <th>Giá</th>
+                        <th>Tồn Kho</th>
+                        <th>Mức Tối Thiểu</th>
+                        <th>Dự Trữ</th>
+                        <th>Trạng Thái</th>
+                        <th>Lần Cuối Bán</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.InventoryItems != null && ViewBag.InventoryItems.Count > 0)
+                    {
+                        @foreach (var item in ViewBag.InventoryItems)
+                        {
+                            var stockPercentage = item.MinimumStockLevel > 0 
+                                ? (item.AvailableStock / item.MinimumStockLevel * 100) 
+                                : 100;
+                            var stockStatus = item.AvailableStock < 10 ? "low" 
+                                : item.AvailableStock < 30 ? "medium" 
+                                : "high";
+
+                            <tr>
+                                <td>
+                                    <strong>@item.ProductName</strong>
+                                </td>
+                                <td>@item.CategoryName</td>
+                                <td>@item.Price.ToString("C")</td>
+                                <td>
+                                    <div class="stock-bar">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill @stockStatus" style="width: @Math.Min(stockPercentage, 100)%"></div>
+                                        </div>
+                                        <span>@item.AvailableStock</span>
+                                    </div>
+                                </td>
+                                <td>@item.MinimumStockLevel</td>
+                                <td>@item.ReservedQuantity</td>
+                                <td>
+                                    <span class="stock-badge @stockStatus">
+                                        @(stockStatus == "low" ? "🔴 Thấp" 
+                                        : stockStatus == "medium" ? "🟡 Trung Bình" 
+                                        : "🟢 Cao")
+                                    </span>
+                                </td>
+                                <td style="font-size: 12px;">
+                                    @(item.LastSoldDate.HasValue 
+                                        ? item.LastSoldDate.Value.ToString("dd/MM/yyyy") 
+                                        : "Chưa bán")
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 30px; color: #9ca3af;">
+                                Chưa có dữ liệu
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Low Stock Alert -->
+    @if (ViewBag.LowStockItems != null && ViewBag.LowStockItems.Count > 0)
+    {
+        <div class="report-section">
+            <h3 class="section-title">⚠️ Cảnh Báo: Sản Phẩm Tồn Kho Thấp</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
+                @foreach (var item in ViewBag.LowStockItems.Take(6))
+                {
+                    <div style="border: 1px solid #fee; border-radius: 8px; padding: 16px; background: #fffbfb;">
+                        <div style="font-weight: 700; color: #dc2626; margin-bottom: 8px;">
+                            ⚠️ @item.ProductName
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                            <strong>Tồn kho hiện tại:</strong> @item.StockQuantity
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 12px;">
+                            <strong>Mức tối thiểu được khuyến nghị:</strong> @item.MinimumStockLevel
+                        </div>
+                        <a href="@Url.Action("Edit", "Product", new { id = item.ProductId })" class="btn btn-primary" style="width: 100%;">
+                            🔧 Nhập Kho Hàng
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Action Buttons -->
+    <div style="display: flex; gap: 12px; margin-top: 30px;">
+        <a href="@Url.Action("Index", "Dashboard", new { area = "Admin" })" class="btn btn-secondary">
+            ← Quay Lại Dashboard
+        </a>
+        <button onclick="window.print()" class="btn btn-secondary">
+            🖨️ In Báo Cáo
+        </button>
+    </div>
+</div>

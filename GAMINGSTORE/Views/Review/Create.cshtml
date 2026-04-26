@@ -1,0 +1,119 @@
+@using GAMINGSTORE.Models
+@model ProductReview
+
+@{
+    ViewData["Title"] = "Đánh Giá Sản Phẩm";
+}
+
+<style>
+    .review-container {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 30px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .review-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+    .form-group label {
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #1f2937;
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        padding: 12px 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 14px;
+        font-family: inherit;
+    }
+    .form-group textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+    .rating-group {
+        display: flex;
+        gap: 8px;
+    }
+    .rating-btn {
+        width: 50px;
+        height: 50px;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        background: white;
+        cursor: pointer;
+        font-size: 20px;
+        font-weight: bold;
+        transition: all 0.2s;
+    }
+    .rating-btn:hover {
+        border-color: #d92e2e;
+        color: #d92e2e;
+    }
+    .rating-btn.selected {
+        border-color: #d92e2e;
+        background: #fff5f1;
+        color: #d92e2e;
+    }
+    .submit-btn {
+        padding: 14px 24px;
+        background: linear-gradient(135deg, #d92e2e, #b82222);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    .submit-btn:hover {
+        box-shadow: 0 8px 16px rgba(217, 46, 46, 0.25);
+    }
+</style>
+
+<div class="review-container">
+    <h1>Đánh Giá Sản Phẩm</h1>
+    
+    <form method="post" class="review-form">
+        <div class="form-group">
+            <label>Xếp Hạng</label>
+            <div class="rating-group">
+                @for (int i = 1; i <= 5; i++)
+                {
+                    <button type="button" class="rating-btn" onclick="setRating(@i)">⭐</button>
+                }
+            </div>
+            <input type="hidden" id="Rating" name="Rating" value="0" required />
+        </div>
+
+        <div class="form-group">
+            <label>Tiêu Đề Đánh Giá</label>
+            <input type="text" name="Title" placeholder="Ví dụ: Sản phẩm chất lượng, giao hàng nhanh" required />
+        </div>
+
+        <div class="form-group">
+            <label>Bình Luận Chi Tiết</label>
+            <textarea name="Comment" placeholder="Chia sẻ trải nghiệm của bạn với sản phẩm này..."></textarea>
+        </div>
+
+        <button type="submit" class="submit-btn">Gửi Đánh Giá</button>
+    </form>
+</div>
+
+<script>
+    function setRating(score) {
+        document.getElementById('Rating').value = score;
+        document.querySelectorAll('.rating-btn').forEach((btn, idx) => {
+            btn.classList.toggle('selected', idx < score);
+        });
+    }
+</script>

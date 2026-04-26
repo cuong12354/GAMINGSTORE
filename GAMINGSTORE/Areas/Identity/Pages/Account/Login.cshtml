@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model LoginModel
 
 @{
@@ -7,154 +7,447 @@
 
 <style>
     body {
-        background-color: #f5f5f5;
+        background:
+            radial-gradient(circle at top left, rgba(217, 46, 46, 0.12), transparent 35%),
+            linear-gradient(180deg, #f7f7f7 0%, #efefef 100%);
     }
 
-    .login-container {
-        min-height: 85vh;
+    .login-shell {
+        min-height: 88vh;
         display: flex;
         align-items: center;
         justify-content: center;
+        padding: 32px 0;
     }
 
     .login-card {
         border: none;
-        border-radius: 15px;
+        border-radius: 22px;
         overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        max-width: 1000px;
+        max-width: 1120px;
         width: 100%;
         background: #fff;
+        box-shadow: 0 22px 60px rgba(0, 0, 0, 0.12);
     }
 
-    .login-image {
-        /* Bạn có thể đổi ảnh này thành ảnh gear/laptop xịn xò của shop bạn */
-        background-image: url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop');
-        background-size: cover;
-        background-position: center;
-        height: 100%;
-        min-height: 600px;
-    }
-
-    .login-form-wrapper {
-        padding: 3rem 4rem;
-    }
-
-    .input-group-text {
-        background-color: #f8f9fa;
-        border-radius: 8px 0 0 8px;
-    }
-
-    .form-control {
-        background-color: #f8f9fa;
-        border-radius: 0 8px 8px 0;
-        padding: 12px 15px;
-    }
-
-        .form-control:focus {
-            box-shadow: none;
-            border-color: #ee4d2d;
-        }
-
-    .btn-login {
-        background-color: #ee4d2d;
-        border: none;
+    .login-hero {
+        position: relative;
+        min-height: 680px;
+        padding: 44px 38px;
         color: white;
-        padding: 12px;
-        font-weight: bold;
-        border-radius: 8px;
-        transition: all 0.3s;
-        font-size: 1.1rem;
+        background:
+            linear-gradient(160deg, rgba(18, 22, 36, 0.86), rgba(217, 46, 46, 0.72)),
+            url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1932&auto=format&fit=crop') center/cover;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
 
-        .btn-login:hover {
-            background-color: #d73a1e;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(238, 77, 45, 0.3);
-            color: white;
-        }
+    .login-hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.18));
+        pointer-events: none;
+    }
 
-    /* Đường kẻ ngăn cách hoặc đăng nhập bằng Google/Facebook */
+    .hero-content,
+    .hero-footer {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.14);
+        backdrop-filter: blur(10px);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+        width: fit-content;
+    }
+
+    .hero-title {
+        font-size: 42px;
+        line-height: 1.08;
+        font-weight: 800;
+        margin-bottom: 18px;
+        max-width: 420px;
+    }
+
+    .hero-desc {
+        max-width: 430px;
+        font-size: 15px;
+        line-height: 1.75;
+        color: rgba(255,255,255,0.88);
+    }
+
+    .hero-highlights {
+        display: grid;
+        gap: 14px;
+        margin-top: 28px;
+    }
+
+    .hero-highlight {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(10px);
+        font-size: 13px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .hero-highlight i {
+        font-size: 16px;
+        min-width: 20px;
+    }
+
+    .hero-footer {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .login-form-side {
+        padding: 44px 38px;
+    }
+
+    .form-brand {
+        font-size: 28px;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 8px;
+    }
+
+    .form-subtitle {
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 28px;
+    }
+
+    .validation-box {
+        padding: 12px 16px;
+        background: #fee2e2;
+        border: 1px solid #fecaca;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        font-size: 13px;
+    }
+
+    .login-label {
+        font-size: 13px;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 8px;
+    }
+
+    .login-input-group {
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        background: white;
+        overflow: hidden;
+        transition: all 0.25s ease;
+        margin-bottom: 16px;
+    }
+
+    .login-input-group:focus-within {
+        border-color: #d92e2e;
+        box-shadow: 0 0 0 4px rgba(217, 46, 46, 0.12);
+    }
+
+    .login-input-group .input-group-text {
+        border: none;
+        background: transparent;
+        color: #9ca3af;
+        padding-left: 16px;
+        padding-right: 8px;
+    }
+
+    .login-input-group .form-control {
+        border: none;
+        box-shadow: none;
+        background: transparent;
+        min-height: 54px;
+        font-size: 14px;
+        color: #111827;
+        padding-right: 16px;
+    }
+
+    .login-input-group .form-control::placeholder {
+        color: #adb5bd;
+    }
+
+    .login-input-group .form-control:focus {
+        box-shadow: none;
+    }
+
+    .remember-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        gap: 16px;
+    }
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-check-input {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #e5e7eb;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        margin-top: 0;
+    }
+
+    .form-check-input:checked {
+        background-color: #d92e2e;
+        border-color: #d92e2e;
+    }
+
+    .form-check-label {
+        font-size: 14px;
+        color: #6b7280;
+        cursor: pointer;
+        margin-bottom: 0;
+    }
+
+    .forgot-link {
+        font-size: 13px;
+        font-weight: 700;
+        color: #d92e2e;
+        text-decoration: none;
+        transition: all 0.25s ease;
+    }
+
+    .forgot-link:hover {
+        color: #d63a1f;
+        text-decoration: underline;
+    }
+
+    .login-submit {
+        width: 100%;
+        border: none;
+        border-radius: 14px;
+        padding: 14px 18px;
+        background: linear-gradient(135deg, #d92e2e, #b82222);
+        color: white;
+        font-size: 15px;
+        font-weight: 800;
+        letter-spacing: 0.3px;
+        transition: all 0.3s ease;
+        box-shadow: 0 14px 28px rgba(217, 46, 46, 0.18);
+        cursor: pointer;
+        margin-bottom: 16px;
+    }
+
+    .login-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 34px rgba(217, 46, 46, 0.26);
+    }
+
+    .login-submit:active {
+        transform: translateY(0);
+    }
+
     .divider-text {
         display: flex;
         align-items: center;
         text-align: center;
-        color: #adb5bd;
+        color: #9ca3af;
         margin: 20px 0;
+        font-size: 13px;
+        font-weight: 600;
     }
 
-        .divider-text::before, .divider-text::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #dee2e6;
+    .divider-text::before,
+    .divider-text::after {
+        content: "";
+        flex: 1;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .divider-text::before {
+        margin-right: .6em;
+    }
+
+    .divider-text::after {
+        margin-left: .6em;
+    }
+
+    .external-login-btn {
+        border: 1.5px solid #e5e7eb;
+        background: white;
+        color: #111827;
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 14px;
+        transition: all 0.25s ease;
+        margin-bottom: 12px;
+        cursor: pointer;
+    }
+
+    .external-login-btn:hover {
+        background: #f9fafb;
+        border-color: #d92e2e;
+        color: #d92e2e;
+    }
+
+    .login-links {
+        text-align: center;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .login-links p {
+        color: #6b7280;
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .login-links a {
+        color: #d92e2e;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.25s ease;
+    }
+
+    .login-links a:hover {
+        color: #d63a1f;
+        text-decoration: underline;
+    }
+
+    .resend-link {
+        font-size: 12px;
+        color: #9ca3af;
+        text-decoration: none;
+        transition: all 0.25s ease;
+    }
+
+    .resend-link:hover {
+        color: #6b7280;
+    }
+
+    @@media (max-width: 991px) {
+        .login-hero {
+            min-height: 320px;
         }
 
-        .divider-text::before {
-            margin-right: .5em;
+        .hero-title {
+            font-size: 32px;
         }
-
-        .divider-text::after {
-            margin-left: .5em;
-        }
+    }
 
     @@media (max-width: 768px) {
-        .login-form-wrapper {
-            padding: 2rem;
+        .login-form-side,
+        .login-hero {
+            padding: 28px 24px;
+        }
+
+        .hero-title {
+            font-size: 28px;
+            max-width: none;
+        }
+
+        .login-shell {
+            padding: 16px 0;
         }
     }
 </style>
 
-<div class="login-container py-4">
+<div class="login-shell">
     <div class="login-card">
-        <div class="row g-0 h-100">
+        <div class="row g-0">
+            <div class="col-lg-5">
+                <div class="login-hero">
+                    <div class="hero-content">
+                        <div class="hero-badge">
+                            <i class="bi bi-controller"></i>
+                            Gamingstore Member
+                        </div>
+                        <h1 class="hero-title">Đăng nhập để quản lý tài khoản của bạn</h1>
+                        <p class="hero-desc">
+                            Truy cập vào lịch sử đơn hàng, theo dõi thanh toán, và khám phá những sản phẩm gaming tốt nhất từ GAMINGSTORE.
+                        </p>
 
-            <div class="col-md-5 d-none d-md-block">
-                <div class="login-image"></div>
-            </div>
-
-            <div class="col-md-7 d-flex align-items-center">
-                <div class="login-form-wrapper w-100">
-
-                    <div class="text-center mb-4">
-                        <h2 class="fw-bolder">GAMINGSTORE</h2>
-                        <p class="text-muted">Đăng nhập bằng tài khoản của bạn</p>
+                        <div class="hero-highlights">
+                            <div class="hero-highlight">
+                                <i class="bi bi-bag-check"></i>
+                                <span>Theo dõi đơn hàng theo thời gian thực</span>
+                            </div>
+                            <div class="hero-highlight">
+                                <i class="bi bi-heart"></i>
+                                <span>Lưu sản phẩm yêu thích để mua lần sau</span>
+                            </div>
+                            <div class="hero-highlight">
+                                <i class="bi bi-shield-check"></i>
+                                <span>Bảo mật cao với hệ thống xác thực ASP.NET</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+                    <div class="hero-footer">
+                        GAMINGSTORE | Thiết bị gaming chính hãng, giao diện mua sắm hiện đại.
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7 d-flex align-items-center">
+                <div class="login-form-side w-100">
+                    <div class="form-brand">Đăng nhập</div>
+                    <p class="form-subtitle">Nhập thông tin đăng nhập của bạn để tiếp tục</p>
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger validation-box" role="alert"></div>
 
                     <form id="account" method="post">
 
                         <div class="mb-3">
-                            <label asp-for="Input.Email" class="form-label fw-bold">Email</label>
-                            <div class="input-group">
-                                <span class="input-group-text border-end-0"><i class="bi-envelope"></i></span>
-                                <input asp-for="Input.Email" class="form-control border-start-0" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                            <label asp-for="Input.Email" class="login-label">Email</label>
+                            <div class="input-group login-input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
                             </div>
                             <span asp-validation-for="Input.Email" class="text-danger small"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="Input.Password" class="form-label fw-bold">Mật khẩu</label>
-                            <div class="input-group">
-                                <span class="input-group-text border-end-0"><i class="bi-lock"></i></span>
-                                <input asp-for="Input.Password" class="form-control border-start-0" autocomplete="current-password" aria-required="true" placeholder="********" />
+                            <label asp-for="Input.Password" class="login-label">Mật khẩu</label>
+                            <div class="input-group login-input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input asp-for="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="••••••••" />
                             </div>
                             <span asp-validation-for="Input.Password" class="text-danger small"></span>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="remember-wrapper">
                             <div class="form-check">
-                                <input class="form-check-input" asp-for="Input.RememberMe" />
-                                <label class="form-check-label text-muted" asp-for="Input.RememberMe">
-                                    @Html.DisplayNameFor(m => m.Input.RememberMe)
+                                <input class="form-check-input" type="checkbox" asp-for="Input.RememberMe" id="rememberMe" />
+                                <label class="form-check-label" for="rememberMe">
+                                    Ghi nhớ tài khoản
                                 </label>
                             </div>
-                            <a id="forgot-password" asp-page="./ForgotPassword" class="text-danger text-decoration-none fw-bold" style="font-size: 0.9rem;">
+                            <a id="forgot-password" asp-page="./ForgotPassword" class="forgot-link">
                                 Quên mật khẩu?
                             </a>
                         </div>
 
-                        <button id="login-submit" type="submit" class="w-100 btn btn-login mb-3">Đăng Nhập</button>
+                        <button id="login-submit" type="submit" class="login-submit">Đăng Nhập</button>
 
                     </form>
 
@@ -163,34 +456,32 @@
                     @{
                         if ((Model.ExternalLogins?.Count ?? 0) == 0)
                         {
-                            <div class="text-center text-muted small">
-                                Hệ thống chưa cấu hình đăng nhập bên thứ 3.
-                                <a href="https://go.microsoft.com/fwlink/?LinkID=532715" target="_blank" class="text-secondary">Xem cách thiết lập</a>.
+                            <div class="text-center text-muted small" style="font-size: 13px;">
+                                Hệ thống hiện chưa cấu hình đăng nhập bên thứ ba.
+                                <a href="https://go.microsoft.com/fwlink/?LinkID=532715" target="_blank" class="text-secondary">Xem hướng dẫn thiết lập</a>.
                             </div>
                         }
                         else
                         {
-                            <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="d-grid gap-2">
+                            <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
                                 @foreach (var provider in Model.ExternalLogins!)
                                 {
-                                    <button type="submit" class="btn btn-outline-dark fw-bold" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
-                                        Đăng nhập với @provider.DisplayName
+                                    <button type="submit" class="w-100 external-login-btn" name="provider" value="@provider.Name" title="Đăng nhập bằng @provider.DisplayName">
+                                        <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập với @provider.DisplayName
                                     </button>
                                 }
                             </form>
                         }
                     }
 
-                    <div class="mt-4 text-center">
-                        <p class="text-muted mb-1">
+                    <div class="login-links">
+                        <p class="mb-2">
                             Chưa có tài khoản?
-                            <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="text-danger fw-bold text-decoration-none">Đăng ký ngay</a>
+                            <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Đăng ký tại đây</a>
                         </p>
-                        <p class="mb-0">
-                            <a id="resend-confirmation" asp-page="./ResendEmailConfirmation" class="text-secondary small text-decoration-none">
-                                Gửi lại email xác nhận
-                            </a>
-                        </p>
+                        <a id="resend-confirmation" asp-page="./ResendEmailConfirmation" class="resend-link">
+                            Gửi lại email xác nhận
+                        </a>
                     </div>
 
                 </div>

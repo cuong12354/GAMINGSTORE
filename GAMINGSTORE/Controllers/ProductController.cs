@@ -1,6 +1,9 @@
 ﻿using GAMINGSTORE.Models;
 using GAMINGSTORE.Repositories;
+using GAMINGSTORE.Services;
 using GAMINGSTORE.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -10,13 +13,22 @@ namespace GAMINGSTORE.Controllers
     {
         private readonly IProductRepository _productRepository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly IRecommendationService _recommendationService;
+        private readonly IReviewRepository _reviewRepository;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public ProductController(
             IProductRepository productRepository,
-            ICategoryRepository categoryRepository)
+            ICategoryRepository categoryRepository,
+            IRecommendationService recommendationService,
+            IReviewRepository reviewRepository,
+            UserManager<ApplicationUser> userManager)
         {
             _productRepository = productRepository;
             _categoryRepository = categoryRepository;
+            _recommendationService = recommendationService;
+            _reviewRepository = reviewRepository;
+            _userManager = userManager;
         }
 
         // ================= DANH SÁCH =================
@@ -27,6 +39,7 @@ namespace GAMINGSTORE.Controllers
         }
 
         // ================= CREATE =================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create()
         {
             var categories = await _categoryRepository.GetAllAsync();
@@ -34,6 +47,7 @@ namespace GAMINGSTORE.Controllers
             return View();
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create(Product product, List<IFormFile> imageFiles, List<int> categoryIds)
         {
@@ -81,19 +95,18 @@ namespace GAMINGSTORE.Controllers
             if (product == null)
                 return NotFound();
 
-            var allProducts = (await _productRepository.GetAllAsync()).ToList();
-            var productCategoryIds = product.Categories.Select(c => c.Id).ToHashSet();
             var primaryCategory = product.Categories
                 .Select(c => c.Name)
                 .FirstOrDefault(name => !string.IsNullOrWhiteSpace(name)) ?? "Thiết bị công nghệ";
 
-            var relatedProducts = allProducts
-                .Where(candidate => candidate.Id != product.Id)
-                .Where(candidate => candidate.Categories.Any(category => productCategoryIds.Contains(category.Id)))
-                .OrderByDescending(candidate => candidate.Categories.Count(category => productCategoryIds.Contains(category.Id)))
-                .ThenBy(candidate => Math.Abs(candidate.Price - product.Price))
-                .Take(4)
-                .ToList();
+            // ✨ Lấy user ID nếu đã đăng nhập
+            var userId = _userManager.GetUserId(User);
+
+            // ✨ Gợi ý sản phẩm thông minh - kết hợp 3 yếu tố
+            var recommendedProducts = await _recommendationService.GetRecommendedProductsAsync(id, userId, count: 6);
+
+            // ✨ Lấy đánh giá sản phẩm
+            var reviews = (await _reviewRepository.GetByProductIdAsync(id)).ToList();
 
             var viewModel = new ProductDetailsViewModel
             {
@@ -101,14 +114,17 @@ namespace GAMINGSTORE.Controllers
                 ImageUrls = ParseImageUrls(product.ImageUrl),
                 Highlights = BuildHighlights(product, primaryCategory),
                 Specifications = BuildSpecifications(product, primaryCategory),
-                RelatedProducts = relatedProducts,
+                RelatedProducts = recommendedProducts,
                 PrimaryCategory = primaryCategory
             };
+
+            ViewBag.Reviews = reviews ?? new List<ProductReview>();
 
             return View(viewModel);
         }
 
         // ================= EDIT =================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
             var product = await _productRepository.GetByIdAsync(id);
@@ -123,6 +139,7 @@ namespace GAMINGSTORE.Controllers
             return View(product);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Edit(int id, Product product, List<IFormFile> imageFiles, List<int> categoryIds)
         {
@@ -174,6 +191,7 @@ namespace GAMINGSTORE.Controllers
         }
 
         // ================= DELETE =================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var product = await _productRepository.GetByIdAsync(id);
@@ -184,6 +202,7 @@ namespace GAMINGSTORE.Controllers
             return View(product);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

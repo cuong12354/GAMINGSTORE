@@ -1,0 +1,380 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<style>
+    .dashboard-container {
+        padding: 30px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    .dashboard-header {
+        margin-bottom: 40px;
+    }
+    .dashboard-header h1 {
+        font-size: 32px;
+        font-weight: 900;
+        color: #1f2937;
+        margin: 0 0 10px 0;
+    }
+    .dashboard-header p {
+        color: #6b7280;
+        margin: 0;
+    }
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+    .kpi-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 24px;
+        transition: all 0.3s;
+    }
+    .kpi-card:hover {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+    .kpi-label {
+        font-size: 13px;
+        font-weight: 700;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+    }
+    .kpi-value {
+        font-size: 36px;
+        font-weight: 900;
+        color: #1f2937;
+        margin-bottom: 12px;
+    }
+    .kpi-change {
+        font-size: 13px;
+        font-weight: 700;
+    }
+    .kpi-change.positive {
+        color: #10b981;
+    }
+    .kpi-change.negative {
+        color: #ef4444;
+    }
+    .kpi-card.primary {
+        background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%);
+        color: white;
+        border: none;
+    }
+    .kpi-card.primary .kpi-label {
+        color: rgba(255, 255, 255, 0.8);
+    }
+    .kpi-card.primary .kpi-value {
+        color: white;
+    }
+    .kpi-card.success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+    }
+    .kpi-card.success .kpi-label {
+        color: rgba(255, 255, 255, 0.8);
+    }
+    .kpi-card.success .kpi-value {
+        color: white;
+    }
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+    .dashboard-section {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 24px;
+    }
+    .section-title {
+        font-size: 18px;
+        font-weight: 900;
+        color: #1f2937;
+        margin: 0 0 20px 0;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    .table-responsive {
+        overflow-x: auto;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+    table thead {
+        background: #f3f4f6;
+    }
+    table th {
+        padding: 12px;
+        text-align: left;
+        font-weight: 700;
+        color: #1f2937;
+        border-bottom: 2px solid #e5e7eb;
+    }
+    table td {
+        padding: 12px;
+        border-bottom: 1px solid #e5e7eb;
+        color: #4b5563;
+    }
+    table tbody tr:hover {
+        background: #f9fafb;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+    .status-pending {
+        background: #fef3c7;
+        color: #7c2d12;
+    }
+    .status-processing {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+    .status-delivered {
+        background: #dcfce7;
+        color: #15803d;
+    }
+    .stat-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .stat-row:last-child {
+        border-bottom: none;
+    }
+    .stat-label {
+        color: #6b7280;
+        font-weight: 600;
+    }
+    .stat-value {
+        font-weight: 700;
+        color: #1f2937;
+    }
+    .chart-placeholder {
+        height: 300px;
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #9ca3af;
+        font-weight: 600;
+        text-align: center;
+    }
+    .warning-alert {
+        background: #fef3c7;
+        border: 1px solid #fbbf24;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 12px;
+        color: #78350f;
+        font-size: 13px;
+        font-weight: 600;
+    }
+</style>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>📊 Dashboard Quản Lý</h1>
+        <p>Tổng quan toàn bộ hoạt động của cửa hàng</p>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+        <div class="kpi-card primary">
+            <div class="kpi-label">📦 Tổng Đơn Hàng</div>
+            <div class="kpi-value">@ViewBag.TotalOrders</div>
+            <div class="kpi-change positive">↑ @ViewBag.TodayOrders hôm nay</div>
+        </div>
+
+        <div class="kpi-card success">
+            <div class="kpi-label">💰 Doanh Thu</div>
+            <div class="kpi-value">@ViewBag.TotalRevenue.ToString("C0")</div>
+            <div class="kpi-change positive">↑ @ViewBag.MonthlyRevenue.ToString("C0") tháng này</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">⏳ Đơn Hàng Chờ</div>
+            <div class="kpi-value">@ViewBag.PendingOrders</div>
+            <div class="kpi-change negative">Cần xử lý</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">🏷️ Sản Phẩm Hoạt Động</div>
+            <div class="kpi-value">@ViewBag.ActiveProducts</div>
+            <div class="kpi-change negative">↓ @ViewBag.LowStockProducts hàng có tồn kho thấp</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">👥 Tổng Khách Hàng</div>
+            <div class="kpi-value">@ViewBag.TotalUsers</div>
+            <div class="kpi-change positive">@ViewBag.TotalReviews đánh giá</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">📂 Danh Mục</div>
+            <div class="kpi-value">@ViewBag.TotalCategories</div>
+            <div class="kpi-change">Tất cả danh mục</div>
+        </div>
+    </div>
+
+    <!-- Charts and Reports Grid -->
+    <div class="dashboard-grid">
+        <!-- Revenue Chart -->
+        <div class="dashboard-section">
+            <h3 class="section-title">📈 Biểu Đồ Doanh Thu Hàng Tháng</h3>
+            <div class="chart-placeholder">
+                📊 Biểu đồ doanh thu (Tích hợp Chart.js)
+            </div>
+        </div>
+
+        <!-- Top Products -->
+        <div class="dashboard-section">
+            <h3 class="section-title">🔥 Sản Phẩm Bán Chạy Nhất</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sản Phẩm</th>
+                            <th>Bán</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.TopProducts != null && ViewBag.TopProducts.Count > 0)
+                        {
+                            @foreach (var product in ViewBag.TopProducts)
+                            {
+                                <tr>
+                                    <td>@product.Name</td>
+                                    <td><strong>@product.QuantitySold</strong> units</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="2" style="text-align: center; padding: 30px; color: #9ca3af;">
+                                    Chưa có dữ liệu
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Low Stock Items -->
+        <div class="dashboard-section">
+            <h3 class="section-title">⚠️ Sản Phẩm Tồn Kho Thấp</h3>
+            @if (ViewBag.LowStockItems != null && ViewBag.LowStockItems.Count > 0)
+            {
+                @foreach (var item in ViewBag.LowStockItems.Take(5))
+                {
+                    <div class="warning-alert">
+                        <strong>@item.ProductName</strong> - Tồn: @item.StockQuantity
+                    </div>
+                }
+            }
+            else
+            {
+                <p style="color: #6b7280; text-align: center; padding: 20px;">
+                    ✅ Tất cả sản phẩm có tồn kho đủ
+                </p>
+            }
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="dashboard-section">
+            <h3 class="section-title">📋 Đơn Hàng Gần Đây</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Đơn</th>
+                            <th>Khách</th>
+                            <th>Trạng Thái</th>
+                            <th>Tổng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.RecentOrders != null && ViewBag.RecentOrders.Count > 0)
+                        {
+                            @foreach (var order in ViewBag.RecentOrders)
+                            {
+                                <tr>
+                                    <td>#@order.Id</td>
+                                    <td>@order.User?.FullName</td>
+                                    <td>
+                                        <span class="status-badge status-@(order.Status?.ToLower() ?? "pending")">
+                                            @order.Status
+                                        </span>
+                                    </td>
+                                    <td><strong>@order.TotalPrice.ToString("C")</strong></td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 30px; color: #9ca3af;">
+                                    Chưa có đơn hàng
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="dashboard-section">
+            <h3 class="section-title">📊 Thống Kê Nhanh</h3>
+            <div class="stat-row">
+                <span class="stat-label">Đơn Hôm Nay</span>
+                <span class="stat-value">@ViewBag.TodayOrders</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Doanh Thu Hôm Nay</span>
+                <span class="stat-value">@ViewBag.TodayRevenue.ToString("C0")</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Doanh Thu Tháng Này</span>
+                <span class="stat-value">@ViewBag.MonthlyRevenue.ToString("C0")</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Đơn Chờ Xử Lý</span>
+                <span class="stat-value">@ViewBag.PendingOrders</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display: flex; gap: 12px; margin-top: 40px;">
+        <a href="@Url.Action("Index", "Coupon", new { area = "Admin" })" class="btn btn-secondary">
+            💳 Quản Lý Mã Giảm Giá
+        </a>
+        <a href="@Url.Action("InventoryReport", "Dashboard", new { area = "Admin" })" class="btn btn-secondary">
+            📦 Báo Cáo Kho Hàng
+        </a>
+        <a href="@Url.Action("CustomerReport", "Dashboard", new { area = "Admin" })" class="btn btn-secondary">
+            👥 Báo Cáo Khách Hàng
+        </a>
+    </div>
+</div>

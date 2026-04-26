@@ -1,0 +1,508 @@
+@model ReturnRequest
+
+@{
+    ViewData["Title"] = $"Chi Tiết Yêu Cầu Trả Hàng #{Model.Id}";
+}
+
+<style>
+    .details-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .details-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
+
+    .details-header h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .details-header p {
+        margin: 5px 0 0 0;
+        opacity: 0.9;
+    }
+
+    .details-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .details-section {
+        padding: 30px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .details-section:last-child {
+        border-bottom: none;
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #667eea;
+        display: inline-block;
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .details-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .details-item-label {
+        font-size: 12px;
+        font-weight: bold;
+        color: #999;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+        letter-spacing: 0.5px;
+    }
+
+    .details-item-value {
+        font-size: 16px;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: bold;
+        width: fit-content;
+    }
+
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-approved {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-rejected {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-completed {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .amount-highlight {
+        font-size: 28px;
+        font-weight: bold;
+        color: #d92e2e;
+        margin: 10px 0;
+    }
+
+    .reason-box {
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 4px;
+        border-left: 4px solid #667eea;
+        line-height: 1.6;
+        color: #555;
+    }
+
+    .admin-notes-box {
+        background: #f5f5f5;
+        padding: 15px;
+        border-radius: 4px;
+        border-left: 4px solid #ffc107;
+        line-height: 1.6;
+        color: #666;
+    }
+
+    .timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .timeline-item {
+        display: flex;
+        gap: 15px;
+    }
+
+    .timeline-dot {
+        width: 20px;
+        height: 20px;
+        background: #667eea;
+        border-radius: 50%;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .timeline-content {
+        flex: 1;
+    }
+
+    .timeline-label {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 2px;
+    }
+
+    .timeline-date {
+        font-size: 12px;
+        color: #999;
+    }
+
+    .actions-section {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .btn-action {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #764ba2;
+        text-decoration: none;
+    }
+
+    .btn-secondary {
+        background: #f0f0f0;
+        color: #333;
+    }
+
+    .btn-secondary:hover {
+        background: #e0e0e0;
+        text-decoration: none;
+    }
+
+    .info-box {
+        background: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        padding: 15px;
+        border-radius: 4px;
+        margin-top: 20px;
+    }
+
+    .info-box-title {
+        font-weight: bold;
+        color: #1565c0;
+        margin-bottom: 5px;
+    }
+
+    .info-box-content {
+        font-size: 14px;
+        color: #1565c0;
+        line-height: 1.6;
+    }
+
+    .btn-approve {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-approve:hover {
+        background: #218838;
+        text-decoration: none;
+    }
+
+    .btn-reject {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-reject:hover {
+        background: #c82333;
+        text-decoration: none;
+    }
+
+    .admin-section {
+        background: #f8f9fa;
+        border: 2px solid #667eea;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .admin-form-group {
+        margin-bottom: 15px;
+    }
+
+    .admin-label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 8px;
+        color: #333;
+    }
+
+    .admin-textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+    }
+
+    .admin-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    @@media (max-width: 600px) {
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .actions-section {
+            flex-direction: column;
+        }
+
+        .btn-action {
+            justify-content: center;
+        }
+
+        .admin-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="details-container">
+    <div class="details-header">
+        <h1>📋 Chi Tiết Yêu Cầu Trả Hàng</h1>
+        <p>Yêu cầu #{Model.Id}</p>
+    </div>
+
+    <div class="details-card">
+        <!-- Status Section -->
+        <div class="details-section">
+            <div class="section-title">📊 Trạng Thái</div>
+            <div class="details-grid">
+                <div class="details-item">
+                    <span class="details-item-label">Trạng Thái Hiện Tại</span>
+                    <span class="status-badge @($"status-{Model.Status.ToLower()}")">
+                        @(Model.Status switch
+                        {
+                            "Pending" => "⏳ Chờ Xem Xét",
+                            "Approved" => "✅ Phê Duyệt",
+                            "Rejected" => "❌ Từ Chối",
+                            "Completed" => "✔️ Hoàn Tất",
+                            _ => Model.Status
+                        })
+                    </span>
+                </div>
+                <div class="details-item">
+                    <span class="details-item-label">Ngày Gửi</span>
+                    <span class="details-item-value">@Model.RequestDate.ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Return Info Section -->
+        <div class="details-section">
+            <div class="section-title">📦 Thông Tin Trả Hàng</div>
+            <div class="details-grid">
+                <div class="details-item">
+                    <span class="details-item-label">Mã Đơn Hàng</span>
+                    <span class="details-item-value">
+                        <a href="@Url.Action("Details", "OrderHistory", new { id = Model.OrderId })" style="color: #667eea; text-decoration: none;">
+                            #@Model.OrderId
+                        </a>
+                    </span>
+                </div>
+                <div class="details-item">
+                    <span class="details-item-label">Số Tiền Hoàn Lại</span>
+                    <span class="amount-highlight">₫@Model.ReturnAmount.ToString("N0")</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <span class="details-item-label">Lý Do Trả Hàng</span>
+                <div class="reason-box">
+                    @(Model.Reason ?? "Không có thông tin")
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Details Section -->
+        @if (Model.Order != null)
+        {
+            <div class="details-section">
+                <div class="section-title">🛍️ Chi Tiết Đơn Hàng</div>
+                <div class="details-grid">
+                    <div class="details-item">
+                        <span class="details-item-label">Khách Hàng</span>
+                        <span class="details-item-value">@Model.Order.CustomerName</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="details-item-label">Ngày Đặt Hàng</span>
+                        <span class="details-item-value">@Model.Order.OrderDate.ToString("dd/MM/yyyy")</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="details-item-label">Địa Chỉ Giao Hàng</span>
+                        <span class="details-item-value">@Model.Order.ShippingAddress</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="details-item-label">Tổng Tiền</span>
+                        <span class="details-item-value">₫@Model.Order.TotalPrice.ToString("N0")</span>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Admin Notes Section -->
+        @if (!string.IsNullOrEmpty(Model.AdminNotes))
+        {
+            <div class="details-section">
+                <div class="section-title">💬 Ghi Chú Từ Quản Trị Viên</div>
+                <div class="admin-notes-box">
+                    @Model.AdminNotes
+                </div>
+            </div>
+        }
+
+        <!-- Timeline Section -->
+        <div class="details-section">
+            <div class="section-title">📈 Tiến Trình Xử Lý</div>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-label">Yêu Cầu Được Tạo</div>
+                        <div class="timeline-date">@Model.RequestDate.ToString("dd/MM/yyyy HH:mm")</div>
+                    </div>
+                </div>
+                @if (Model.Status != "Pending")
+                {
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-label">
+                                @(Model.Status switch
+                                {
+                                    "Approved" => "✅ Phê Duyệt",
+                                    "Rejected" => "❌ Từ Chối",
+                                    "Completed" => "✔️ Hoàn Tất",
+                                    _ => "Cập Nhật"
+                                })
+                            </div>
+                            <div class="timeline-date">Đang xử lý</div>
+                        </div>
+                    </div>
+                }
+                @if (Model.Status == "Completed")
+                {
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-label">💰 Hoàn Tiền Đã Gửi</div>
+                            <div class="timeline-date">Sẽ nhận trong 3-5 ngày làm việc</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Info Box -->
+        @if (Model.Status == "Pending")
+        {
+            <div class="details-section">
+                <div class="info-box">
+                    <div class="info-box-title">ℹ️ Đang Chờ Xem Xét</div>
+                    <div class="info-box-content">
+                        Yêu cầu của bạn đang được xem xét bởi đội hỗ trợ khách hàng. Chúng tôi sẽ liên hệ với bạn trong 3-5 ngày làm việc.
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Admin Section -->
+        @if (User.IsInRole("Admin") && Model.Status == "Pending")
+        {
+            <div class="details-section">
+                <div class="admin-section">
+                    <h3 style="margin-top: 0; color: #667eea;">⚙️ Phê Duyệt / Từ Chối Yêu Cầu</h3>
+                    
+                    <form method="post" asp-action="UpdateStatus">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-label">Ghi Chú (Tùy Chọn)</label>
+                            <textarea name="adminNotes" 
+                                      class="admin-textarea" 
+                                      rows="4" 
+                                      placeholder="Nhập ghi chú hoặc lý do từ chối..."></textarea>
+                        </div>
+
+                        <div class="admin-buttons">
+                            <button type="submit" 
+                                    name="status" 
+                                    value="Approved" 
+                                    class="btn-action btn-approve"
+                                    onclick="return confirm('Xác nhận phê duyệt yêu cầu này?');">
+                                ✅ Phê Duyệt
+                            </button>
+                            <button type="submit" 
+                                    name="status" 
+                                    value="Rejected" 
+                                    class="btn-action btn-reject"
+                                    onclick="return confirm('Xác nhận từ chối yêu cầu này?');">
+                                ❌ Từ Chối
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+
+        <!-- Actions -->
+        <div class="details-section" style="background: #f9f9f9;">
+            <div class="actions-section">
+                <a href="@Url.Action("Index")" class="btn-action btn-secondary">
+                    ← Quay Lại
+                </a>
+                <a href="@Url.Action("Index", "OrderHistory")" class="btn-action btn-primary">
+                    📦 Xem Đơn Hàng
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

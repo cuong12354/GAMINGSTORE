@@ -1,4 +1,4 @@
-﻿@model ShoppingCart
+@model ShoppingCart
 
 @{
     ViewData["Title"] = "Giỏ Hàng";
@@ -6,8 +6,8 @@
 
 <style>
     :root {
-        --primary: #ee4d2d;
-        --primary-dark: #d63d1f;
+        --primary: #d92e2e;
+        --primary-dark: #b82222;
         --surface: #ffffff;
         --surface-soft: #fff7f3;
         --text: #1f2937;
@@ -22,9 +22,9 @@
 
     .cart-hero {
         background:
-            radial-gradient(circle at top right, rgba(238, 77, 45, 0.16), transparent 30%),
+            radial-gradient(circle at top right, rgba(217, 46, 46, 0.16), transparent 30%),
             linear-gradient(135deg, #ffffff, #fff6f2);
-        border: 1px solid rgba(238, 77, 45, 0.08);
+        border: 1px solid rgba(217, 46, 46, 0.08);
         border-radius: 24px;
         box-shadow: 0 18px 44px rgba(15, 23, 42, 0.07);
         padding: 26px 28px;
@@ -37,7 +37,7 @@
         gap: 8px;
         padding: 8px 14px;
         border-radius: 999px;
-        background: rgba(238, 77, 45, 0.1);
+        background: rgba(217, 46, 46, 0.1);
         color: var(--primary-dark);
         font-size: 12px;
         font-weight: 800;
@@ -136,12 +136,21 @@
         color: var(--text);
         background: white;
         font-weight: 800;
-        transition: all 0.2s ease;
+        transition: all 0.25s ease;
+        border: 1px solid transparent;
     }
 
     .qty-btn:hover {
         color: var(--primary);
         background: #fff5f2;
+        transform: scale(1.08);
+        box-shadow: 0 4px 12px rgba(238,77,45,0.15);
+        border-color: rgba(238,77,45,0.2);
+    }
+
+    .qty-btn:active {
+        transform: scale(0.95);
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.08);
     }
 
     .qty-value {
@@ -168,12 +177,21 @@
         background: rgba(215, 58, 73, 0.12);
         color: var(--danger);
         font-size: 18px;
-        transition: all 0.2s ease;
+        transition: all 0.25s ease;
+        border: 1px solid rgba(215, 58, 73, 0.2);
     }
 
     .remove-btn:hover {
         background: var(--danger);
         color: white;
+        transform: scale(1.1);
+        box-shadow: 0 6px 16px rgba(215,58,73,0.25);
+        border-color: var(--danger);
+    }
+
+    .remove-btn:active {
+        transform: scale(0.95);
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
     }
 
     .cart-summary {
@@ -237,7 +255,7 @@
         border-radius: 16px;
         font-weight: 800;
         cursor: pointer;
-        transition: all 0.25s ease;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         font-size: 14px;
         text-decoration: none;
         display: inline-flex;
@@ -251,9 +269,31 @@
         color: var(--text);
     }
 
+    .btn-continue:hover {
+        background: #e0e7f0;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    .btn-continue:active {
+        transform: translateY(0);
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+
     .btn-clear {
         background: #fff4e5;
         color: #9a6700;
+    }
+
+    .btn-clear:hover {
+        background: #ffe8cc;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(154,103,0,0.15);
+    }
+
+    .btn-clear:active {
+        transform: translateY(0);
+        box-shadow: inset 0 2px 4px rgba(154,103,0,0.1);
     }
 
     .btn-checkout {
@@ -262,12 +302,18 @@
         width: 100%;
         margin-top: 12px;
         min-height: 54px;
-        box-shadow: 0 16px 28px rgba(238, 77, 45, 0.18);
+        box-shadow: 0 16px 28px rgba(217, 46, 46, 0.18);
     }
 
-    .btn-action:hover,
     .btn-checkout:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 24px 40px rgba(217, 46, 46, 0.28), inset 0 1px 0 rgba(255,255,255,0.2);
+        background: linear-gradient(135deg, #f25c35, #c23015);
+    }
+
+    .btn-checkout:active {
         transform: translateY(-1px);
+        box-shadow: 0 8px 16px rgba(217, 46, 46, 0.18), inset 0 2px 4px rgba(0,0,0,0.15);
     }
 
     .cart-empty {
@@ -314,21 +360,294 @@
 
     @@media (max-width: 768px) {
         .cart-page {
-            padding-top: 24px;
+            padding: 20px 0 40px;
+        }
+
+        .cart-hero {
+            padding: 20px;
+            margin-bottom: 18px;
         }
 
         .cart-title {
-            font-size: 28px;
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        .cart-subtitle {
+            font-size: 14px;
         }
 
         .cart-actions {
             grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .btn-action, .btn-checkout {
+            min-height: 44px;
+            font-size: 13px;
         }
 
         .cart-table th,
         .cart-table td {
-            padding: 14px 12px;
+            padding: 12px 10px;
+            font-size: 12px;
+        }
+
+        .cart-table th {
+            padding: 14px 10px;
+        }
+
+        .product-cell {
+            max-width: 200px;
+        }
+
+        .product-name {
             font-size: 13px;
+            font-weight: 700;
+        }
+
+        .product-meta {
+            font-size: 11px;
+        }
+
+        .qty-control {
+            gap: 4px;
+            padding: 2px;
+        }
+
+        .qty-btn {
+            width: 30px;
+            height: 30px;
+            font-size: 12px;
+        }
+
+        .qty-value {
+            min-width: 28px;
+            font-size: 12px;
+        }
+
+        .price-column {
+            font-size: 13px;
+        }
+
+        .remove-btn {
+            width: 34px;
+            height: 34px;
+            font-size: 14px;
+        }
+
+        .cart-summary {
+            padding: 18px;
+            border-radius: 18px;
+        }
+
+        .summary-title {
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+
+        .summary-subtitle {
+            margin-bottom: 14px;
+            font-size: 13px;
+        }
+
+        .summary-row {
+            padding: 10px 0;
+            font-size: 13px;
+        }
+
+        .summary-row.total-row {
+            margin-top: 6px;
+            padding-top: 14px;
+        }
+
+        .summary-row.total-row strong,
+        .summary-row.total-row .total-price {
+            font-size: 20px;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .cart-page {
+            padding: 16px 0 32px;
+        }
+
+        .cart-hero {
+            padding: 16px;
+            margin-bottom: 16px;
+            border-radius: 18px;
+        }
+
+        .cart-kicker {
+            padding: 6px 12px;
+            font-size: 11px;
+            margin-bottom: 10px;
+        }
+
+        .cart-title {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .cart-subtitle {
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        /* CONVERT TABLE TO CARD LAYOUT ON SMALL PHONES */
+        .cart-table {
+            display: block;
+        }
+
+        .cart-table thead {
+            display: none;
+        }
+
+        .cart-table tbody {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .cart-table tr {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 4px;
+        }
+
+        .cart-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 !important;
+            border: none !important;
+        }
+
+        .cart-table td::before {
+            content: attr(data-label);
+            font-weight: 700;
+            color: var(--text-light);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .product-cell {
+            flex-direction: column;
+            align-items: flex-start !important;
+            max-width: 100%;
+        }
+
+        .product-cell::before {
+            content: "Sản phẩm";
+        }
+
+        .product-name {
+            font-size: 13px;
+            margin-bottom: 4px;
+            width: 100%;
+        }
+
+        .product-meta {
+            font-size: 11px;
+        }
+
+        .price-column {
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .price-column::before {
+            content: "Giá";
+        }
+
+        .qty-control {
+            gap: 4px;
+            padding: 3px;
+            justify-content: flex-end;
+        }
+
+        .qty-btn {
+            width: 28px;
+            height: 28px;
+            font-size: 11px;
+        }
+
+        .qty-value {
+            min-width: 24px;
+            font-size: 11px;
+        }
+
+        .remove-btn {
+            width: 32px;
+            height: 32px;
+            font-size: 13px;
+            align-self: flex-end;
+        }
+
+        .cart-summary {
+            padding: 16px;
+            border-radius: 16px;
+            margin-top: 16px;
+        }
+
+        .summary-title {
+            font-size: 16px;
+        }
+
+        .summary-subtitle {
+            margin-bottom: 12px;
+            font-size: 12px;
+        }
+
+        .summary-row {
+            padding: 8px 0;
+            font-size: 12px;
+        }
+
+        .summary-row.total-row {
+            margin-top: 4px;
+            padding-top: 12px;
+        }
+
+        .summary-row.total-row strong,
+        .summary-row.total-row .total-price {
+            font-size: 18px;
+        }
+
+        .btn-action {
+            min-height: 44px;
+            padding: 10px 12px;
+            font-size: 12px;
+            border-radius: 10px;
+        }
+
+        .btn-checkout {
+            min-height: 48px;
+            margin-top: 10px;
+        }
+
+        .cart-empty {
+            padding: 48px 16px;
+            margin: 0 -12px;
+            border-radius: 0;
+        }
+
+        .cart-empty-icon {
+            width: 72px;
+            height: 72px;
+            font-size: 32px;
+            margin-bottom: 16px;
+        }
+
+        .empty-btn {
+            padding: 11px 16px;
+            font-size: 12px;
         }
     }
 </style>
@@ -415,9 +734,22 @@
                         <span>Miễn phí</span>
                     </div>
 
+                    <div style="padding: 16px 0; border-top: 1px solid rgba(15, 23, 42, 0.08);">
+                        <label style="display: block; font-weight: 700; margin-bottom: 8px; font-size: 14px;">Mã Giảm Giá:</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="couponCode" placeholder="Nhập mã giảm giá (nếu có)" 
+                                   style="flex: 1; padding: 10px 12px; border: 1px solid rgba(15, 23, 42, 0.08); border-radius: 8px; font-size: 13px;">
+                            <button type="button" onclick="applyCoupon()" 
+                                    style="padding: 10px 16px; background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px;">
+                                Áp Dụng
+                            </button>
+                        </div>
+                        <div id="couponMessage" style="font-size: 12px; margin-top: 6px; color: #6b7280;"></div>
+                    </div>
+
                     <div class="summary-row">
                         <span>Giảm giá:</span>
-                        <span>0 ₫</span>
+                        <span id="discountAmount">0 ₫</span>
                     </div>
 
                     <div class="summary-row total-row">
@@ -430,7 +762,8 @@
                         <a asp-action="ClearCart" class="btn-action btn-clear" onclick="return confirm('Bạn có chắc chắn muốn xóa hết giỏ hàng?');">Xóa hết</a>
                     </div>
 
-                    <form asp-action="Checkout" method="get">
+                    <form asp-action="Checkout" method="post">
+                        <input type="hidden" id="couponCodeInput" name="CouponCode" />
                         <button type="submit" class="btn-checkout">
                             ✓ Thanh Toán (@Model.Items.Count sản phẩm)
                         </button>
@@ -440,3 +773,85 @@
         </div>
     }
 </div>
+
+<script>
+    // Store applied coupon code
+    let appliedCouponCode = '';
+    let appliedDiscountAmount = 0;
+
+    async function applyCoupon() {
+        const couponCode = document.getElementById('couponCode').value.trim();
+        const messageDiv = document.getElementById('couponMessage');
+        
+        if (!couponCode) {
+            messageDiv.textContent = '❌ Vui lòng nhập mã giảm giá';
+            messageDiv.style.color = '#dc2626';
+            return;
+        }
+        
+        messageDiv.textContent = '⏳ Đang kiểm tra mã...';
+        messageDiv.style.color = '#f59e0b';
+        
+        try {
+            // Get current total from page
+            const totalPriceText = document.querySelector('.total-price')?.textContent || '0';
+            const totalPrice = parseInt(totalPriceText.replace(/[^0-9]/g, ''));
+            
+            // Call API to validate coupon
+            const response = await fetch('/api/coupon/test', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    code: couponCode,
+                    totalPrice: totalPrice
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                appliedCouponCode = couponCode.toUpperCase();
+                appliedDiscountAmount = data.discountAmount;
+                
+                // Update discount display
+                document.getElementById('discountAmount').textContent = 
+                    data.discountAmount.toLocaleString('vi-VN') + ' ₫';
+                
+                // Update total
+                const newTotal = totalPrice - data.discountAmount;
+                document.querySelector('.total-price').textContent = 
+                    newTotal.toLocaleString('vi-VN') + ' ₫';
+                
+                messageDiv.textContent = '✅ ' + data.message;
+                messageDiv.style.color = '#10b981';
+                
+                // Store coupon code for checkout
+                document.getElementById('couponCodeInput').value = appliedCouponCode;
+            } else {
+                appliedCouponCode = '';
+                appliedDiscountAmount = 0;
+                messageDiv.textContent = '❌ ' + data.message;
+                messageDiv.style.color = '#dc2626';
+                document.getElementById('couponCodeInput').value = '';
+            }
+        } catch (error) {
+            messageDiv.textContent = '❌ Lỗi khi kiểm tra mã. Vui lòng thử lại.';
+            messageDiv.style.color = '#dc2626';
+            console.error('Coupon error:', error);
+        }
+    }
+    
+    // Allow Enter key to apply coupon
+    document.addEventListener('DOMContentLoaded', function() {
+        const input = document.getElementById('couponCode');
+        if (input) {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    applyCoupon();
+                }
+            });
+        }
+    });
+</script>

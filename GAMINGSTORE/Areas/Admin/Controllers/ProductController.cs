@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 namespace Ares.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class ProductController : Controller
     {
         private readonly IProductRepository _productRepository;

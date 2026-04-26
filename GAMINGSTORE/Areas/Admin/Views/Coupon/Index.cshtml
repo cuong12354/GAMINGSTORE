@@ -1,0 +1,319 @@
+@using GAMINGSTORE.Models
+@model IEnumerable<Coupon>
+
+@{
+    ViewData["Title"] = "Quản Lý Mã Giảm Giá";
+}
+
+<style>
+    .coupon-container {
+        padding: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .coupon-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    .coupon-header h1 {
+        font-size: 28px;
+        font-weight: 900;
+        color: #1f2937;
+        margin: 0;
+    }
+    .btn-new-coupon {
+        background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%);
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.2s;
+    }
+    .btn-new-coupon:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(217, 46, 46, 0.3);
+    }
+    .coupon-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+    .coupon-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+        background: white;
+        transition: all 0.3s;
+    }
+    .coupon-card:hover {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        transform: translateY(-4px);
+    }
+    .coupon-header-card {
+        background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%);
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+    .coupon-code {
+        font-size: 24px;
+        font-weight: 900;
+        margin-bottom: 8px;
+        letter-spacing: 4px;
+        font-family: 'Courier New', monospace;
+    }
+    .coupon-label {
+        font-size: 12px;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .coupon-body {
+        padding: 16px;
+    }
+    .coupon-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #e5e7eb;
+        font-size: 13px;
+    }
+    .coupon-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    .coupon-label-text {
+        color: #6b7280;
+        font-weight: 600;
+    }
+    .coupon-value {
+        color: #1f2937;
+        font-weight: 700;
+    }
+    .discount-amount {
+        font-size: 18px;
+        font-weight: 900;
+        color: #d92e2e;
+    }
+    .coupon-status {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+    .status-active {
+        background: #dcfce7;
+        color: #15803d;
+    }
+    .status-inactive {
+        background: #fee;
+        color: #dc2626;
+    }
+    .status-expired {
+        background: #e5e7eb;
+        color: #374151;
+    }
+    .coupon-actions {
+        display: flex;
+        gap: 8px;
+        padding: 12px;
+        border-top: 1px solid #e5e7eb;
+    }
+    .btn-edit {
+        flex: 1;
+        background: #dbeafe;
+        border: 1px solid #93c5fd;
+        color: #1e40af;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 13px;
+        transition: all 0.2s;
+        text-decoration: none;
+        text-align: center;
+        display: inline-block;
+    }
+    .btn-edit:hover {
+        background: #93c5fd;
+        border-color: #3b82f6;
+    }
+    .btn-delete {
+        flex: 1;
+        background: #fee;
+        border: 1px solid #fca5a5;
+        color: #dc2626;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 13px;
+        transition: all 0.2s;
+    }
+    .btn-delete:hover {
+        background: #fca5a5;
+        border-color: #dc2626;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+    }
+    .empty-icon {
+        font-size: 64px;
+        margin-bottom: 20px;
+    }
+    .empty-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 12px;
+    }
+    .empty-text {
+        color: #6b7280;
+        margin-bottom: 24px;
+    }
+    .filters {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    .filter-btn {
+        background: white;
+        border: 1px solid #e5e7eb;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .filter-btn.active {
+        background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%);
+        color: white;
+        border-color: #d92e2e;
+    }
+    .filter-btn:hover {
+        border-color: #d92e2e;
+    }
+</style>
+
+<div class="coupon-container">
+    <div class="coupon-header">
+        <h1>💳 Quản Lý Mã Giảm Giá</h1>
+        <a href="@Url.Action("Create", "Coupon", new { area = "Admin" })" class="btn-new-coupon">
+            ➕ Tạo Mã Mới
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+        <button class="filter-btn active">📊 Tất Cả</button>
+        <button class="filter-btn">✅ Hoạt Động</button>
+        <button class="filter-btn">❌ Vô Hiệu</button>
+        <button class="filter-btn">⏰ Sắp Hết Hạn</button>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="coupon-grid">
+            @foreach (var coupon in Model.OrderByDescending(c => c.StartDate))
+            {
+                var isExpired = coupon.ExpiryDate < DateTime.Now;
+                var status = !coupon.IsActive ? "inactive" 
+                    : isExpired ? "expired" 
+                    : "active";
+                var statusText = !coupon.IsActive ? "❌ Vô Hiệu" 
+                    : isExpired ? "⏰ Hết Hạn" 
+                    : "✅ Hoạt Động";
+
+                <div class="coupon-card">
+                    <div class="coupon-header-card">
+                        <div class="coupon-code">@coupon.Code</div>
+                        <div class="coupon-label">Mã Giảm Giá</div>
+                    </div>
+
+                    <div class="coupon-body">
+                        <div class="coupon-row">
+                            <span class="coupon-label-text">Giảm Giá:</span>
+                            <span class="discount-amount">
+                                @if (coupon.DiscountPercent > 0)
+                                {
+                                    <text>-@coupon.DiscountPercent%</text>
+                                }
+                                else if (coupon.DiscountAmount > 0)
+                                {
+                                    <text>-@coupon.DiscountAmount.ToString("C")</text>
+                                }
+                                else
+                                {
+                                    <text>Không có giảm giá</text>
+                                }
+                            </span>
+                        </div>
+
+                        <div class="coupon-row">
+                            <span class="coupon-label-text">Tối Thiểu:</span>
+                            <span class="coupon-value">@coupon.MinimumOrderValue.ToString("C")</span>
+                        </div>
+
+                        <div class="coupon-row">
+                            <span class="coupon-label-text">Lượt Sử Dụng:</span>
+                            <span class="coupon-value">@coupon.CurrentUsageCount / @coupon.MaxUsageCount</span>
+                        </div>
+
+                        <div class="coupon-row">
+                            <span class="coupon-label-text">Từ - Đến:</span>
+                            <span class="coupon-value" style="font-size: 12px;">
+                                @coupon.StartDate.ToString("dd/MM")<br/>
+                                @coupon.ExpiryDate.ToString("dd/MM")
+                            </span>
+                        </div>
+
+                        <div class="coupon-row">
+                            <span class="coupon-label-text">Trạng Thái:</span>
+                            <span class="coupon-status status-@status">@statusText</span>
+                        </div>
+                    </div>
+
+                    <div class="coupon-actions">
+                        <a href="@Url.Action("Edit", "Coupon", new { area = "Admin", id = coupon.Id })" class="btn-edit">
+                            ✏️ Sửa
+                        </a>
+                        <form method="post" action="@Url.Action("Delete", "Coupon", new { area = "Admin" })" style="flex: 1;">
+                            <input type="hidden" name="id" value="@coupon.Id" />
+                            <button type="submit" class="btn-delete" onclick="return confirm('Xác nhận xóa mã: @coupon.Code?')">
+                                🗑️ Xóa
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <div class="empty-icon">😢</div>
+            <div class="empty-title">Chưa có mã giảm giá</div>
+            <div class="empty-text">Tạo mã giảm giá đầu tiên để khuyến khích khách hàng</div>
+            <a href="@Url.Action("Create", "Coupon", new { area = "Admin" })" class="btn-new-coupon">
+                ➕ Tạo Mã Mới
+            </a>
+        </div>
+    }
+</div>
