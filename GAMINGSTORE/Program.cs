@@ -77,6 +77,7 @@ builder.Services.AddScoped<IReturnService, ReturnService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IOrderManagementService, OrderManagementService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 var app = builder.Build();
 
