@@ -1,3 +1,7 @@
+@using GAMINGSTORE.Authorization
+@using GAMINGSTORE.Extensions
+@using GAMINGSTORE.Areas.Admin.Controllers
+@model DashboardViewModel
 @{
     ViewData["Title"] = "Admin Dashboard";
 }
@@ -188,6 +192,42 @@
         font-size: 13px;
         font-weight: 600;
     }
+    .action-buttons {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 40px;
+    }
+    .action-button {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        text-decoration: none;
+        color: #1f2937;
+        transition: all 0.3s;
+        display: block;
+    }
+    .action-button:hover {
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+        border-color: #d1d5db;
+    }
+    .action-button-icon {
+        font-size: 24px;
+        margin-bottom: 8px;
+        display: block;
+    }
+    .action-button-title {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+    .action-button-desc {
+        font-size: 13px;
+        color: #6b7280;
+    }
 </style>
 
 <div class="dashboard-container">
@@ -200,39 +240,63 @@
     <div class="kpi-grid">
         <div class="kpi-card primary">
             <div class="kpi-label">📦 Tổng Đơn Hàng</div>
-            <div class="kpi-value">@ViewBag.TotalOrders</div>
-            <div class="kpi-change positive">↑ @ViewBag.TodayOrders hôm nay</div>
+            <div class="kpi-value">@Model.TotalOrders</div>
+            <div class="kpi-change positive">↑ @Model.TodayOrders hôm nay</div>
         </div>
 
         <div class="kpi-card success">
             <div class="kpi-label">💰 Doanh Thu</div>
-            <div class="kpi-value">@ViewBag.TotalRevenue.ToString("C0")</div>
-            <div class="kpi-change positive">↑ @ViewBag.MonthlyRevenue.ToString("C0") tháng này</div>
+            <div class="kpi-value">@Model.TotalRevenue.ToString("C0")</div>
+            <div class="kpi-change positive">↑ @Model.MonthlyRevenue.ToString("C0") tháng này</div>
         </div>
 
         <div class="kpi-card">
             <div class="kpi-label">⏳ Đơn Hàng Chờ</div>
-            <div class="kpi-value">@ViewBag.PendingOrders</div>
+            <div class="kpi-value">@Model.PendingOrders</div>
             <div class="kpi-change negative">Cần xử lý</div>
         </div>
 
         <div class="kpi-card">
             <div class="kpi-label">🏷️ Sản Phẩm Hoạt Động</div>
-            <div class="kpi-value">@ViewBag.ActiveProducts</div>
-            <div class="kpi-change negative">↓ @ViewBag.LowStockProducts hàng có tồn kho thấp</div>
+            <div class="kpi-value">@Model.ActiveProducts</div>
+            <div class="kpi-change negative">↓ @Model.LowStockProducts hàng có tồn kho thấp</div>
         </div>
 
         <div class="kpi-card">
             <div class="kpi-label">👥 Tổng Khách Hàng</div>
-            <div class="kpi-value">@ViewBag.TotalUsers</div>
-            <div class="kpi-change positive">@ViewBag.TotalReviews đánh giá</div>
+            <div class="kpi-value">@Model.TotalUsers</div>
+            <div class="kpi-change positive">@Model.TotalReviews đánh giá</div>
         </div>
 
         <div class="kpi-card">
             <div class="kpi-label">📂 Danh Mục</div>
-            <div class="kpi-value">@ViewBag.TotalCategories</div>
+            <div class="kpi-value">@Model.TotalCategories</div>
             <div class="kpi-change">Tất cả danh mục</div>
         </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <a href="@Url.Action("Create", "Coupon", new { area = "Admin" })" class="action-button">
+            <span class="action-button-icon">🎫</span>
+            <div class="action-button-title">Tạo Coupon</div>
+            <div class="action-button-desc">Tạo mã giảm giá mới</div>
+        </a>
+        <a href="@Url.Action("Index", "Product", new { area = "Admin" })" class="action-button">
+            <span class="action-button-icon">📦</span>
+            <div class="action-button-title">Quản Lý Sản Phẩm</div>
+            <div class="action-button-desc">Thêm, sửa, xóa sản phẩm</div>
+        </a>
+        <a href="@Url.Action("Index", "Dashboard", new { area = "Admin" })" class="action-button">
+            <span class="action-button-icon">📊</span>
+            <div class="action-button-title">Báo Cáo</div>
+            <div class="action-button-desc">Xem báo cáo chi tiết</div>
+        </a>
+        <a href="@Url.Action("Index", "Coupon", new { area = "Admin" })" class="action-button">
+            <span class="action-button-icon">🏷️</span>
+            <div class="action-button-title">Danh Sách Coupon</div>
+            <div class="action-button-desc">Xem và quản lý coupon</div>
+        </a>
     </div>
 
     <!-- Charts and Reports Grid -->
@@ -240,9 +304,7 @@
         <!-- Revenue Chart -->
         <div class="dashboard-section">
             <h3 class="section-title">📈 Biểu Đồ Doanh Thu Hàng Tháng</h3>
-            <div class="chart-placeholder">
-                📊 Biểu đồ doanh thu (Tích hợp Chart.js)
-            </div>
+            <canvas id="revenueChart" style="max-height: 300px;"></canvas>
         </div>
 
         <!-- Top Products -->
@@ -257,13 +319,13 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @if (ViewBag.TopProducts != null && ViewBag.TopProducts.Count > 0)
+                        @if (Model.TopProducts != null && Model.TopProducts.Count > 0)
                         {
-                            @foreach (var product in ViewBag.TopProducts)
+                            @foreach (var product in Model.TopProducts)
                             {
                                 <tr>
-                                    <td>@product.Name</td>
-                                    <td><strong>@product.QuantitySold</strong> units</td>
+                                    <td>@product.ProductId</td>
+                                    <td><strong>@product.Quantity</strong> units</td>
                                 </tr>
                             }
                         }
@@ -283,21 +345,9 @@
         <!-- Low Stock Items -->
         <div class="dashboard-section">
             <h3 class="section-title">⚠️ Sản Phẩm Tồn Kho Thấp</h3>
-            @if (ViewBag.LowStockItems != null && ViewBag.LowStockItems.Count > 0)
-            {
-                @foreach (var item in ViewBag.LowStockItems.Take(5))
-                {
-                    <div class="warning-alert">
-                        <strong>@item.ProductName</strong> - Tồn: @item.StockQuantity
-                    </div>
-                }
-            }
-            else
-            {
-                <p style="color: #6b7280; text-align: center; padding: 20px;">
-                    ✅ Tất cả sản phẩm có tồn kho đủ
-                </p>
-            }
+            <p style="color: #6b7280; text-align: center; padding: 20px;">
+                ✅ Xem chi tiết tại <a href="@Url.Action("InventoryReport", "Dashboard", new { area = "Admin" })" style="color: #d92e2e; text-decoration: underline;">Báo Cáo Kho Hàng</a>
+            </p>
         </div>
 
         <!-- Recent Orders -->
@@ -314,13 +364,13 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @if (ViewBag.RecentOrders != null && ViewBag.RecentOrders.Count > 0)
+                        @if (Model.RecentOrders != null && Model.RecentOrders.Count > 0)
                         {
-                            @foreach (var order in ViewBag.RecentOrders)
+                            @foreach (var order in Model.RecentOrders)
                             {
                                 <tr>
                                     <td>#@order.Id</td>
-                                    <td>@order.User?.FullName</td>
+                                    <td>@order.ApplicationUser?.FullName</td>
                                     <td>
                                         <span class="status-badge status-@(order.Status?.ToLower() ?? "pending")">
                                             @order.Status
@@ -348,25 +398,55 @@
             <h3 class="section-title">📊 Thống Kê Nhanh</h3>
             <div class="stat-row">
                 <span class="stat-label">Đơn Hôm Nay</span>
-                <span class="stat-value">@ViewBag.TodayOrders</span>
+                <span class="stat-value">@Model.TodayOrders</span>
             </div>
             <div class="stat-row">
                 <span class="stat-label">Doanh Thu Hôm Nay</span>
-                <span class="stat-value">@ViewBag.TodayRevenue.ToString("C0")</span>
+                <span class="stat-value">@Model.TodayRevenue.ToString("C0")</span>
             </div>
             <div class="stat-row">
                 <span class="stat-label">Doanh Thu Tháng Này</span>
-                <span class="stat-value">@ViewBag.MonthlyRevenue.ToString("C0")</span>
+                <span class="stat-value">@Model.MonthlyRevenue.ToString("C0")</span>
             </div>
             <div class="stat-row">
                 <span class="stat-label">Đơn Chờ Xử Lý</span>
-                <span class="stat-value">@ViewBag.PendingOrders</span>
+                <span class="stat-value">@Model.PendingOrders</span>
             </div>
         </div>
     </div>
 
     <!-- Action Buttons -->
-    <div style="display: flex; gap: 12px; margin-top: 40px;">
+    <div style="display: flex; gap: 12px; margin-top: 40px; flex-wrap: wrap;">
+        @if (User.HasPermission(PermissionConstants.ProductManage))
+        {
+            <a href="/Admin/Product/Index" class="btn btn-secondary">
+                ⚙️ Quản Lý Sản Phẩm
+            </a>
+        }
+        @if (User.HasPermission(PermissionConstants.OrderManage))
+        {
+            <a href="/Admin/OrderManagement/Index" class="btn btn-secondary">
+                📦 Quản Lý Đơn Hàng
+            </a>
+        }
+        @if (User.HasPermission(PermissionConstants.ReturnManage))
+        {
+            <a href="/Return/Pending" class="btn btn-secondary">
+                📋 Quản Lý Trả Hàng
+            </a>
+        }
+        @if (User.HasPermission(PermissionConstants.AuditView))
+        {
+            <a href="/Admin/Audit/Index" class="btn btn-secondary">
+                📋 Audit Trail
+            </a>
+        }
+        @if (User.HasPermission(PermissionConstants.RoleManage))
+        {
+            <a href="/Admin/RolePermission/Index" class="btn btn-secondary">
+                🔐 Quản Lý Quyền
+            </a>
+        }
         <a href="@Url.Action("Index", "Coupon", new { area = "Admin" })" class="btn btn-secondary">
             💳 Quản Lý Mã Giảm Giá
         </a>
@@ -378,3 +458,116 @@
         </a>
     </div>
 </div>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+    // Prepare monthly revenue data
+    const monthlyData = @Html.Raw(Json.Serialize(Model.MonthlyRevenueData ?? new List<MonthlyRevenueDataItem>()));
+    
+    // Map month numbers to names
+    const monthNames = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+                        'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+    
+    // Prepare labels and data
+    const labels = monthlyData.map(item => monthNames[item.month - 1]);
+    const revenueValues = monthlyData.map(item => item.revenue);
+    const orderCounts = monthlyData.map(item => item.orders);
+    
+    // Create Revenue Chart
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    const revenueChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Doanh Thu (₫)',
+                    data: revenueValues,
+                    borderColor: '#d92e2e',
+                    backgroundColor: 'rgba(217, 46, 46, 0.7)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Số Đơn Hàng',
+                    data: orderCounts,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.3)',
+                    borderWidth: 2,
+                    type: 'line',
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Doanh Thu (₫)',
+                        font: { size: 12, weight: 'bold' }
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(value);
+                        }
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Số Đơn Hàng',
+                        font: { size: 12, weight: 'bold' }
+                    },
+                    grid: {
+                        drawOnChartArea: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        font: { size: 12, weight: '600' },
+                        padding: 15,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleFont: { size: 12, weight: 'bold' },
+                    bodyFont: { size: 11 },
+                    padding: 12,
+                    displayColors: true,
+                    callbacks: {
+                        label: function(context) {
+                            if (context.datasetIndex === 0) {
+                                return context.dataset.label + ': ' + 
+                                    new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(context.parsed.y) + ' ₫';
+                            } else {
+                                return context.dataset.label + ': ' + Math.round(context.parsed.y) + ' đơn';
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>

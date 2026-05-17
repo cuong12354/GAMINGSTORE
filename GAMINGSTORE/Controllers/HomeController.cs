@@ -1,7 +1,9 @@
-﻿using GAMINGSTORE.Models;
+using Microsoft.EntityFrameworkCore;
+using GAMINGSTORE.Models;
 using GAMINGSTORE.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace GAMINGSTORE.Controllers
 {
@@ -9,22 +11,40 @@ namespace GAMINGSTORE.Controllers
     {
 
         private readonly ICategoryRepository _categoryRepository;
-
         private readonly IProductRepository _productRepository;
+        private readonly IMemoryCache _cache;
 
-        public HomeController(IProductRepository productRepository, ICategoryRepository categoryRepository)
+        public HomeController(IProductRepository productRepository, ICategoryRepository categoryRepository, IMemoryCache cache)
         {
             _productRepository = productRepository;
             _categoryRepository = categoryRepository;
+            _cache = cache;
         }
 
         public async Task<IActionResult> Index(string searchString, int? categoryId, string sortBy = "newest", int page = 1)
         {
             int pageSize = 12;
 
-            // Lấy toàn bộ sản phẩm
-            var products = (await _productRepository.GetAllAsync()).AsQueryable();
+            // Tạm thời bỏ cache để cập nhật giao diện Mega Menu mới
             var categories = await _categoryRepository.GetAllAsync();
+            /*
+            if (!_cache.TryGetValue("AllCategories", out IEnumerable<Category> categories))
+            {
+                categories = await _categoryRepository.GetAllAsync();
+                var cacheOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromHours(1));
+                _cache.Set("AllCategories", categories, cacheOptions);
+            }
+            */
+
+            // ✨ Lấy Products từ Cache
+            if (!_cache.TryGetValue("AllProducts", out IEnumerable<Product>? allProducts) || allProducts == null)
+            {
+                allProducts = await _productRepository.GetAllAsync() ?? new List<Product>();
+                var cacheOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30));
+                _cache.Set("AllProducts", allProducts, cacheOptions);
+            }
+
+            var products = allProducts.AsQueryable();
 
             // ================= SEARCH =================
             if (!string.IsNullOrEmpty(searchString))
@@ -76,6 +96,9 @@ namespace GAMINGSTORE.Controllers
             ViewBag.PageSize = pageSize;              // 👉 số sản phẩm mỗi trang
             ViewBag.TotalProduct = totalProduct;      // 👉 tổng số sản phẩm
 
+            ViewBag.AllHomeProducts = allProducts
+    .OrderByDescending(p => p.Id)
+    .ToList();
             return View(productList);
         }
 

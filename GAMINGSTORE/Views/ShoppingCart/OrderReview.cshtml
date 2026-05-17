@@ -296,26 +296,48 @@
         </div>
 
         <!-- PRICE SUMMARY -->
-        <div class="review-section">
-            <div class="section-title">💰 Chi Tiết Thanh Toán</div>
-            <div class="price-summary">
-                <div class="price-row">
-                    <span>Tổng tiền hàng:</span>
-                    <span>@((Model.TotalPrice + Model.DiscountAmount).ToString("N0"))</span>
-                </div>
-                @if (Model.DiscountAmount > 0)
-                {
-                    <div class="price-row">
-                        <span>🎟️ Mã giảm giá (@Model.CouponCode):</span>
-                        <span style="color: #10b981;">-@Model.DiscountAmount.ToString("N0")</span>
-                    </div>
-                }
-                <div class="price-row total">
-                    <span>Thành tiền:</span>
-                    <span>@Model.TotalPrice.ToString("N0") ₫</span>
-                </div>
-            </div>
+<div class="review-section">
+    <div class="section-title">💰 Chi Tiết Thanh Toán</div>
+
+    @{
+        decimal subTotal = Model.OrderDetails.Sum(x => x.Price * x.Quantity);
+        decimal priceAfterCoupon = subTotal - Model.DiscountAmount;
+        if (priceAfterCoupon < 0) priceAfterCoupon = 0;
+    }
+
+    <div class="price-summary">
+        <div class="price-row">
+            <span>Tạm tính:</span>
+            <span>@subTotal.ToString("N0") ₫</span>
         </div>
+
+        @if (Model.DiscountAmount > 0)
+        {
+            <div class="price-row">
+                <span>🎟️ Mã giảm giá (@Model.CouponCode):</span>
+                <span style="color: #10b981;">-@Model.DiscountAmount.ToString("N0") ₫</span>
+            </div>
+
+            <div class="price-row">
+                <span>Sau khi áp mã:</span>
+                <span>@priceAfterCoupon.ToString("N0") ₫</span>
+            </div>
+        }
+
+        @if (Model.MemberDiscountAmount > 0)
+        {
+            <div class="price-row">
+                <span>🎖️ Giảm giá Hội viên (@Model.MemberDiscountPercentage.ToString("0.##")%):</span>
+                <span style="color: #10b981;">-@Model.MemberDiscountAmount.ToString("N0") ₫</span>
+            </div>
+        }
+
+        <div class="price-row total">
+            <span>Thành tiền cuối:</span>
+            <span>@Model.TotalPrice.ToString("N0") ₫</span>
+        </div>
+    </div>
+</div>
 
         <!-- ACTION BUTTONS -->
         <div class="review-section">

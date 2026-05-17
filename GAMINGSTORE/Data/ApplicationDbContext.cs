@@ -1,4 +1,4 @@
-﻿using GAMINGSTORE.Models;
+using GAMINGSTORE.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 namespace GAMINGSTORE.Data
@@ -39,6 +39,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .HasMany(p => p.Categories)
                 .WithMany(c => c.Products)
                 .UsingEntity(j => j.ToTable("CategoryProduct"));
+
+            // Configure Self-Referencing relationship for Category
+            modelBuilder.Entity<Category>()
+                .HasOne(c => c.Parent)
+                .WithMany(c => c.SubCategories)
+                .HasForeignKey(c => c.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Configure One-to-Many relationships
             modelBuilder.Entity<Product>()
@@ -94,6 +101,15 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .WithOne(a => a.User)
                 .HasForeignKey(a => a.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // ✨ Configure decimal precision
+            modelBuilder.Entity<Product>().Property(p => p.Price).HasPrecision(18, 2);
+            modelBuilder.Entity<Order>().Property(o => o.TotalPrice).HasPrecision(18, 2);
+            modelBuilder.Entity<Order>().Property(o => o.DiscountAmount).HasPrecision(18, 2);
+            modelBuilder.Entity<OrderDetail>().Property(od => od.Price).HasPrecision(18, 2);
+            modelBuilder.Entity<Coupon>().Property(c => c.DiscountAmount).HasPrecision(18, 2);
+            modelBuilder.Entity<Coupon>().Property(c => c.MinimumOrderValue).HasPrecision(18, 2);
+            modelBuilder.Entity<ReturnRequest>().Property(r => r.ReturnAmount).HasPrecision(18, 2);
             
             base.OnModelCreating(modelBuilder);
         }

@@ -739,7 +739,7 @@
                         <div style="display: flex; gap: 8px;">
                             <input type="text" id="couponCode" placeholder="Nhập mã giảm giá (nếu có)" 
                                    style="flex: 1; padding: 10px 12px; border: 1px solid rgba(15, 23, 42, 0.08); border-radius: 8px; font-size: 13px;">
-                            <button type="button" onclick="applyCoupon()" 
+                            <button type="button" id="applyCouponBtn" onclick="applyCoupon()" 
                                     style="padding: 10px 16px; background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px;">
                                 Áp Dụng
                             </button>
@@ -754,8 +754,10 @@
 
                     <div class="summary-row total-row">
                         <strong>Tổng cộng:</strong>
-                        <span class="total-price">@(Model.Items.Sum(x => x.Price * x.Quantity).ToString("N0", new System.Globalization.CultureInfo("vi-VN"))) ₫</span>
-                    </div>
+                        <span class="total-price" data-original-total="@Model.Items.Sum(x => x.Price * x.Quantity)">
+                            @(Model.Items.Sum(x => x.Price * x.Quantity).ToString("N0", new System.Globalization.CultureInfo("vi-VN"))) ₫
+                        </span>
+</div>
 
                     <div class="cart-actions">
                         <a asp-controller="Home" asp-action="Index" class="btn-action btn-continue">Tiếp tục mua</a>
@@ -763,7 +765,7 @@
                     </div>
 
                     <form asp-action="Checkout" method="post">
-                        <input type="hidden" id="couponCodeInput" name="CouponCode" />
+                        <input type="hidden" id="couponCodeInput" name="couponCode" value="" />
                         <button type="submit" class="btn-checkout">
                             ✓ Thanh Toán (@Model.Items.Count sản phẩm)
                         </button>
@@ -779,69 +781,105 @@
     let appliedCouponCode = '';
     let appliedDiscountAmount = 0;
 
-    async function applyCoupon() {
-        const couponCode = document.getElementById('couponCode').value.trim();
-        const messageDiv = document.getElementById('couponMessage');
-        
-        if (!couponCode) {
-            messageDiv.textContent = '❌ Vui lòng nhập mã giảm giá';
-            messageDiv.style.color = '#dc2626';
-            return;
-        }
-        
-        messageDiv.textContent = '⏳ Đang kiểm tra mã...';
+async function applyCoupon() {
+    const couponInput = document.getElementById('couponCode');
+    const applyBtn = document.getElementById('applyCouponBtn');
+    const messageDiv = document.getElementById('couponMessage');
+    const hiddenCouponInput = document.getElementById('couponCodeInput');
+    const totalElement = document.querySelector('.total-price');
+
+    const couponCode = couponInput.value.trim().toUpperCase();
+
+    if (appliedCouponCode) {
+        messageDiv.textContent = '⚠️ Bạn đã áp mã ' + appliedCouponCode + ' rồi. Không thể áp lại nhiều lần.';
         messageDiv.style.color = '#f59e0b';
-        
-        try {
-            // Get current total from page
-            const totalPriceText = document.querySelector('.total-price')?.textContent || '0';
-            const totalPrice = parseInt(totalPriceText.replace(/[^0-9]/g, ''));
-            
-            // Call API to validate coupon
-            const response = await fetch('/api/coupon/test', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    code: couponCode,
-                    totalPrice: totalPrice
-                })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                appliedCouponCode = couponCode.toUpperCase();
-                appliedDiscountAmount = data.discountAmount;
-                
-                // Update discount display
-                document.getElementById('discountAmount').textContent = 
-                    data.discountAmount.toLocaleString('vi-VN') + ' ₫';
-                
-                // Update total
-                const newTotal = totalPrice - data.discountAmount;
-                document.querySelector('.total-price').textContent = 
-                    newTotal.toLocaleString('vi-VN') + ' ₫';
-                
-                messageDiv.textContent = '✅ ' + data.message;
-                messageDiv.style.color = '#10b981';
-                
-                // Store coupon code for checkout
-                document.getElementById('couponCodeInput').value = appliedCouponCode;
-            } else {
-                appliedCouponCode = '';
-                appliedDiscountAmount = 0;
-                messageDiv.textContent = '❌ ' + data.message;
-                messageDiv.style.color = '#dc2626';
-                document.getElementById('couponCodeInput').value = '';
-            }
-        } catch (error) {
-            messageDiv.textContent = '❌ Lỗi khi kiểm tra mã. Vui lòng thử lại.';
-            messageDiv.style.color = '#dc2626';
-            console.error('Coupon error:', error);
-        }
+        return;
     }
+
+    if (!couponCode) {
+        messageDiv.textContent = '❌ Vui lòng nhập mã giảm giá';
+        messageDiv.style.color = '#dc2626';
+        return;
+    }
+
+    const originalTotal = parseInt(totalElement.dataset.originalTotal || '0');
+
+    if (!originalTotal || originalTotal <= 0) {
+        messageDiv.textContent = '❌ Không xác định được tổng tiền gốc.';
+        messageDiv.style.color = '#dc2626';
+        return;
+    }
+
+    messageDiv.textContent = '⏳ Đang kiểm tra mã...';
+    messageDiv.style.color = '#f59e0b';
+
+    applyBtn.disabled = true;
+    applyBtn.textContent = 'Đang áp...';
+    applyBtn.style.opacity = '0.7';
+    applyBtn.style.cursor = 'not-allowed';
+
+    try {
+        const response = await fetch('/api/coupon/validate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                code: couponCode,
+                totalPrice: originalTotal
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            appliedCouponCode = couponCode;
+            appliedDiscountAmount = Math.min(data.discountAmount, originalTotal);
+
+            document.getElementById('discountAmount').textContent =
+                appliedDiscountAmount.toLocaleString('vi-VN') + ' ₫';
+
+            const newTotal = Math.max(originalTotal - appliedDiscountAmount, 0);
+
+            totalElement.textContent =
+                newTotal.toLocaleString('vi-VN') + ' ₫';
+
+            hiddenCouponInput.value = appliedCouponCode;
+
+            couponInput.readOnly = true;
+
+            messageDiv.textContent = '✅ Đã áp mã ' + appliedCouponCode + ' thành công';
+            messageDiv.style.color = '#10b981';
+
+            applyBtn.textContent = 'Đã áp dụng';
+        } else {
+            appliedCouponCode = '';
+            appliedDiscountAmount = 0;
+            hiddenCouponInput.value = '';
+
+            messageDiv.textContent = '❌ ' + data.message;
+            messageDiv.style.color = '#dc2626';
+
+            applyBtn.disabled = false;
+            applyBtn.textContent = 'Áp Dụng';
+            applyBtn.style.opacity = '1';
+            applyBtn.style.cursor = 'pointer';
+        }
+    } catch (error) {
+        appliedCouponCode = '';
+        appliedDiscountAmount = 0;
+        hiddenCouponInput.value = '';
+
+        messageDiv.textContent = '❌ Lỗi khi kiểm tra mã. Vui lòng thử lại.';
+        messageDiv.style.color = '#dc2626';
+        console.error('Coupon error:', error);
+
+        applyBtn.disabled = false;
+        applyBtn.textContent = 'Áp Dụng';
+        applyBtn.style.opacity = '1';
+        applyBtn.style.cursor = 'pointer';
+    }
+}
     
     // Allow Enter key to apply coupon
     document.addEventListener('DOMContentLoaded', function() {

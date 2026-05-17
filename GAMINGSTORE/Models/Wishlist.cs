@@ -20,6 +20,8 @@ namespace GAMINGSTORE.Models
         public ApplicationUser? User { get; set; }
 
         [ForeignKey("ProductId")]
+        [System.Text.Json.Serialization.JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
         public Product? Product { get; set; }
     }
 }

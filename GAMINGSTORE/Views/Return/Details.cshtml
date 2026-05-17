@@ -455,7 +455,7 @@
         }
 
         <!-- Admin Section -->
-        @if (User.IsInRole("Admin") && Model.Status == "Pending")
+        @if (User.HasPermission(PermissionConstants.ReturnManage) && Model.Status == "Pending")
         {
             <div class="details-section">
                 <div class="admin-section">

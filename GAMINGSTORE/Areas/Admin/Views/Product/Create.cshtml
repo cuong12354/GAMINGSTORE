@@ -1,43 +1,587 @@
-﻿@model GAMINGSTORE.Models.Product
+@model GAMINGSTORE.Models.Product
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Thêm sản phẩm mới";
+    
+    // Kiểm tra quyền tạo sản phẩm
+    if (!User.HasPermission(PermissionConstants.ProductManage))
+    {
+        <div style="padding: 60px 20px; text-align: center;">
+            <h2 style="color: #dc2626; margin-bottom: 16px;">⛔ Truy cập bị từ chối</h2>
+            <p style="color: #64748b; font-size: 16px; margin-bottom: 24px;">Chỉ tài khoản Admin mới có thể thêm sản phẩm mới. Vui lòng đăng nhập với tài khoản Admin.</p>
+            <a href="/" style="display: inline-block; padding: 10px 24px; background: #d92e2e; color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">← Quay lại trang chủ</a>
+        </div>
+        return;
+    }
 }
 
-<h2>Thêm Sản Phẩm Mới</h2>
+<style>
+    :root {
+        --create-primary: #d92e2e;
+        --create-primary-dark: #c43a20;
+        --create-text: #18212f;
+        --create-muted: #64748b;
+        --create-line: rgba(15, 23, 42, 0.08);
+        --create-bg: #f5f7fb;
+    }
 
-<form asp-action="Create" method="post" enctype="multipart/form-data">
-    <div class="form-group mb-3">
-        <label asp-for="Name" class="fw-bold"></label>
-        <input asp-for="Name" class="form-control" />
-        <span asp-validation-for="Name" class="text-danger"></span>
-    </div>
+    body {
+        background:
+            radial-gradient(circle at top right, rgba(217, 46, 46, 0.10), transparent 24%),
+            linear-gradient(180deg, #fffaf8 0%, var(--create-bg) 40%, #eef2f7 100%);
+    }
 
-    <div class="form-group mb-3">
-        <label asp-for="Price" class="fw-bold"></label>
-        <input asp-for="Price" class="form-control" />
-        <span asp-validation-for="Price" class="text-danger"></span>
-    </div>
+    .create-shell {
+        padding: 28px 0 60px;
+    }
 
-    <div class="form-group mb-3">
-        <label class="fw-bold">Danh mục (Category)</label>
-        <select id="categorySelect" asp-items="ViewBag.Categories" class="form-control">
-            <option value="">-- Chọn danh mục --</option>
-        </select>
-        <input type="hidden" id="selectedCategories" name="selectedCategories" />
-    </div>
+    .create-hero {
+        background: linear-gradient(145deg, rgba(255,255,255,0.96), rgba(255,255,255,0.88));
+        border: 1px solid rgba(255,255,255,0.76);
+        border-radius: 32px;
+        box-shadow: 0 28px 60px rgba(15, 23, 42, 0.09);
+        padding: 30px;
+        margin-bottom: 24px;
+    }
 
-    <div class="form-group mb-3">
-        <label asp-for="Description" class="fw-bold"></label>
-        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
-        <span asp-validation-for="Description" class="text-danger"></span>
-    </div>
+    .create-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 14px;
+        border-radius: 999px;
+        background: #fff4f1;
+        color: var(--create-primary-dark);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.7px;
+        text-transform: uppercase;
+        margin-bottom: 16px;
+    }
 
-    <div class="form-group mb-4">
-        <label class="fw-bold">Chọn ảnh sản phẩm (Có thể chọn nhiều ảnh)</label>
-        <input type="file" name="imageFiles" class="form-control" multiple accept="image/*" />
-        <small class="text-muted">Giữ phím Ctrl (hoặc Cmd) để chọn nhiều file cùng lúc.</small>
-    </div>
+    .create-hero-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
 
-    <button type="submit" class="btn btn-primary px-4 fw-bold">Thêm Sản Phẩm</button>
-</form>
+    .create-title {
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.04;
+        font-weight: 900;
+        color: var(--create-text);
+        margin-bottom: 10px;
+    }
+
+    .create-desc {
+        max-width: 760px;
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.8;
+        color: var(--create-muted);
+    }
+
+    .create-back-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 48px;
+        padding: 0 18px;
+        border-radius: 16px;
+        background: #fff;
+        border: 1px solid var(--create-line);
+        color: var(--create-text);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 800;
+    }
+
+    .create-back-link:hover {
+        color: var(--create-primary-dark);
+        background: #fff7f3;
+        border-color: rgba(217, 46, 46, 0.18);
+    }
+
+    .create-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 24px;
+    }
+
+    .create-stat-card {
+        padding: 20px 22px;
+        border-radius: 24px;
+        background: #fff;
+        border: 1px solid var(--create-line);
+    }
+
+    .create-stat-label {
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        color: var(--create-muted);
+        margin-bottom: 8px;
+    }
+
+    .create-stat-value {
+        font-size: clamp(24px, 3vw, 32px);
+        line-height: 1.05;
+        font-weight: 900;
+        color: var(--create-text);
+    }
+
+    .create-stat-note {
+        margin-top: 8px;
+        font-size: 13px;
+        line-height: 1.7;
+        color: var(--create-muted);
+    }
+
+    .create-layout {
+        display: grid;
+        grid-template-columns: 1.08fr 0.92fr;
+        gap: 24px;
+    }
+
+    .create-panel {
+        background: rgba(255,255,255,0.94);
+        border: 1px solid rgba(255,255,255,0.74);
+        border-radius: 30px;
+        box-shadow: 0 24px 52px rgba(15, 23, 42, 0.08);
+        padding: 26px;
+    }
+
+    .panel-kicker {
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        color: var(--create-primary-dark);
+        margin-bottom: 8px;
+    }
+
+    .panel-title {
+        font-size: 28px;
+        line-height: 1.12;
+        font-weight: 900;
+        color: var(--create-text);
+        margin-bottom: 20px;
+    }
+
+    .form-grid {
+        display: grid;
+        gap: 18px;
+    }
+
+    .field-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--create-text);
+        margin-bottom: 8px;
+    }
+
+    .field-input,
+    .field-textarea,
+    .field-select {
+        width: 100%;
+        border: 1px solid var(--create-line);
+        border-radius: 18px;
+        background: #fff;
+        color: var(--create-text);
+        padding: 14px 16px;
+        font-size: 14px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .field-input:focus,
+    .field-textarea:focus,
+    .field-select:focus {
+        outline: none;
+        border-color: rgba(217, 46, 46, 0.35);
+        box-shadow: 0 0 0 4px rgba(217, 46, 46, 0.10);
+    }
+
+    .field-textarea {
+        min-height: 170px;
+        resize: vertical;
+        line-height: 1.75;
+    }
+
+    .field-select {
+        min-height: 180px;
+    }
+
+    .field-help {
+        margin-top: 8px;
+        font-size: 12px;
+        line-height: 1.7;
+        color: var(--create-muted);
+    }
+
+    .validation-note {
+        display: block;
+        margin-top: 6px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .price-field {
+        position: relative;
+    }
+
+    .price-currency {
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 12px;
+        font-weight: 800;
+        color: var(--create-muted);
+        pointer-events: none;
+    }
+
+    .price-field .field-input {
+        padding-right: 64px;
+    }
+
+    .create-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+    }
+
+    .create-action-primary,
+    .create-action-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 50px;
+        padding: 0 22px;
+        border-radius: 18px;
+        font-size: 14px;
+        font-weight: 800;
+        text-decoration: none;
+        transition: 0.25s ease;
+    }
+
+    .create-action-primary {
+        border: none;
+        background: linear-gradient(135deg, var(--create-primary), var(--create-primary-dark));
+        color: #fff;
+        box-shadow: 0 18px 34px rgba(217, 46, 46, 0.22);
+    }
+
+    .create-action-primary:hover {
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    .create-action-secondary {
+        background: #fff;
+        color: var(--create-text);
+        border: 1px solid var(--create-line);
+    }
+
+    .create-action-secondary:hover {
+        color: var(--create-primary-dark);
+        background: #fff7f3;
+        border-color: rgba(217, 46, 46, 0.18);
+    }
+
+    .image-stack {
+        display: grid;
+        gap: 18px;
+    }
+
+    .main-preview {
+        position: relative;
+        min-height: 300px;
+        border-radius: 26px;
+        background: linear-gradient(180deg, #fff8f5, #f8fafc);
+        border: 1px solid var(--create-line);
+        overflow: hidden;
+    }
+
+    .main-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 22px;
+    }
+
+    .preview-badge {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 32px;
+        padding: 0 12px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.94);
+        color: var(--create-primary-dark);
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .preview-empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        padding: 24px;
+        text-align: center;
+        color: var(--create-muted);
+        font-size: 14px;
+        line-height: 1.8;
+    }
+
+    .thumb-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .thumb-item {
+        height: 94px;
+        border-radius: 20px;
+        background: #fff;
+        border: 1px solid var(--create-line);
+        overflow: hidden;
+    }
+
+    .thumb-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 10px;
+    }
+
+    .upload-box {
+        border: 1px dashed rgba(217, 46, 46, 0.28);
+        border-radius: 24px;
+        background: #fff9f7;
+        padding: 18px;
+    }
+
+    .upload-box input[type="file"] {
+        width: 100%;
+        border: 1px solid var(--create-line);
+        border-radius: 16px;
+        background: #fff;
+        padding: 14px;
+        font-size: 14px;
+    }
+
+    .side-note {
+        padding: 18px;
+        border-radius: 22px;
+        background: #fff;
+        border: 1px solid var(--create-line);
+    }
+
+    .side-note-title {
+        font-size: 14px;
+        font-weight: 900;
+        color: var(--create-text);
+        margin-bottom: 8px;
+    }
+
+    .side-note p {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.75;
+        color: var(--create-muted);
+    }
+
+    @@media (max-width: 991.98px) {
+        .create-stats,
+        .create-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 767.98px) {
+        .create-shell {
+            padding-top: 20px;
+        }
+
+        .create-hero,
+        .create-panel {
+            padding: 20px;
+        }
+
+        .thumb-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .create-actions {
+            flex-direction: column;
+        }
+
+        .create-action-primary,
+        .create-action-secondary {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="container create-shell">
+    <section class="create-hero">
+        <div class="create-kicker"><i class="bi bi-plus-circle"></i> Product Creator</div>
+
+        <div class="create-hero-row">
+            <div>
+                <h1 class="create-title">Tạo sản phẩm mới với giao diện quản trị đồng bộ và dễ nhìn hơn.</h1>
+                <p class="create-desc">Trang thêm mới giờ cùng phong cách với dashboard quản trị và trang chỉnh sửa. Bạn có thể nhập tên, giá, mô tả, danh mục và bộ ảnh trong một bố cục rõ ràng hơn để lên catalog nhanh.</p>
+            </div>
+
+            <a asp-action="Index" class="create-back-link">
+                <i class="bi bi-arrow-left"></i> Quay lại danh sách
+            </a>
+        </div>
+
+        <div class="create-stats">
+            <div class="create-stat-card">
+                <div class="create-stat-label">Mục tiêu form</div>
+                <div class="create-stat-value">Nhanh</div>
+                <div class="create-stat-note">Tối ưu để bạn tạo sản phẩm mới nhanh mà vẫn đủ thông tin hiển thị đẹp.</div>
+            </div>
+            <div class="create-stat-card">
+                <div class="create-stat-label">Ảnh sản phẩm</div>
+                <div class="create-stat-value">Nhiều ảnh</div>
+                <div class="create-stat-note">Có thể tải lên nhiều ảnh cùng lúc để dùng cho trang chi tiết và card catalog.</div>
+            </div>
+            <div class="create-stat-card">
+                <div class="create-stat-label">Danh mục</div>
+                <div class="create-stat-value">Multi-select</div>
+                <div class="create-stat-note">Hỗ trợ gắn một sản phẩm vào nhiều nhóm để lọc và gợi ý sản phẩm tương tự tốt hơn.</div>
+            </div>
+        </div>
+    </section>
+
+    <form asp-action="Create" method="post" enctype="multipart/form-data">
+        <div class="create-layout">
+            <section class="create-panel">
+                <div class="panel-kicker">Product Form</div>
+                <h2 class="panel-title">Thông tin sản phẩm mới</h2>
+
+                <div class="form-grid">
+                    <div>
+                        <label asp-for="Name" class="field-label">Tên sản phẩm</label>
+                        <input asp-for="Name" class="field-input" placeholder="Nhập tên sản phẩm rõ ràng, dễ tìm kiếm" />
+                        <span asp-validation-for="Name" class="text-danger validation-note"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="Price" class="field-label">Giá bán</label>
+                        <div class="price-field">
+                            <input asp-for="Price" class="field-input" placeholder="Ví dụ: 15990000" />
+                            <span class="price-currency">VNĐ</span>
+                        </div>
+                        <span asp-validation-for="Price" class="text-danger validation-note"></span>
+                    </div>
+
+                    <div>
+                        <label class="field-label">Danh mục</label>
+                        <select name="categoryIds" asp-items="ViewBag.CategoryList" class="field-select" multiple>
+                        </select>
+                        <div class="field-help">Giữ phím Ctrl hoặc Cmd để chọn nhiều danh mục cùng lúc. Một sản phẩm có thể thuộc nhiều nhóm để hiển thị linh hoạt hơn ngoài storefront.</div>
+                    </div>
+
+                    <div>
+                        <label asp-for="Description" class="field-label">Mô tả sản phẩm</label>
+                        <textarea asp-for="Description" class="field-textarea" placeholder="Viết ngắn gọn điểm mạnh, nhóm nhu cầu phù hợp và thông tin giúp trang chi tiết thuyết phục hơn."></textarea>
+                        <span asp-validation-for="Description" class="text-danger validation-note"></span>
+                    </div>
+
+                    <div class="create-actions">
+                        <button type="submit" class="create-action-primary">
+                            <i class="bi bi-check2-circle"></i> Tạo sản phẩm
+                        </button>
+                        <a asp-action="Index" class="create-action-secondary">
+                            <i class="bi bi-x-circle"></i> Hủy và quay lại
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <aside class="create-panel">
+                <div class="panel-kicker">Visual Setup</div>
+                <h2 class="panel-title">Ảnh preview và hướng dẫn</h2>
+
+                <div class="image-stack">
+                    <div class="main-preview">
+                        <span class="preview-badge"><i class="bi bi-image"></i> Preview ảnh đầu tiên</span>
+                        <img src="/images/no-image.png" id="previewImage" alt="Preview sản phẩm" onerror="this.style.display='none'" />
+                    </div>
+
+                    <div class="thumb-grid" id="thumbGrid"></div>
+
+                    <div class="upload-box">
+                        <label class="field-label">Tải ảnh sản phẩm</label>
+                        <input type="file" name="imageFiles" id="imageInput" multiple accept="image/*" />
+                        <div class="field-help">Bạn có thể chọn nhiều ảnh. Hệ thống sẽ dùng ảnh đầu tiên làm ảnh đại diện trên card sản phẩm và trang chi tiết.</div>
+                    </div>
+
+                    <div class="side-note">
+                        <div class="side-note-title">Mẹo tạo sản phẩm đẹp hơn</div>
+                        <p>Tên sản phẩm nên rõ model, mô tả nên có giá trị sử dụng thật, và bộ ảnh nên nhất quán về góc chụp hoặc phong cách. Điều này giúp cả card sản phẩm lẫn trang chi tiết nhìn chuyên nghiệp hơn.</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const previewImage = document.getElementById('previewImage');
+        const thumbGrid = document.getElementById('thumbGrid');
+
+        if (imageInput && previewImage && thumbGrid) {
+            imageInput.addEventListener('change', function (event) {
+                const files = Array.from(event.target.files || []);
+                thumbGrid.innerHTML = '';
+
+                if (files.length === 0) {
+                    previewImage.src = '/images/no-image.png';
+                    return;
+                }
+
+                const firstReader = new FileReader();
+                firstReader.onload = function (loadEvent) {
+                    previewImage.src = loadEvent.target?.result;
+                };
+                firstReader.readAsDataURL(files[0]);
+
+                files.slice(0, 6).forEach(function (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (loadEvent) {
+                        const item = document.createElement('div');
+                        item.className = 'thumb-item';
+
+                        const img = document.createElement('img');
+                        img.src = loadEvent.target?.result;
+                        img.alt = file.name;
+
+                        item.appendChild(img);
+                        thumbGrid.appendChild(item);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
+        }
+    </script>
+}

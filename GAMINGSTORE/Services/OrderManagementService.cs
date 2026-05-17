@@ -77,6 +77,17 @@ namespace GAMINGSTORE.Services
                     order.DeliveredDate = DateTime.Now;
                 }
 
+                // ✨ Bổ sung Tracking
+                var tracking = new OrderTracking
+                {
+                    OrderId = order.Id,
+                    Status = newStatus,
+                    UpdatedDate = DateTime.Now,
+                    Location = "Kho trung tâm", // Có thể tùy biến sau
+                    Description = $"Trạng thái cập nhật từ {oldStatus} sang {newStatus}"
+                };
+                _context.OrderTrackings.Add(tracking);
+
                 _context.Orders.Update(order);
                 await _context.SaveChangesAsync();
 

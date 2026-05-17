@@ -1,0 +1,64 @@
+@model GAMINGSTORE.Models.Category
+@{
+    ViewData["Title"] = "Thêm Danh mục mới";
+    Layout = "_LayoutAdmin";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white py-3">
+                    <h4 class="mb-0"><i class="bi bi-plus-circle me-2 text-primary"></i>Thêm Danh mục mới</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Add" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label fw-bold">Tên danh mục</label>
+                            <input asp-for="Name" class="form-control" placeholder="Nhập tên danh mục..." />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ParentId" class="form-label fw-bold">Danh mục cha</label>
+                            <select asp-for="ParentId" class="form-select" asp-items="ViewBag.ParentCategories">
+                                <option value="">-- Cấp cao nhất --</option>
+                            </select>
+                            <div class="form-text text-muted">Nếu chọn danh mục cha, mục này sẽ trở thành danh mục con (hoặc tiêu đề nhóm).</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Icon" class="form-label fw-bold">Biểu tượng (Icon)</label>
+                                <input asp-for="Icon" class="form-control" placeholder="bi bi-laptop" />
+                                <div class="form-text">Dùng class <a href="https://icons.getbootstrap.com/" target="_blank">Bootstrap Icons</a>.</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="DisplayOrder" class="form-label fw-bold">Thứ tự hiển thị</label>
+                                <input asp-for="DisplayOrder" type="number" class="form-control" />
+                            </div>
+                        </div>
+
+                        <div class="mb-4 mt-2">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" asp-for="IsMenuVisible" checked>
+                                <label class="form-check-label fw-bold" asp-for="IsMenuVisible">Hiển thị trên thanh Menu chính</label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a asp-action="Index" class="btn btn-light px-4">Hủy</a>
+                            <button type="submit" class="btn btn-primary px-4">Lưu danh mục</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

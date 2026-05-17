@@ -1,9 +1,10 @@
-﻿using GAMINGSTORE.Models;
+using GAMINGSTORE.Models;
 using GAMINGSTORE.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace Ares.Admin.Controllers
+namespace GAMINGSTORE.Areas.Admin.Controllers
 {
     [Area("Admin")]
     [Authorize]
@@ -22,6 +23,7 @@ namespace Ares.Admin.Controllers
         public async Task<IActionResult> Index()
         {
             var categories = await _categoryRepository.GetAllAsync();
+            // Order by hierarchy for better display in Index if needed, but for now just pass all
             return View(categories);
         }
 
@@ -35,8 +37,10 @@ namespace Ares.Admin.Controllers
             return View(category);
         }
 
-        public IActionResult Add()
+        public async Task<IActionResult> Add()
         {
+            var categories = await _categoryRepository.GetAllAsync();
+            ViewBag.ParentCategories = new SelectList(categories, "Id", "Name");
             return View();
         }
 
@@ -48,6 +52,8 @@ namespace Ares.Admin.Controllers
                 await _categoryRepository.AddAsync(category);
                 return RedirectToAction(nameof(Index));
             }
+            var categories = await _categoryRepository.GetAllAsync();
+            ViewBag.ParentCategories = new SelectList(categories, "Id", "Name", category.ParentId);
             return View(category);
         }
 
@@ -58,6 +64,8 @@ namespace Ares.Admin.Controllers
             {
                 return NotFound();
             }
+            var categories = (await _categoryRepository.GetAllAsync()).Where(c => c.Id != id).ToList();
+            ViewBag.ParentCategories = new SelectList(categories, "Id", "Name", category.ParentId);
             return View(category);
         }
 
@@ -74,6 +82,8 @@ namespace Ares.Admin.Controllers
                 await _categoryRepository.UpdateAsync(category);
                 return RedirectToAction(nameof(Index));
             }
+            var categories = (await _categoryRepository.GetAllAsync()).Where(c => c.Id != id).ToList();
+            ViewBag.ParentCategories = new SelectList(categories, "Id", "Name", category.ParentId);
             return View(category);
         }
 

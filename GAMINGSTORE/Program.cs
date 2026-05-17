@@ -3,6 +3,8 @@ using GAMINGSTORE.Models;
 using GAMINGSTORE.Repositories;
 using GAMINGSTORE.Seeding;
 using GAMINGSTORE.Services;
+using GAMINGSTORE.Authorization;
+using GAMINGSTORE.Extensions;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
@@ -60,6 +62,39 @@ builder.Services.AddSession(options =>
     options.Cookie.Name = ".GAMINGSTORE.Session.v2";
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(PermissionConstants.DashboardAccess, policy =>
+        policy.RequireAssertion(context => context.User.HasPermission(PermissionConstants.DashboardAccess)));
+
+    options.AddPolicy(PermissionConstants.AuditView, policy =>
+        policy.RequireAssertion(context => context.User.HasPermission(PermissionConstants.AuditView)));
+
+    options.AddPolicy(PermissionConstants.ProductManage, policy =>
+        policy.RequireAssertion(context => context.User.HasPermission(PermissionConstants.ProductManage)));
+
+    options.AddPolicy(PermissionConstants.OrderManage, policy =>
+        policy.RequireAssertion(context => context.User.HasPermission(PermissionConstants.OrderManage)));
+
+    options.AddPolicy(PermissionConstants.OrderView, policy =>
+        policy.RequireAssertion(context => context.User.HasPermission(PermissionConstants.OrderView)));
+
+    options.AddPolicy(PermissionConstants.ReturnManage, policy =>
+        policy.RequireAssertion(context => context.User.HasPermission(PermissionConstants.ReturnManage)));
+
+    options.AddPolicy(PermissionConstants.ReturnView, policy =>
+        policy.RequireAssertion(context => context.User.HasPermission(PermissionConstants.ReturnView)));
+
+    options.AddPolicy(PermissionConstants.CouponManage, policy =>
+        policy.RequireAssertion(context => context.User.HasPermission(PermissionConstants.CouponManage)));
+
+    options.AddPolicy(PermissionConstants.ReviewManage, policy =>
+        policy.RequireAssertion(context => context.User.HasPermission(PermissionConstants.ReviewManage)));
+
+    options.AddPolicy(PermissionConstants.RoleManage, policy =>
+        policy.RequireAssertion(context => context.User.HasPermission(PermissionConstants.RoleManage)));
 });
 
 // Add services to the container.

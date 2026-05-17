@@ -519,7 +519,7 @@
                 var returnRequest = Model.ReturnRequests?.FirstOrDefault();
             }
 
-            @if (!User.IsInRole("Admin"))
+            @if (!User.HasPermission(PermissionConstants.ReturnManage))
             {
                 @if (canReturn)
                 {

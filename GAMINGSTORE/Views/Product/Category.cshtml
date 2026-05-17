@@ -253,6 +253,7 @@
         font-weight: 900;
         color: var(--category-primary);
         margin-bottom: 4px;
+        margin-top: auto;
     }
 
     .product-subprice {
@@ -265,7 +266,6 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 10px;
-        margin-top: auto;
     }
 
     .product-btn {
@@ -371,20 +371,22 @@
                             <span><i class="bi bi-lightning-charge"></i> Sẵn đơn</span>
                         </div>
 
-                        <div class="product-price">@item.Price.ToString("N0", new CultureInfo("vi-VN")) ₫</div>
-                        <div class="product-subprice">Trải nghiệm card đồng bộ với trang chi tiết</div>
+                        <div class="mt-auto w-100">
+                            <div class="product-price">@item.Price.ToString("N0", new CultureInfo("vi-VN")) ₫</div>
+                            <div class="product-subprice">Trải nghiệm card đồng bộ với trang chi tiết</div>
 
-                        <div class="product-actions">
-                            <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id" class="product-btn product-btn-detail">
-                                <i class="bi bi-eye"></i> Chi tiết
-                            </a>
-                            <a asp-controller="ShoppingCart"
-                               asp-action="AddToCart"
-                               asp-route-productId="@item.Id"
-                               asp-route-quantity="1"
-                               class="product-btn product-btn-cart">
-                                <i class="bi bi-cart-plus"></i> Thêm giỏ
-                            </a>
+                            <div class="product-actions">
+                                <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id" class="product-btn product-btn-detail">
+                                    <i class="bi bi-eye"></i> Chi tiết
+                                </a>
+                                <a asp-controller="ShoppingCart"
+                                   asp-action="AddToCart"
+                                   asp-route-productId="@item.Id"
+                                   asp-route-quantity="1"
+                                   class="product-btn product-btn-cart">
+                                    <i class="bi bi-cart-plus"></i> Thêm giỏ
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </article>

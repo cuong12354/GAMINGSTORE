@@ -496,6 +496,43 @@
             font-size: 28px;
         }
     }
+
+    /* SCROLL ANIMATION */
+    .scroll-animate { 
+        opacity: 0; 
+        transform: translateY(40px); 
+        transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); 
+    }
+    .scroll-animate.visible { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+
+    /* STICKY CART BAR */
+    .sticky-cart-bar {
+        position: fixed;
+        bottom: -100px;
+        left: 0;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 -10px 30px rgba(0,0,0,0.08);
+        padding: 12px 0;
+        z-index: 1040;
+        transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border-top: 1px solid rgba(15, 23, 42, 0.05);
+    }
+    .sticky-cart-bar.show {
+        bottom: 0;
+    }
+    .sticky-cart-info img {
+        width: 48px; 
+        height: 48px; 
+        object-fit: contain; 
+        border-radius: 12px;
+        background: var(--detail-bg);
+        border: 1px solid var(--detail-line);
+    }
 </style>
 
 <div class="container detail-shell">
@@ -507,7 +544,7 @@
         </ol>
     </nav>
 
-    <section class="detail-hero">
+    <section class="detail-hero scroll-animate">
         <div class="row g-0">
             <div class="col-lg-5">
                 <div class="detail-gallery">
@@ -576,7 +613,7 @@
                         <p>@(string.IsNullOrWhiteSpace(product.Description) ? "Sản phẩm đang được cập nhật mô tả chi tiết. Bạn vẫn có thể xem nhanh nhóm danh mục, mức giá và các lựa chọn tương tự bên dưới." : product.Description)</p>
                     </div>
 
-                    <form asp-controller="ShoppingCart" asp-action="AddToCart" method="get" class="detail-actions">
+                    <form asp-controller="ShoppingCart" asp-action="AddToCart" method="get" class="detail-actions" id="mainAddToCartForm">
                         <input type="hidden" name="productId" value="@product.Id" />
 
                         <div class="quantity-box">
@@ -619,7 +656,7 @@
         </div>
     </section>
 
-    <section class="detail-grid">
+    <section class="detail-grid scroll-animate" style="transition-delay: 0.1s;">
         <div class="detail-panel">
             <div class="panel-kicker">Điểm nổi bật</div>
             <h2 class="panel-title">Đặc điểm nổi bật</h2>
@@ -656,7 +693,7 @@
         </div>
     </section>
 
-    <section class="detail-panel related-section">
+    <section class="detail-panel related-section scroll-animate" style="transition-delay: 0.2s;">
         <div class="panel-kicker">Khám phá thêm</div>
         <h2 class="panel-title">Sản phẩm tương tự</h2>
 
@@ -692,9 +729,29 @@
     </section>
 
     <!-- Reviews Section -->
-    <section style="margin-top: 50px;">
+    <section style="margin-top: 50px;" class="scroll-animate" style="transition-delay: 0.3s;">
         @await Html.PartialAsync("_ReviewsList", (List<ProductReview>)ViewBag.Reviews)
     </section>
+</div>
+
+<!-- STICKY BOTTOM BAR -->
+<div class="sticky-cart-bar" id="stickyCartBar">
+    <div class="container d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-3 sticky-cart-info">
+            <img src="@GetFirstImage(product.ImageUrl)" alt="@product.Name" class="d-none d-sm-block">
+            <div>
+                <div class="fw-bold" style="font-size: 15px; color: var(--detail-text);">@product.Name</div>
+                <div class="fw-bold" style="font-size: 16px; color: var(--detail-primary);">@product.Price.ToString("C0", new CultureInfo("vi-VN"))</div>
+            </div>
+        </div>
+        <form asp-controller="ShoppingCart" asp-action="AddToCart" method="get" class="m-0">
+            <input type="hidden" name="productId" value="@product.Id" />
+            <input type="hidden" name="quantity" value="1" id="stickyQuantity" />
+            <button type="submit" class="btn text-white rounded-pill px-4 fw-bold shadow-sm" style="background: linear-gradient(135deg, var(--detail-primary), var(--detail-primary-dark)); border: none; height: 46px;">
+                <i class="bi bi-cart-plus me-2"></i>Thêm <span class="d-none d-sm-inline">Vào Giỏ</span>
+            </button>
+        </form>
+    </div>
 </div>
 
 @section Scripts {
@@ -702,17 +759,51 @@
         // Script tăng giảm số lượng an toàn
         function increaseQty() {
             let input = document.getElementById('quantity');
+            let stickyInput = document.getElementById('stickyQuantity');
             let currentVal = parseInt(input.value);
             if(currentVal < 50) { // Giới hạn mua tối đa 50 cái
                 input.value = currentVal + 1;
+                stickyInput.value = currentVal + 1;
             }
         }
         function decreaseQty() {
             let input = document.getElementById('quantity');
+            let stickyInput = document.getElementById('stickyQuantity');
             let currentVal = parseInt(input.value);
             if(currentVal > 1) { // Không cho phép âm hoặc = 0
                 input.value = currentVal - 1;
+                stickyInput.value = currentVal - 1;
             }
         }
+
+        // IntersectionObserver cho hiệu ứng Scroll Animation
+        document.addEventListener('DOMContentLoaded', () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if(entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+
+            document.querySelectorAll('.scroll-animate').forEach(el => observer.observe(el));
+
+            // Logic Sticky Cart Bar
+            const mainForm = document.getElementById('mainAddToCartForm');
+            const stickyBar = document.getElementById('stickyCartBar');
+            
+            if (mainForm && stickyBar) {
+                window.addEventListener('scroll', () => {
+                    const formRect = mainForm.getBoundingClientRect();
+                    // Khi form chính trôi qua nửa màn hình lên trên
+                    if (formRect.bottom < 0) {
+                        stickyBar.classList.add('show');
+                    } else {
+                        stickyBar.classList.remove('show');
+                    }
+                });
+            }
+        });
     </script>
 }

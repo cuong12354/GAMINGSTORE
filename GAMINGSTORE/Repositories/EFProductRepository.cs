@@ -1,4 +1,4 @@
-﻿using GAMINGSTORE.Models;
+using GAMINGSTORE.Models;
 using Microsoft.EntityFrameworkCore;
 using GAMINGSTORE.Data;
 namespace GAMINGSTORE.Repositories
@@ -15,13 +15,17 @@ namespace GAMINGSTORE.Repositories
             // return await _context.Products.ToListAsync();
             return await _context.Products
             .Include(p => p.Categories) // Include thông tin về categories
+            .Include(p => p.Inventory) // ✨ Lấy kèm số lượng tồn kho
             .ToListAsync();
         }
         public async Task<Product> GetByIdAsync(int id)
         {
             // return await _context.Products.FindAsync(id);
             // lấy thông tin kèm theo categories
-            return await _context.Products.Include(p => p.Categories).FirstOrDefaultAsync(p => p.Id == id);
+            return await _context.Products
+                .Include(p => p.Categories)
+                .Include(p => p.Inventory) // ✨ Lấy kèm số lượng tồn kho
+                .FirstOrDefaultAsync(p => p.Id == id);
         }
         public async Task AddAsync(Product product)
         {

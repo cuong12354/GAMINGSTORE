@@ -1,4 +1,4 @@
-﻿using GAMINGSTORE.Data;
+using GAMINGSTORE.Data;
 using GAMINGSTORE.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,12 +15,18 @@ namespace GAMINGSTORE.Repositories
 
         public async Task<IEnumerable<Category>> GetAllAsync()
         {
-            return await _context.Categories.ToListAsync();
+            return await _context.Categories
+                .Include(c => c.SubCategories)
+                    .ThenInclude(s => s.SubCategories)
+                .ToListAsync();
         }
 
         public async Task<Category> GetByIdAsync(int id)
         {
-            return await _context.Categories.FindAsync(id);
+            return await _context.Categories
+                .Include(c => c.SubCategories)
+                    .ThenInclude(s => s.SubCategories)
+                .FirstOrDefaultAsync(c => c.Id == id);
         }
 
         public async Task AddAsync(Category category)

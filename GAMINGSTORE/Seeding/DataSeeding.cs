@@ -31,14 +31,14 @@ namespace GAMINGSTORE.Seeding
                 var category = categoryMap[definition.Name];
                 var currentCount = existingProducts.Count(p => p.Categories.Any(c => c.Id == category.Id));
 
-                if (currentCount >= 10)
+                if (currentCount >= 1)
                 {
                     continue;
                 }
 
                 foreach (var productName in definition.ProductNames)
                 {
-                    if (currentCount >= 10)
+                    if (currentCount >= 1)
                     {
                         break;
                     }

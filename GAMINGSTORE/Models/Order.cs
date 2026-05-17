@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
@@ -26,6 +26,8 @@ namespace GAMINGSTORE.Models
         // New Features
         public string? CouponCode { get; set; }
         public decimal DiscountAmount { get; set; } = 0;
+        public decimal MemberDiscountAmount { get; set; } = 0;
+        public decimal MemberDiscountPercentage { get; set; } = 0;
         public List<OrderTracking>? TrackingHistory { get; set; }
         public List<ReturnRequest> ReturnRequests { get; set; } = new List<ReturnRequest>();
         public DateTime? DeliveredDate { get; set; }

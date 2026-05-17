@@ -1,3 +1,4 @@
+using GAMINGSTORE.Authorization;
 using GAMINGSTORE.Data;
 using GAMINGSTORE.Models;
 using GAMINGSTORE.Repositories;
@@ -9,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace GAMINGSTORE.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = PermissionConstants.DashboardAccess)]
     public class DashboardController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -58,6 +59,7 @@ namespace GAMINGSTORE.Areas.Admin.Controllers
 
             // Recent Orders
             var recentOrders = await _context.Orders
+                .Include(o => o.ApplicationUser)
                 .OrderByDescending(o => o.OrderDate)
                 .Take(10)
                 .ToListAsync();
@@ -71,6 +73,22 @@ namespace GAMINGSTORE.Areas.Admin.Controllers
                 .ToListAsync())
                 .Cast<dynamic>()
                 .ToList();
+
+            // Monthly Revenue Data (Last 12 months)
+            var last12Months = DateTime.UtcNow.AddMonths(-11);
+            var monthlyRevenueData = await _context.Orders
+                .Where(o => o.OrderDate >= last12Months)
+                .GroupBy(o => new { o.OrderDate.Year, o.OrderDate.Month })
+                .Select(g => new MonthlyRevenueDataItem
+                {
+                    Month = g.Key.Month,
+                    Year = g.Key.Year,
+                    Revenue = g.Sum(o => o.TotalPrice),
+                    Orders = g.Count()
+                })
+                .OrderBy(x => x.Year)
+                .ThenBy(x => x.Month)
+                .ToListAsync();
 
             var model = new DashboardViewModel
             {
@@ -88,7 +106,8 @@ namespace GAMINGSTORE.Areas.Admin.Controllers
                 TotalReviews = totalReviews,
                 TotalCategories = categories.Count(),
                 RecentOrders = recentOrders,
-                TopProducts = topProducts
+                TopProducts = topProducts,
+                MonthlyRevenueData = monthlyRevenueData
             };
 
             return View(model);
@@ -142,6 +161,14 @@ namespace GAMINGSTORE.Areas.Admin.Controllers
         }
     }
 
+    public class MonthlyRevenueDataItem
+    {
+        public int Month { get; set; }
+        public int Year { get; set; }
+        public decimal Revenue { get; set; }
+        public int Orders { get; set; }
+    }
+
     public class DashboardViewModel
     {
         public int TotalOrders { get; set; }
@@ -159,5 +186,6 @@ namespace GAMINGSTORE.Areas.Admin.Controllers
         public int TotalCategories { get; set; }
         public List<Order> RecentOrders { get; set; }
         public List<dynamic> TopProducts { get; set; } = new List<dynamic>();
+        public List<MonthlyRevenueDataItem> MonthlyRevenueData { get; set; } = new List<MonthlyRevenueDataItem>();
     }
 }

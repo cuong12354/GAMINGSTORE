@@ -1,3 +1,4 @@
+@using GAMINGSTORE.Authorization
 @using Microsoft.AspNetCore.Identity
 
 @inject SignInManager<ApplicationUser> SignInManager
@@ -291,7 +292,7 @@
                         ⭐ Chương trình thành viên
                     </a>
 
-                    @if (User.IsInRole("Admin"))
+                    @if (User.HasPermission(PermissionConstants.OrderView))
                     {
                         <a href="/OrderHistory/AllOrders">
                             📊 Tất cả lịch sử mua hàng
@@ -308,26 +309,10 @@
                         🔄 Lịch sử trả hàng
                     </a>
 
-                    @if (User.IsInRole("Admin"))
+                    @if (User.HasPermission(PermissionConstants.DashboardAccess))
                     {
-                        <a href="/Dashboard/Index">
+                        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
                             📊 Dashboard
-                        </a>
-
-                        <a href="/Product/Index">
-                            ⚙️ Quản lý sản phẩm
-                        </a>
-
-                        <a href="/OrderManagement/Index">
-                            📦 Quản lý đơn hàng
-                        </a>
-
-                        <a href="/Return/Pending">
-                            📋 Quản lý trả hàng
-                        </a>
-
-                        <a href="/Audit/Index">
-                            📋 Audit Trail
                         </a>
                     }
 

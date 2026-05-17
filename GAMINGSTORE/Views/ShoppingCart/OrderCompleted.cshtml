@@ -224,24 +224,27 @@
                 </span>
             </div>
             <div class="info-item">
-                <span class="info-label">💰 Tổng Tiền</span>
-                <span class="info-value">@Model.TotalPrice.ToString("N0") ₫</span>
+                <span class="info-label">💰 Tạm Tính</span>
+                <span class="info-value">@((Model.TotalPrice + Model.DiscountAmount + Model.MemberDiscountAmount).ToString("N0")) ₫</span>
             </div>
+            @if (Model.MemberDiscountAmount > 0)
+            {
+                <div class="info-item">
+                    <span class="info-label">🎖️ Giảm Giá Hội Viên (@Model.MemberDiscountPercentage.ToString("0.##")%)</span>
+                    <span class="info-value" style="color: #28a745;">-@Model.MemberDiscountAmount.ToString("N0") ₫</span>
+                </div>
+            }
             @if (Model.DiscountAmount > 0)
             {
                 <div class="info-item">
-                    <span class="info-label">🎟️ Mã Giảm Giá</span>
-                    <span class="info-value">@Model.CouponCode</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">✂️ Giảm</span>
+                    <span class="info-label">🎟️ Mã Giảm Giá (@Model.CouponCode)</span>
                     <span class="info-value" style="color: #28a745;">-@Model.DiscountAmount.ToString("N0") ₫</span>
                 </div>
             }
             <div class="info-item" style="border-top: 2px solid #eee; padding-top: 10px; margin-top: 10px;">
                 <span class="info-label" style="font-weight: bold; font-size: 15px;">💳 Thành Tiền</span>
                 <span class="info-value" style="font-weight: bold; font-size: 15px; color: #d92e2e;">
-                    @(Model.TotalPrice + Model.DiscountAmount).ToString("N0") ₫
+                    @Model.TotalPrice.ToString("N0") ₫
                 </span>
             </div>
             <div class="info-item">

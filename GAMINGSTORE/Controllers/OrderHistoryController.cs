@@ -1,4 +1,6 @@
+using GAMINGSTORE.Authorization;
 using GAMINGSTORE.Data;
+using GAMINGSTORE.Extensions;
 using GAMINGSTORE.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -38,7 +40,7 @@ namespace GAMINGSTORE.Controllers
                 .ThenInclude(od => od.Product)
                 .Include(o => o.ReturnRequests); // Added to include return requests
 
-            if (!User.IsInRole("Admin"))
+            if (!User.HasPermission(PermissionConstants.OrderView))
             {
                 query = query.Where(o => o.UserId == user.Id);
             }
@@ -47,7 +49,7 @@ namespace GAMINGSTORE.Controllers
 
             ViewBag.UserFullName = user.FullName;
             ViewBag.UserEmail = user.Email;
-            ViewBag.IsAdmin = User.IsInRole("Admin");
+            ViewBag.CanViewAllOrders = User.HasPermission(PermissionConstants.OrderView);
 
             return View(orders);
         }
@@ -66,7 +68,7 @@ namespace GAMINGSTORE.Controllers
             }
 
             var order = await _context.Orders
-                .Where(o => o.Id == id && (User.IsInRole("Admin") || o.UserId == user.Id))
+                .Where(o => o.Id == id && (User.HasPermission(PermissionConstants.OrderView) || o.UserId == user.Id))
                 .Include(o => o.OrderDetails)
                 .ThenInclude(od => od.Product)
                 .Include(o => o.ReturnRequests)
@@ -91,7 +93,7 @@ namespace GAMINGSTORE.Controllers
             
             // ✅ Logic rõ ràng: Admin xem tất cả, User xem của mình
             var order = await _context.Orders
-                .Where(o => o.Id == id && (User.IsInRole("Admin") || o.UserId == user.Id))
+                .Where(o => o.Id == id && (User.HasPermission(PermissionConstants.OrderView) || o.UserId == user.Id))
                 .FirstOrDefaultAsync();
 
             if (order == null)
@@ -120,7 +122,7 @@ namespace GAMINGSTORE.Controllers
         /// Cập nhật trạng thái đơn hàng (chỉ Admin)
         /// </summary>
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Policy = PermissionConstants.OrderManage)]
         public async Task<IActionResult> UpdateStatus(int id, string status)
         {
             var validStatuses = new[] { "Pending", "Confirmed", "Shipped", "Delivered", "Cancelled" };
@@ -147,7 +149,7 @@ namespace GAMINGSTORE.Controllers
         /// Hiển thị lịch sử tất cả đơn hàng (chỉ Admin)
         /// </summary>
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Policy = PermissionConstants.OrderView)]
         public async Task<IActionResult> AllOrders()
         {
             var orders = await _context.Orders

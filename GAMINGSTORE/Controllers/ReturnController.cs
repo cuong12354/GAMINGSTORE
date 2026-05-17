@@ -1,3 +1,5 @@
+using GAMINGSTORE.Authorization;
+using GAMINGSTORE.Extensions;
 using GAMINGSTORE.Models;
 using GAMINGSTORE.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -48,7 +50,7 @@ namespace GAMINGSTORE.Controllers
                 return NotFound();
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (returnRequest.UserId != userId && !User.IsInRole("Admin"))
+            if (returnRequest.UserId != userId && !User.HasPermission(PermissionConstants.ReturnManage))
                 return Unauthorized();
 
             return View(returnRequest);
@@ -114,7 +116,7 @@ namespace GAMINGSTORE.Controllers
         /// <summary>
         /// Admin: View all pending returns
         /// </summary>
-        [Authorize(Roles = "Admin")]
+        [Authorize(Policy = PermissionConstants.ReturnManage)]
         public async Task<IActionResult> Pending()
         {
             var pendingReturns = await _returnService.GetPendingReturnRequestsAsync();
@@ -124,7 +126,7 @@ namespace GAMINGSTORE.Controllers
         /// <summary>
         /// Admin: Approve or reject return request
         /// </summary>
-        [Authorize(Roles = "Admin")]
+        [Authorize(Policy = PermissionConstants.ReturnManage)]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateStatus(int id, string status, string? adminNotes)
@@ -158,7 +160,7 @@ namespace GAMINGSTORE.Controllers
         /// <summary>
         /// Admin: View return statistics
         /// </summary>
-        [Authorize(Roles = "Admin")]
+        [Authorize(Policy = PermissionConstants.ReturnManage)]
         public async Task<IActionResult> Statistics()
         {
             var stats = await _returnService.GetReturnStatisticsAsync();

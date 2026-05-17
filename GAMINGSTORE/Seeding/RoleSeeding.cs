@@ -1,7 +1,11 @@
+using GAMINGSTORE.Authorization;
 using GAMINGSTORE.Data;
 using GAMINGSTORE.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 
 namespace GAMINGSTORE.Seeding
 {
@@ -29,6 +33,51 @@ namespace GAMINGSTORE.Seeding
                         if (!result.Succeeded)
                         {
                             throw new Exception($"Lỗi tạo role '{roleName}': {string.Join(",", result.Errors.Select(e => e.Description))}");
+                        }
+                    }
+                }
+
+                // ============ SEED ROLE PERMISSIONS ============
+                var rolePermissions = new Dictionary<string, string[]>
+                {
+                    ["Admin"] = PermissionConstants.AllPermissions,
+                    ["Employee"] = new[]
+                    {
+                        PermissionConstants.ProductManage,
+                        PermissionConstants.OrderView,
+                        PermissionConstants.OrderManage,
+                        PermissionConstants.ReturnView,
+                        PermissionConstants.ReturnManage,
+                        PermissionConstants.DashboardAccess,
+                        PermissionConstants.CouponManage,
+                        PermissionConstants.ReviewManage
+                    },
+                    ["Company"] = new[]
+                    {
+                        PermissionConstants.OrderView,
+                        PermissionConstants.DashboardAccess
+                    },
+                    ["Customer"] = new[]
+                    {
+                        PermissionConstants.OrderView,
+                        PermissionConstants.ReturnView
+                    }
+                };
+
+                foreach (var (roleName, permissions) in rolePermissions)
+                {
+                    var role = await roleManager.FindByNameAsync(roleName);
+                    if (role == null)
+                    {
+                        continue;
+                    }
+
+                    var existingClaims = await roleManager.GetClaimsAsync(role);
+                    foreach (var permission in permissions)
+                    {
+                        if (!existingClaims.Any(c => c.Type == PermissionConstants.ClaimType && c.Value == permission))
+                        {
+                            await roleManager.AddClaimAsync(role, new Claim(PermissionConstants.ClaimType, permission));
                         }
                     }
                 }

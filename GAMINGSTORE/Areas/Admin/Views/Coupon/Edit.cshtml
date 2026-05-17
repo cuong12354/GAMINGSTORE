@@ -6,346 +6,139 @@
 }
 
 <style>
-    .form-container {
-        padding: 30px;
-        max-width: 600px;
-        margin: 0 auto;
-    }
-    .form-header {
-        margin-bottom: 30px;
-    }
-    .form-header h1 {
-        font-size: 28px;
-        font-weight: 900;
-        color: #1f2937;
-        margin: 0 0 10px 0;
-    }
-    .form-header p {
-        color: #6b7280;
-        margin: 0;
-    }
-    .form-group {
-        margin-bottom: 24px;
-    }
-    .form-label {
-        display: block;
-        font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 8px;
-        font-size: 14px;
-    }
-    .form-control {
-        width: 100%;
-        padding: 12px 16px;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        font-size: 14px;
-        font-family: inherit;
-        transition: all 0.2s;
-    }
-    .form-control:focus {
-        outline: none;
-        border-color: #d92e2e;
-        box-shadow: 0 0 0 3px rgba(217, 46, 46, 0.1);
-    }
-    .form-control:disabled {
-        background: #f3f4f6;
-        cursor: not-allowed;
-    }
-    .form-check {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 12px;
-    }
-    .form-check input {
-        width: 18px;
-        height: 18px;
-        cursor: pointer;
-        accent-color: #d92e2e;
-    }
-    .form-check label {
-        cursor: pointer;
-        font-weight: 500;
-        margin: 0;
-    }
-    .form-section {
-        background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 20px;
-    }
-    .section-title {
-        font-weight: 900;
-        color: #1f2937;
-        margin: 0 0 16px 0;
-        font-size: 16px;
-        padding-bottom: 12px;
-        border-bottom: 2px solid #f0f0f0;
-    }
-    .two-col {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-    }
-    .textarea {
-        resize: vertical;
-        min-height: 100px;
-    }
-    .help-text {
-        display: block;
-        font-size: 12px;
-        color: #6b7280;
-        margin-top: 4px;
-    }
-    .form-actions {
-        display: flex;
-        gap: 12px;
-        justify-content: space-between;
-        margin-top: 30px;
-    }
-    .btn-primary {
-        background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%);
-        color: white;
-        padding: 12px 32px;
-        border: none;
-        border-radius: 8px;
-        font-weight: 700;
-        cursor: pointer;
-        font-size: 14px;
-        transition: all 0.2s;
-    }
-    .btn-primary:hover {
-        transform: scale(1.02);
-        box-shadow: 0 4px 12px rgba(217, 46, 46, 0.3);
-    }
-    .btn-secondary {
-        background: white;
-        border: 1px solid #e5e7eb;
-        color: #1f2937;
-        padding: 12px 32px;
-        border-radius: 8px;
-        font-weight: 700;
-        cursor: pointer;
-        font-size: 14px;
-        transition: all 0.2s;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-    }
-    .btn-secondary:hover {
-        border-color: #d92e2e;
-        color: #d92e2e;
-    }
-    .btn-delete {
-        background: #fee;
-        border: 1px solid #fca5a5;
-        color: #dc2626;
-        padding: 12px 32px;
-        border-radius: 8px;
-        font-weight: 700;
-        cursor: pointer;
-        font-size: 14px;
-        transition: all 0.2s;
-    }
-    .btn-delete:hover {
-        background: #fca5a5;
-        border-color: #dc2626;
-    }
-    .input-addon {
-        display: flex;
-        align-items: center;
-        gap: 0;
-    }
-    .input-addon .form-control {
-        flex: 1;
-        border-radius: 8px 0 0 8px;
-        margin-bottom: 0;
-    }
-    .addon-unit {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 50px;
-        background: #f3f4f6;
-        border: 1px solid #e5e7eb;
-        border-left: none;
-        border-radius: 0 8px 8px 0;
-        font-weight: 700;
-        color: #6b7280;
-        font-size: 13px;
-    }
-    .info-box {
-        background: #fef3c7;
-        border: 1px solid #fbbf24;
-        border-radius: 8px;
-        padding: 12px;
-        margin-bottom: 16px;
-        color: #78350f;
-        font-size: 13px;
-    }
-    .usage-stats {
-        background: #dbeafe;
-        border: 1px solid #93c5fd;
-        border-radius: 8px;
-        padding: 12px;
-        margin-bottom: 16px;
-        color: #1e40af;
-        font-size: 13px;
-    }
+    .form-container { padding: 30px; max-width: 760px; margin: 0 auto; }
+    .form-header { margin-bottom: 24px; }
+    .form-header h1 { font-size: 28px; font-weight: 900; color: #1f2937; margin: 0 0 8px; }
+    .form-header p { color: #6b7280; margin: 0; }
+    .form-section { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px; margin-bottom: 18px; box-shadow: 0 6px 18px rgba(15,23,42,.04); }
+    .section-title { font-weight: 900; color: #1f2937; margin: 0 0 16px; font-size: 16px; padding-bottom: 12px; border-bottom: 2px solid #f0f0f0; }
+    .form-group { margin-bottom: 18px; }
+    .form-label { display: block; font-weight: 800; color: #1f2937; margin-bottom: 7px; font-size: 14px; }
+    .form-control { width: 100%; padding: 12px 14px; border: 1px solid #e5e7eb; border-radius: 9px; font-size: 14px; font-family: inherit; }
+    .form-control:focus { outline: none; border-color: #d92e2e; box-shadow: 0 0 0 3px rgba(217,46,46,.1); }
+    .textarea { resize: vertical; min-height: 88px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .help-text { display: block; font-size: 12px; color: #6b7280; margin-top: 5px; }
+    .text-danger { color: #dc2626; font-size: 13px; font-weight: 700; }
+    .validation-summary-errors { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; padding: 12px 14px; border-radius: 10px; margin-bottom: 16px; font-weight: 700; }
+    .form-check { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+    .form-check input { width: 18px; height: 18px; accent-color: #d92e2e; }
+    .input-addon { display: flex; align-items: stretch; }
+    .input-addon .form-control { border-radius: 9px 0 0 9px; }
+    .addon-unit { display: flex; align-items: center; justify-content: center; min-width: 62px; background: #f3f4f6; border: 1px solid #e5e7eb; border-left: 0; border-radius: 0 9px 9px 0; font-weight: 900; color: #6b7280; }
+    .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+    .btn-primary, .btn-secondary { min-height: 44px; padding: 0 22px; border-radius: 9px; font-weight: 900; border: 1px solid transparent; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+    .btn-primary { background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%); color: white; }
+    .btn-secondary { background: white; border-color: #e5e7eb; color: #1f2937; }
+    @@media(max-width: 768px) { .two-col { grid-template-columns: 1fr; } .form-container { padding: 16px; } }
 </style>
 
 <div class="form-container">
     <div class="form-header">
         <h1>✏️ Chỉnh Sửa Mã Giảm Giá</h1>
-        <p>Cập nhật thông tin cho mã: <strong>@Model.Code</strong></p>
+        <p>Cập nhật coupon trực tiếp trên web. Database chỉ dùng để lưu trữ.</p>
     </div>
 
-    <form method="post" action="@Url.Action("Edit", "Coupon", new { area = "Admin", id = Model.Id })">
+    <form asp-area="Admin" asp-controller="Coupon" asp-action="Edit" asp-route-id="@Model.Id" method="post">
         <input type="hidden" asp-for="Id" />
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="All" class="text-danger"></div>
 
-        <!-- Basic Information -->
         <div class="form-section">
-            <h3 class="section-title">💳 Thông Tin Cơ Bản</h3>
-
+            <h3 class="section-title">💳 Thông tin cơ bản</h3>
             <div class="form-group">
-                <label class="form-label">Mã Coupon</label>
-                <input type="text" asp-for="Code" class="form-control" disabled>
-                <span class="help-text">Mã không thể chỉnh sửa sau khi tạo</span>
+                <label asp-for="Code" class="form-label">Mã coupon <span class="text-danger">*</span></label>
+                <input asp-for="Code" class="form-control" placeholder="VD: AI2026" oninput="this.value=this.value.toUpperCase().replace(/\s/g,'')" />
+                <span class="help-text">Mã nên viết hoa, không dấu cách.</span>
+                <span asp-validation-for="Code" class="text-danger"></span>
             </div>
-
             <div class="form-group">
-                <label class="form-label">Mô Tả</label>
-                <textarea asp-for="Description" class="form-control textarea" placeholder="Ví dụ: Giảm 50% toàn bộ sản phẩm trong mùa hè"></textarea>
-                <span class="help-text">Mô tả ngắn về mã giảm giá (tùy chọn)</span>
+                <label asp-for="Description" class="form-label">Mô tả</label>
+                <textarea asp-for="Description" class="form-control textarea" placeholder="VD: Giảm 10% cho toàn bộ đơn hàng"></textarea>
             </div>
         </div>
 
-        <!-- Usage Statistics -->
-        @{
-            var usagePercentage = Model.MaxUsageCount > 0 ? (Model.CurrentUsageCount * 100 / Model.MaxUsageCount) : 0;
-        }
         <div class="form-section">
-            <div class="usage-stats">
-                📊 <strong>Lượt sử dụng:</strong> @Model.CurrentUsageCount / @Model.MaxUsageCount lần
-                <div style="margin-top: 8px; background: white; height: 8px; border-radius: 4px; overflow: hidden;">
-                    <div style="height: 100%; background: linear-gradient(90deg, #d92e2e 0%, #b82222 100%); width: @usagePercentage%;"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Discount Configuration -->
-        <div class="form-section">
-            <h3 class="section-title">💰 Cấu Hình Giảm Giá</h3>
-
-            <div class="info-box">
-                ℹ️ Loại giảm giá: @(Model.DiscountPercent > 0 ? "Theo phần trăm (" + Model.DiscountPercent + "%)" : (Model.DiscountAmount > 0 ? "Số tiền cố định (" + Model.DiscountAmount.ToString("C") + ")" : "Chưa cấu hình"))
-            </div>
-
-            <div class="form-group">
-                <div class="form-check">
-                    <input type="radio" id="discountPercent" name="discountType" value="percent" 
-                           @(Model.DiscountPercent > 0 ? "checked" : "") onchange="toggleDiscountType()">
-                    <label for="discountPercent">Giảm Theo Phần Trăm (%)</label>
-                </div>
-                <div style="padding-left: 26px;">
-                    <input type="number" asp-for="DiscountPercent" class="form-control" 
-                           placeholder="Ví dụ: 50" min="1" max="100">
-                    <span class="help-text">Nhập số phần trăm (1-100%)</span>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="form-check">
-                    <input type="radio" id="discountAmount" name="discountType" value="amount" 
-                           @(Model.DiscountAmount > 0 ? "checked" : "") onchange="toggleDiscountType()">
-                    <label for="discountAmount">Giảm Số Tiền Cố Định</label>
-                </div>
-                <div style="padding-left: 26px;">
-                    <input type="number" asp-for="DiscountAmount" class="form-control" 
-                           placeholder="Ví dụ: 100000" min="1000" step="1000">
-                    <span class="help-text">Nhập số tiền VNĐ</span>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Giá Trị Đơn Hàng Tối Thiểu</label>
-                <div class="input-addon">
-                    <input type="number" asp-for="MinimumOrderValue" class="form-control" 
-                           placeholder="Ví dụ: 500000" min="0" step="10000">
-                    <div class="addon-unit">VNĐ</div>
-                </div>
-                <span class="help-text">Giá trị đơn hàng tối thiểu để dùng mã này (0 = không yêu cầu)</span>
-            </div>
-        </div>
-
-        <!-- Usage Limits -->
-        <div class="form-section">
-            <h3 class="section-title">🎟️ Giới Hạn Sử Dụng</h3>
-
-            <div class="form-group">
-                <label class="form-label">Tổng Số Lần Sử Dụng Tối Đa</label>
-                <input type="number" asp-for="MaxUsageCount" class="form-control" 
-                       placeholder="Ví dụ: 100" min="1">
-                <span class="help-text">Tổng lần có thể dùng mã này</span>
-            </div>
-        </div>
-
-        <!-- Date Range -->
-        <div class="form-section">
-            <h3 class="section-title">📅 Thời Gian Hiệu Lực</h3>
-
+            <h3 class="section-title">💰 Cấu hình giảm giá</h3>
             <div class="two-col">
                 <div class="form-group">
-                    <label class="form-label">Ngày Bắt Đầu</label>
-                    <input type="datetime-local" asp-for="StartDate" class="form-control">
-                    <span class="help-text">Ngày mã bắt đầu hoạt động</span>
+                    <label asp-for="DiscountPercent" class="form-label">Giảm theo phần trăm</label>
+                    <div class="input-addon">
+                        <input asp-for="DiscountPercent" type="number" class="form-control" min="0" max="100" step="0.01" />
+                        <div class="addon-unit">%</div>
+                    </div>
+                    <span class="help-text">Ví dụ: 10 = giảm 10%. Nếu dùng giảm tiền thì để 0.</span>
                 </div>
-
                 <div class="form-group">
-                    <label class="form-label">Ngày Kết Thúc</label>
-                    <input type="datetime-local" asp-for="ExpiryDate" class="form-control">
-                    <span class="help-text">Ngày mã hết hiệu lực</span>
+                    <label asp-for="DiscountAmount" class="form-label">Giảm tiền cố định</label>
+                    <div class="input-addon">
+                        <input asp-for="DiscountAmount" type="number" class="form-control" min="0" step="1000" />
+                        <div class="addon-unit">VNĐ</div>
+                    </div>
+                    <span class="help-text">Ví dụ: 500000. Nếu dùng giảm % thì để 0.</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="MinimumOrderValue" class="form-label">Giá trị đơn hàng tối thiểu</label>
+                <div class="input-addon">
+                    <input asp-for="MinimumOrderValue" type="number" class="form-control" min="0" step="10000" />
+                    <div class="addon-unit">VNĐ</div>
                 </div>
             </div>
         </div>
 
-        <!-- Status -->
         <div class="form-section">
-            <h3 class="section-title">✅ Trạng Thái</h3>
-
-            <div class="form-check">
-                <input type="checkbox" id="isActive" asp-for="IsActive">
-                <label for="isActive">Kích Hoạt Mã Này</label>
+            <h3 class="section-title">🎟️ Giới hạn sử dụng</h3>
+            <div class="two-col">
+                <div class="form-group">
+                    <label asp-for="MaxUsageCount" class="form-label">Tổng lượt sử dụng tối đa</label>
+                    <input asp-for="MaxUsageCount" type="number" class="form-control" min="1" />
+                </div>
+                <div class="form-group">
+                    <label asp-for="CurrentUsageCount" class="form-label">Lượt đã dùng</label>
+                    <input asp-for="CurrentUsageCount" type="number" class="form-control" min="0" />
+                    <span class="help-text">Khi tạo mới thường để 0.</span>
+                </div>
             </div>
-            <span class="help-text">Nếu chưa tích, mã sẽ ở trạng thái vô hiệu</span>
         </div>
 
-        <!-- Form Actions -->
-        <div class="form-actions">
-            <div style="display: flex; gap: 12px;">
-                <a href="@Url.Action("Index", "Coupon", new { area = "Admin" })" class="btn-secondary">
-                    ← Hủy
-                </a>
-                <button type="submit" class="btn-primary">
-                    ✅ Lưu Thay Đổi
-                </button>
+        <div class="form-section">
+            <h3 class="section-title">📅 Thời gian hiệu lực</h3>
+            <div class="two-col">
+                <div class="form-group">
+                    <label asp-for="StartDate" class="form-label">Ngày bắt đầu</label>
+                    <input asp-for="StartDate" type="datetime-local" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label asp-for="ExpiryDate" class="form-label">Ngày hết hạn</label>
+                    <input asp-for="ExpiryDate" type="datetime-local" class="form-control" />
+                </div>
             </div>
-            <form method="post" action="@Url.Action("Delete", "Coupon", new { area = "Admin" })" style="display: inline;">
-                <input type="hidden" name="id" value="@Model.Id" />
-                <button type="submit" class="btn-delete" onclick="return confirm('Xác nhận xóa mã: @Model.Code?')">
-                    🗑️ Xóa Mã
-                </button>
-            </form>
+        </div>
+
+        <div class="form-section">
+            <h3 class="section-title">🎯 Phạm vi áp dụng</h3>
+            <div class="form-group">
+                <label asp-for="ApplicableCategoryIds" class="form-label">ID danh mục áp dụng</label>
+                <input asp-for="ApplicableCategoryIds" class="form-control" placeholder="VD: 1,2,3 hoặc để trống = tất cả" />
+            </div>
+            <div class="form-group">
+                <label asp-for="ApplicableProductIds" class="form-label">ID sản phẩm áp dụng</label>
+                <input asp-for="ApplicableProductIds" class="form-control" placeholder="VD: 5,8,12 hoặc để trống = tất cả" />
+            </div>
+            <div class="form-check">
+                <input asp-for="IsActive" type="checkbox" />
+                <label asp-for="IsActive">Kích hoạt coupon</label>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a asp-area="Admin" asp-controller="Coupon" asp-action="Index" class="btn-secondary">← Hủy</a>
+            <button type="submit" class="btn-primary">✅ Lưu thay đổi</button>
         </div>
     </form>
 </div>
 
-<script>
-    function toggleDiscountType() {
-        // Enable/disable based on radio selection
-        const percentRadio = document.getElementById('discountPercent');
-        // Just for UI update - form will handle validation
-    }
-</script>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

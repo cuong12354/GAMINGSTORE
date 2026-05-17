@@ -3,302 +3,104 @@
 
 @{
     ViewData["Title"] = "Quản Lý Mã Giảm Giá";
+    var status = ViewBag.Status as string ?? "all";
+    var now = DateTime.UtcNow;
 }
 
 <style>
-    .coupon-container {
-        padding: 30px;
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-    .coupon-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-        padding-bottom: 20px;
-        border-bottom: 2px solid #f0f0f0;
-    }
-    .coupon-header h1 {
-        font-size: 28px;
-        font-weight: 900;
-        color: #1f2937;
-        margin: 0;
-    }
-    .btn-new-coupon {
-        background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%);
-        color: white;
-        padding: 12px 24px;
-        border: none;
-        border-radius: 8px;
-        font-weight: 700;
-        cursor: pointer;
-        text-decoration: none;
-        display: inline-block;
-        transition: all 0.2s;
-    }
-    .btn-new-coupon:hover {
-        transform: scale(1.05);
-        box-shadow: 0 4px 12px rgba(217, 46, 46, 0.3);
-    }
-    .coupon-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 20px;
-        margin-bottom: 40px;
-    }
-    .coupon-card {
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        overflow: hidden;
-        background: white;
-        transition: all 0.3s;
-    }
-    .coupon-card:hover {
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        transform: translateY(-4px);
-    }
-    .coupon-header-card {
-        background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%);
-        color: white;
-        padding: 20px;
-        text-align: center;
-    }
-    .coupon-code {
-        font-size: 24px;
-        font-weight: 900;
-        margin-bottom: 8px;
-        letter-spacing: 4px;
-        font-family: 'Courier New', monospace;
-    }
-    .coupon-label {
-        font-size: 12px;
-        opacity: 0.9;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    .coupon-body {
-        padding: 16px;
-    }
-    .coupon-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px 0;
-        border-bottom: 1px solid #e5e7eb;
-        font-size: 13px;
-    }
-    .coupon-row:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
-    }
-    .coupon-label-text {
-        color: #6b7280;
-        font-weight: 600;
-    }
-    .coupon-value {
-        color: #1f2937;
-        font-weight: 700;
-    }
-    .discount-amount {
-        font-size: 18px;
-        font-weight: 900;
-        color: #d92e2e;
-    }
-    .coupon-status {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 700;
-    }
-    .status-active {
-        background: #dcfce7;
-        color: #15803d;
-    }
-    .status-inactive {
-        background: #fee;
-        color: #dc2626;
-    }
-    .status-expired {
-        background: #e5e7eb;
-        color: #374151;
-    }
-    .coupon-actions {
-        display: flex;
-        gap: 8px;
-        padding: 12px;
-        border-top: 1px solid #e5e7eb;
-    }
-    .btn-edit {
-        flex: 1;
-        background: #dbeafe;
-        border: 1px solid #93c5fd;
-        color: #1e40af;
-        padding: 8px 12px;
-        border-radius: 6px;
-        font-weight: 700;
-        cursor: pointer;
-        font-size: 13px;
-        transition: all 0.2s;
-        text-decoration: none;
-        text-align: center;
-        display: inline-block;
-    }
-    .btn-edit:hover {
-        background: #93c5fd;
-        border-color: #3b82f6;
-    }
-    .btn-delete {
-        flex: 1;
-        background: #fee;
-        border: 1px solid #fca5a5;
-        color: #dc2626;
-        padding: 8px 12px;
-        border-radius: 6px;
-        font-weight: 700;
-        cursor: pointer;
-        font-size: 13px;
-        transition: all 0.2s;
-    }
-    .btn-delete:hover {
-        background: #fca5a5;
-        border-color: #dc2626;
-    }
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-    }
-    .empty-icon {
-        font-size: 64px;
-        margin-bottom: 20px;
-    }
-    .empty-title {
-        font-size: 24px;
-        font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 12px;
-    }
-    .empty-text {
-        color: #6b7280;
-        margin-bottom: 24px;
-    }
-    .filters {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-    }
-    .filter-btn {
-        background: white;
-        border: 1px solid #e5e7eb;
-        padding: 8px 16px;
-        border-radius: 6px;
-        font-weight: 700;
-        font-size: 13px;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    .filter-btn.active {
-        background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%);
-        color: white;
-        border-color: #d92e2e;
-    }
-    .filter-btn:hover {
-        border-color: #d92e2e;
-    }
+    .coupon-container { padding: 30px; max-width: 1200px; margin: 0 auto; }
+    .coupon-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 22px; padding-bottom: 18px; border-bottom: 2px solid #f0f0f0; }
+    .coupon-header h1 { font-size: 28px; font-weight: 900; color: #1f2937; margin: 0; }
+    .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn-main { background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%); color: white; padding: 11px 18px; border: none; border-radius: 8px; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; transition: all .2s; }
+    .btn-main:hover { color: white; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(217,46,46,.25); }
+    .btn-back { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); }
+    .alert-success { background: #dcfce7; color: #166534; border: 1px solid #86efac; padding: 12px 14px; border-radius: 10px; margin-bottom: 16px; font-weight: 700; }
+    .filters { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .filter-btn { background: white; border: 1px solid #e5e7eb; color: #1f2937; padding: 8px 14px; border-radius: 8px; font-weight: 800; font-size: 13px; text-decoration: none; }
+    .filter-btn.active, .filter-btn:hover { background: #d92e2e; color: white; border-color: #d92e2e; }
+    .coupon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px; }
+    .coupon-card { border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; background: white; transition: all .25s; box-shadow: 0 6px 18px rgba(15,23,42,.05); }
+    .coupon-card:hover { box-shadow: 0 12px 28px rgba(15,23,42,.12); transform: translateY(-3px); }
+    .coupon-top { background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%); color: white; padding: 20px; text-align: center; }
+    .coupon-code { font-size: 24px; font-weight: 900; letter-spacing: 3px; font-family: Consolas, 'Courier New', monospace; }
+    .coupon-desc { margin-top: 7px; font-size: 13px; opacity: .9; min-height: 18px; }
+    .coupon-body { padding: 16px; }
+    .coupon-row { display: flex; justify-content: space-between; gap: 16px; padding: 9px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+    .coupon-row:last-child { border-bottom: none; }
+    .coupon-label { color: #6b7280; font-weight: 700; }
+    .coupon-value { color: #111827; font-weight: 800; text-align: right; }
+    .discount { font-size: 18px; color: #d92e2e; font-weight: 900; }
+    .status { display: inline-flex; padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 900; }
+    .status-active { background: #dcfce7; color: #15803d; }
+    .status-inactive { background: #fee2e2; color: #dc2626; }
+    .status-expired { background: #e5e7eb; color: #374151; }
+    .status-upcoming { background: #dbeafe; color: #1d4ed8; }
+    .coupon-actions { display: flex; gap: 8px; padding: 12px; border-top: 1px solid #e5e7eb; }
+    .btn-edit, .btn-delete { flex: 1; min-height: 38px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; cursor: pointer; }
+    .btn-edit { background: #dbeafe; border-color: #93c5fd; color: #1e40af; }
+    .btn-delete { background: #fee2e2; border-color: #fca5a5; color: #dc2626; width: 100%; }
+    .empty-state { text-align: center; padding: 58px 20px; background: white; border: 1px solid #e5e7eb; border-radius: 14px; }
+    .empty-icon { font-size: 58px; margin-bottom: 12px; }
+    .empty-title { font-size: 22px; font-weight: 900; color: #1f2937; margin-bottom: 8px; }
+    .empty-text { color: #6b7280; margin-bottom: 20px; }
+    @@media(max-width: 768px) { .coupon-header { flex-direction: column; align-items: stretch; } .coupon-grid { grid-template-columns: 1fr; } }
 </style>
 
 <div class="coupon-container">
     <div class="coupon-header">
         <h1>💳 Quản Lý Mã Giảm Giá</h1>
-        <a href="@Url.Action("Create", "Coupon", new { area = "Admin" })" class="btn-new-coupon">
-            ➕ Tạo Mã Mới
-        </a>
+        <div class="header-actions">
+            <a href="/Admin/Dashboard/Index" class="btn-main btn-back">🔙 Dashboard</a>
+            <a asp-area="Admin" asp-controller="Coupon" asp-action="Create" class="btn-main">➕ Tạo mã mới</a>
+        </div>
     </div>
 
-    <!-- Filters -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-success">@TempData["Success"]</div>
+    }
+
     <div class="filters">
-        <button class="filter-btn active">📊 Tất Cả</button>
-        <button class="filter-btn">✅ Hoạt Động</button>
-        <button class="filter-btn">❌ Vô Hiệu</button>
-        <button class="filter-btn">⏰ Sắp Hết Hạn</button>
+        <a asp-area="Admin" asp-controller="Coupon" asp-action="Index" class="filter-btn @(status == "all" ? "active" : "")">📊 Tất cả</a>
+        <a asp-area="Admin" asp-controller="Coupon" asp-action="Index" asp-route-status="active" class="filter-btn @(status == "active" ? "active" : "")">✅ Hoạt động</a>
+        <a asp-area="Admin" asp-controller="Coupon" asp-action="Index" asp-route-status="inactive" class="filter-btn @(status == "inactive" ? "active" : "")">❌ Vô hiệu</a>
+        <a asp-area="Admin" asp-controller="Coupon" asp-action="Index" asp-route-status="expired" class="filter-btn @(status == "expired" ? "active" : "")">⏰ Hết hạn</a>
+        <a asp-area="Admin" asp-controller="Coupon" asp-action="Index" asp-route-status="upcoming" class="filter-btn @(status == "upcoming" ? "active" : "")">🕒 Chưa tới ngày</a>
     </div>
 
-    @if (Model.Any())
+    @if (Model != null && Model.Any())
     {
         <div class="coupon-grid">
-            @foreach (var coupon in Model.OrderByDescending(c => c.StartDate))
+            @foreach (var coupon in Model)
             {
-                var isExpired = coupon.ExpiryDate < DateTime.Now;
-                var status = !coupon.IsActive ? "inactive" 
-                    : isExpired ? "expired" 
-                    : "active";
-                var statusText = !coupon.IsActive ? "❌ Vô Hiệu" 
-                    : isExpired ? "⏰ Hết Hạn" 
-                    : "✅ Hoạt Động";
+                var isExpired = coupon.ExpiryDate <= now;
+                var isUpcoming = coupon.StartDate > now;
+                var statusClass = !coupon.IsActive ? "inactive" : isExpired ? "expired" : isUpcoming ? "upcoming" : "active";
+                var statusText = !coupon.IsActive ? "❌ Vô hiệu" : isExpired ? "⏰ Hết hạn" : isUpcoming ? "🕒 Chưa tới ngày" : "✅ Hoạt động";
+                var discountText = coupon.DiscountPercent > 0
+                    ? $"-{coupon.DiscountPercent:0.##}%"
+                    : coupon.DiscountAmount > 0 ? $"-{coupon.DiscountAmount:N0} đ" : "Chưa đặt";
 
                 <div class="coupon-card">
-                    <div class="coupon-header-card">
+                    <div class="coupon-top">
                         <div class="coupon-code">@coupon.Code</div>
-                        <div class="coupon-label">Mã Giảm Giá</div>
+                        <div class="coupon-desc">@(string.IsNullOrWhiteSpace(coupon.Description) ? "Không có mô tả" : coupon.Description)</div>
                     </div>
-
                     <div class="coupon-body">
-                        <div class="coupon-row">
-                            <span class="coupon-label-text">Giảm Giá:</span>
-                            <span class="discount-amount">
-                                @if (coupon.DiscountPercent > 0)
-                                {
-                                    <text>-@coupon.DiscountPercent%</text>
-                                }
-                                else if (coupon.DiscountAmount > 0)
-                                {
-                                    <text>-@coupon.DiscountAmount.ToString("C")</text>
-                                }
-                                else
-                                {
-                                    <text>Không có giảm giá</text>
-                                }
-                            </span>
-                        </div>
-
-                        <div class="coupon-row">
-                            <span class="coupon-label-text">Tối Thiểu:</span>
-                            <span class="coupon-value">@coupon.MinimumOrderValue.ToString("C")</span>
-                        </div>
-
-                        <div class="coupon-row">
-                            <span class="coupon-label-text">Lượt Sử Dụng:</span>
-                            <span class="coupon-value">@coupon.CurrentUsageCount / @coupon.MaxUsageCount</span>
-                        </div>
-
-                        <div class="coupon-row">
-                            <span class="coupon-label-text">Từ - Đến:</span>
-                            <span class="coupon-value" style="font-size: 12px;">
-                                @coupon.StartDate.ToString("dd/MM")<br/>
-                                @coupon.ExpiryDate.ToString("dd/MM")
-                            </span>
-                        </div>
-
-                        <div class="coupon-row">
-                            <span class="coupon-label-text">Trạng Thái:</span>
-                            <span class="coupon-status status-@status">@statusText</span>
-                        </div>
+                        <div class="coupon-row"><span class="coupon-label">Giảm giá</span><span class="coupon-value discount">@discountText</span></div>
+                        <div class="coupon-row"><span class="coupon-label">Đơn tối thiểu</span><span class="coupon-value">@coupon.MinimumOrderValue.ToString("N0") đ</span></div>
+                        <div class="coupon-row"><span class="coupon-label">Lượt dùng</span><span class="coupon-value">@coupon.CurrentUsageCount / @coupon.MaxUsageCount</span></div>
+                        <div class="coupon-row"><span class="coupon-label">Thời gian</span><span class="coupon-value">@coupon.StartDate.ToString("dd/MM/yyyy HH:mm")<br />@coupon.ExpiryDate.ToString("dd/MM/yyyy HH:mm")</span></div>
+                        <div class="coupon-row"><span class="coupon-label">Danh mục áp dụng</span><span class="coupon-value">@(string.IsNullOrWhiteSpace(coupon.ApplicableCategoryIds) ? "Tất cả" : coupon.ApplicableCategoryIds)</span></div>
+                        <div class="coupon-row"><span class="coupon-label">Sản phẩm áp dụng</span><span class="coupon-value">@(string.IsNullOrWhiteSpace(coupon.ApplicableProductIds) ? "Tất cả" : coupon.ApplicableProductIds)</span></div>
+                        <div class="coupon-row"><span class="coupon-label">Trạng thái</span><span class="status status-@statusClass">@statusText</span></div>
                     </div>
-
                     <div class="coupon-actions">
-                        <a href="@Url.Action("Edit", "Coupon", new { area = "Admin", id = coupon.Id })" class="btn-edit">
-                            ✏️ Sửa
-                        </a>
-                        <form method="post" action="@Url.Action("Delete", "Coupon", new { area = "Admin" })" style="flex: 1;">
-                            <input type="hidden" name="id" value="@coupon.Id" />
-                            <button type="submit" class="btn-delete" onclick="return confirm('Xác nhận xóa mã: @coupon.Code?')">
-                                🗑️ Xóa
-                            </button>
+                        <a asp-area="Admin" asp-controller="Coupon" asp-action="Edit" asp-route-id="@coupon.Id" class="btn-edit">✏️ Sửa</a>
+                        <form asp-area="Admin" asp-controller="Coupon" asp-action="Delete" asp-route-id="@coupon.Id" method="post" style="flex:1; margin:0;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn-delete" onclick="return confirm('Xóa mã @coupon.Code?')">🗑️ Xóa</button>
                         </form>
                     </div>
                 </div>
@@ -310,10 +112,8 @@
         <div class="empty-state">
             <div class="empty-icon">😢</div>
             <div class="empty-title">Chưa có mã giảm giá</div>
-            <div class="empty-text">Tạo mã giảm giá đầu tiên để khuyến khích khách hàng</div>
-            <a href="@Url.Action("Create", "Coupon", new { area = "Admin" })" class="btn-new-coupon">
-                ➕ Tạo Mã Mới
-            </a>
+            <div class="empty-text">Tạo mã giảm giá ngay trên web, không cần thêm trực tiếp trong SQL.</div>
+            <a asp-area="Admin" asp-controller="Coupon" asp-action="Create" class="btn-main">➕ Tạo mã mới</a>
         </div>
     }
 </div>

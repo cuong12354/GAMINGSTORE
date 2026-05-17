@@ -176,7 +176,7 @@
                         <button class="helpful-btn" onclick="markHelpful(@review.Id)">
                             👍 Hữu ích (@review.HelpfulCount)
                         </button>
-                        @if (User.Identity?.Name == review.User?.Email || User.IsInRole("Admin"))
+                        @if (User.Identity?.Name == review.User?.Email || User.HasPermission(PermissionConstants.ReviewManage))
                         {
                             <form method="post" action="@Url.Action("Delete", "Review")" style="display: inline;">
                                 <input type="hidden" name="id" value="@review.Id" />

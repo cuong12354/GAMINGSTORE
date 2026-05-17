@@ -1,3 +1,5 @@
+using GAMINGSTORE.Authorization;
+using GAMINGSTORE.Extensions;
 using GAMINGSTORE.Models;
 using GAMINGSTORE.Repositories;
 using Microsoft.AspNetCore.Authorization;
@@ -90,7 +92,7 @@ namespace GAMINGSTORE.Controllers
                 return NotFound();
 
             var user = await _userManager.GetUserAsync(User);
-            if (review.UserId != user.Id && !User.IsInRole("Admin"))
+            if (review.UserId != user.Id && !User.HasPermission(PermissionConstants.ReviewManage))
                 return Forbid();
 
             var productId = review.ProductId;

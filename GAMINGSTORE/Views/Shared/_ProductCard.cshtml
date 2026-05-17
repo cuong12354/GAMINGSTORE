@@ -1,0 +1,51 @@
+@model GAMINGSTORE.Models.Product
+@using System.Globalization
+
+@{
+    string GetFirstImage(string? imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl)) return "/images/no-image.png";
+        return imageUrl.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).FirstOrDefault() ?? "/images/no-image.png";
+    }
+
+    string GetShortDescription(string? description)
+    {
+        if (string.IsNullOrWhiteSpace(description)) return "Thiết kế hiện đại, hiệu năng mạnh mẽ cho game thủ.";
+        return description.Length > 80 ? description[..77].TrimEnd() + "..." : description;
+    }
+}
+
+<div class="product-card">
+    @if (Model != null)
+    {
+        <div class="product-image-wrapper">
+            <a asp-controller="Product" asp-action="Details" asp-route-id="@Model.Id" style="text-decoration: none; display: block; height: 100%;">
+                <img src="@GetFirstImage(Model.ImageUrl)" class="product-image" alt="@Model.Name" onerror="this.src='/images/no-image.png'">
+            </a>
+            <span class="product-badge">@((Model.Categories?.FirstOrDefault()?.Name) ?? "Gaming Choice")</span>
+        </div>
+
+        <div class="product-info">
+            <a asp-controller="Product" asp-action="Details" asp-route-id="@Model.Id" style="text-decoration: none;">
+                <div class="product-name">@Model.Name</div>
+            </a>
+
+            <div class="product-description">@GetShortDescription(Model.Description)</div>
+
+            <div class="mt-auto w-100">
+                <div class="product-price">
+                    @Math.Round(Model.Price, 0).ToString("N0", new CultureInfo("vi-VN")) ₫
+                </div>
+
+                <div class="product-actions">
+                    <a asp-controller="Product" asp-action="Details" asp-route-id="@Model.Id" class="product-button product-button-secondary">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                    <a asp-controller="ShoppingCart" asp-action="AddToCart" asp-route-productId="@Model.Id" class="product-button">
+                        <i class="bi bi-cart-plus"></i> Thêm giỏ
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
