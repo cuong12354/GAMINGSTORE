@@ -2,15 +2,356 @@
 
 @{
     ViewData["Title"] = "Chi tiết đơn hàng";
+
+    var statusClass = Model.Status switch
+    {
+        "Pending" => "status-pending",
+        "PendingReview" => "status-review",
+        "Confirmed" => "status-confirmed",
+        "Shipped" => "status-shipped",
+        "Delivered" => "status-delivered",
+        "Cancelled" => "status-cancelled",
+        _ => "status-default"
+    };
+
+    var statusText = Model.Status switch
+    {
+        "Pending" => "⏳ Chờ xử lý",
+        "PendingReview" => "📝 Chờ xác nhận",
+        "Confirmed" => "✅ Đã xác nhận",
+        "Shipped" => "📦 Đang giao",
+        "Delivered" => "✔️ Đã giao hàng",
+        "Cancelled" => "❌ Đã hủy",
+        _ => Model.Status
+    };
+
+    decimal subTotal = Model.OrderDetails?.Sum(x => x.Price * x.Quantity) ?? 0;
+    decimal priceAfterCoupon = subTotal - Model.DiscountAmount;
+    if (priceAfterCoupon < 0) priceAfterCoupon = 0;
 }
 
-<div class="container mt-4">
-    <div class="row mb-4">
-        <div class="col">
-            <a asp-action="Index" class="btn btn-secondary">
-                ← Quay lại danh sách
-            </a>
-        </div>
+<style>
+    :root {
+        --admin-primary: #d92e2e;
+        --admin-primary-dark: #b82222;
+        --admin-bg: #f5f7fb;
+        --admin-card: #ffffff;
+        --admin-text: #111827;
+        --admin-muted: #6b7280;
+        --admin-border: rgba(15, 23, 42, 0.08);
+        --admin-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+    }
+
+    body { background: var(--admin-bg); }
+
+    .od-page { padding: 28px 0 52px; }
+
+    .od-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+    }
+
+    .btn-back-modern {
+        min-height: 42px;
+        padding: 0 16px;
+        border-radius: 13px;
+        background: white;
+        color: var(--admin-text);
+        border: 1px solid var(--admin-border);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 900;
+        box-shadow: 0 8px 20px rgba(15,23,42,.05);
+        transition: all .2s ease;
+    }
+
+    .btn-back-modern:hover {
+        color: var(--admin-primary);
+        transform: translateY(-2px);
+        box-shadow: 0 14px 26px rgba(15,23,42,.08);
+    }
+
+    .od-hero {
+        position: relative;
+        overflow: hidden;
+        border-radius: 24px;
+        padding: 28px;
+        margin-bottom: 22px;
+        color: white;
+        background:
+            radial-gradient(circle at top right, rgba(255,255,255,0.28), transparent 28%),
+            linear-gradient(135deg, #111827 0%, #d92e2e 100%);
+        box-shadow: var(--admin-shadow);
+    }
+
+    .od-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 13px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.16);
+        border: 1px solid rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: .5px;
+        text-transform: uppercase;
+        margin-bottom: 13px;
+    }
+
+    .od-title {
+        font-size: 34px;
+        font-weight: 950;
+        line-height: 1.1;
+        margin: 0 0 8px;
+    }
+
+    .od-subtitle {
+        color: rgba(255,255,255,.84);
+        font-size: 14px;
+        line-height: 1.7;
+        margin: 0;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        min-height: 36px;
+        padding: 0 14px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 950;
+        white-space: nowrap;
+        border: 1px solid transparent;
+    }
+
+    .status-pending { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+    .status-review { background: #fefce8; color: #a16207; border-color: #fde68a; }
+    .status-confirmed { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .status-shipped { background: #eef2ff; color: #4338ca; border-color: #c7d2fe; }
+    .status-delivered { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+    .status-cancelled { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+    .status-default { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
+
+    .od-grid {
+        display: grid;
+        grid-template-columns: 1.45fr .85fr;
+        gap: 20px;
+    }
+
+    .od-card {
+        background: var(--admin-card);
+        border: 1px solid var(--admin-border);
+        border-radius: 22px;
+        box-shadow: var(--admin-shadow);
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+
+    .od-card-header {
+        padding: 18px 20px;
+        border-bottom: 1px solid var(--admin-border);
+        background: linear-gradient(180deg, #ffffff 0%, #fbfbfd 100%);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .od-card-title {
+        margin: 0;
+        color: var(--admin-text);
+        font-size: 17px;
+        font-weight: 950;
+    }
+
+    .od-card-body { padding: 20px; }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .info-item {
+        background: #f9fafb;
+        border: 1px solid rgba(15,23,42,.06);
+        border-radius: 15px;
+        padding: 14px;
+    }
+
+    .info-label {
+        color: var(--admin-muted);
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: .4px;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }
+
+    .info-value {
+        color: var(--admin-text);
+        font-size: 14px;
+        font-weight: 800;
+        line-height: 1.55;
+        word-break: break-word;
+    }
+
+    .products-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+    .products-table th {
+        padding: 13px 14px;
+        background: #f9fafb;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--admin-border);
+        white-space: nowrap;
+    }
+
+    .products-table td {
+        padding: 14px;
+        border-bottom: 1px solid rgba(15,23,42,.06);
+        vertical-align: middle;
+        color: var(--admin-text);
+        font-size: 14px;
+    }
+
+    .product-name {
+        font-weight: 900;
+        color: var(--admin-text);
+    }
+
+    .money {
+        color: var(--admin-primary);
+        font-weight: 950;
+        white-space: nowrap;
+    }
+
+    .price-summary {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .price-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(15,23,42,.07);
+        color: var(--admin-muted);
+        font-size: 14px;
+    }
+
+    .price-row span:last-child {
+        color: var(--admin-text);
+        font-weight: 900;
+    }
+
+    .price-row.discount span:last-child {
+        color: #059669;
+    }
+
+    .price-row.total {
+        border-bottom: none;
+        margin-top: 4px;
+        padding: 16px 14px;
+        background: #fff1f2;
+        border-radius: 16px;
+        color: var(--admin-text);
+        font-size: 16px;
+        font-weight: 950;
+    }
+
+    .price-row.total span:last-child {
+        color: var(--admin-primary);
+        font-size: 22px;
+        font-weight: 950;
+    }
+
+    .status-form {
+        display: grid;
+        gap: 13px;
+    }
+
+    .form-label-modern {
+        color: var(--admin-text);
+        font-weight: 900;
+        font-size: 13px;
+        margin-bottom: 2px;
+    }
+
+    .form-select-modern {
+        min-height: 46px;
+        border-radius: 14px;
+        border: 1px solid var(--admin-border);
+        padding: 0 13px;
+        color: var(--admin-text);
+        font-weight: 750;
+        outline: none;
+        background: white;
+        transition: all .2s ease;
+    }
+
+    .form-select-modern:focus {
+        border-color: rgba(217,46,46,.45);
+        box-shadow: 0 0 0 4px rgba(217,46,46,.09);
+    }
+
+    .btn-save-status {
+        min-height: 46px;
+        border-radius: 14px;
+        border: none;
+        background: linear-gradient(135deg, var(--admin-primary), var(--admin-primary-dark));
+        color: white;
+        font-weight: 950;
+        cursor: pointer;
+        box-shadow: 0 12px 22px rgba(217,46,46,.18);
+        transition: all .22s ease;
+    }
+
+    .btn-save-status:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 30px rgba(217,46,46,.25);
+    }
+
+    .alert {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 10px 24px rgba(15,23,42,.08);
+        font-weight: 750;
+    }
+
+    @@media (max-width: 991px) {
+        .od-grid { grid-template-columns: 1fr; }
+    }
+
+    @@media (max-width: 768px) {
+        .od-title { font-size: 26px; }
+        .info-grid { grid-template-columns: 1fr; }
+        .products-table th, .products-table td { padding: 11px; font-size: 12px; }
+    }
+</style>
+
+<div class="container od-page">
+    <div class="od-topbar">
+        <a asp-action="Index" class="btn-back-modern">← Quay lại danh sách</a>
+        <span class="status-badge @statusClass">@statusText</span>
     </div>
 
     @if (TempData["Success"] != null)
@@ -29,176 +370,170 @@
         </div>
     }
 
-    <!-- Order Header -->
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">📦 Đơn Hàng #@Model.Id</h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <p><strong>Khách hàng:</strong> @Model.CustomerName</p>
-                    <p><strong>Email:</strong> @Model.ApplicationUser?.Email</p>
-                    <p><strong>Điện thoại:</strong> @Model.Phone</p>
-                    <p><strong>Ngày đặt hàng:</strong> @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+    <div class="od-hero">
+        <div class="od-kicker">📦 Order detail</div>
+        <h1 class="od-title">Đơn hàng #@Model.Id</h1>
+        <p class="od-subtitle">Kiểm tra thông tin khách hàng, sản phẩm, thanh toán và cập nhật trạng thái xử lý đơn hàng.</p>
+    </div>
+
+    <div class="od-grid">
+        <div>
+            <div class="od-card">
+                <div class="od-card-header">
+                    <h2 class="od-card-title">👤 Thông tin khách hàng</h2>
                 </div>
-                <div class="col-md-6">
-                    <p><strong>Địa chỉ giao hàng:</strong><br/>@Model.ShippingAddress</p>
-                    <p><strong>Phương thức thanh toán:</strong> @Model.PaymentMethod</p>
-                    @if (Model.DeliveredDate.HasValue)
-                    {
-                        <p><strong>Ngày giao hàng:</strong> @Model.DeliveredDate.Value.ToString("dd/MM/yyyy HH:mm")</p>
-                    }
+                <div class="od-card-body">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Khách hàng</div>
+                            <div class="info-value">@(!string.IsNullOrWhiteSpace(Model.CustomerName) ? Model.CustomerName : "Chưa có tên")</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Email</div>
+                            <div class="info-value">@(Model.ApplicationUser?.Email ?? "Chưa có email")</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Điện thoại</div>
+                            <div class="info-value">@(!string.IsNullOrWhiteSpace(Model.Phone) ? Model.Phone : "Chưa có SĐT")</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Ngày đặt</div>
+                            <div class="info-value">@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</div>
+                        </div>
+                        <div class="info-item" style="grid-column: 1 / -1;">
+                            <div class="info-label">Địa chỉ giao hàng</div>
+                            <div class="info-value">@(!string.IsNullOrWhiteSpace(Model.ShippingAddress) ? Model.ShippingAddress : "Chưa có địa chỉ")</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Thanh toán</div>
+                            <div class="info-value">@(!string.IsNullOrWhiteSpace(Model.PaymentMethod) ? Model.PaymentMethod : "Chưa chọn")</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Ngày giao</div>
+                            <div class="info-value">@(Model.DeliveredDate.HasValue ? Model.DeliveredDate.Value.ToString("dd/MM/yyyy HH:mm") : "Chưa giao")</div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Current Status -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h6 class="mb-0">🔄 Trạng Thái Hiện Tại</h6>
-        </div>
-        <div class="card-body">
-            @{
-                var statusColor = Model.Status switch
-                {
-                    "Pending" => "warning",
-                    "Confirmed" => "info",
-                    "Shipped" => "primary",
-                    "Delivered" => "success",
-                    "Cancelled" => "danger",
-                    _ => "secondary"
-                };
-
-                var statusText = Model.Status switch
-                {
-                    "Pending" => "⏳ Chờ xử lý",
-                    "Confirmed" => "✅ Đã xác nhận",
-                    "Shipped" => "📦 Đang giao",
-                    "Delivered" => "✔️ Đã giao hàng",
-                    "Cancelled" => "❌ Đã hủy",
-                    _ => Model.Status
-                };
-            }
-            <span class="badge bg-@statusColor" style="font-size: 1.2rem; padding: 0.5rem 1rem;">
-                @statusText
-            </span>
-        </div>
-    </div>
-
-    <!-- Order Details -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h6 class="mb-0">📋 Chi Tiết Sản Phẩm</h6>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>Sản phẩm</th>
-                            <th>Số lượng</th>
-                            <th>Giá</th>
-                            <th>Thành tiền</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var detail in Model.OrderDetails)
-                        {
-                            <tr>
-                                <td>@detail.Product?.Name</td>
-                                <td>@detail.Quantity</td>
-                                <td>@detail.Price.ToString("N0")₫</td>
-                                <td>@((detail.Quantity * detail.Price).ToString("N0"))₫</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-            <div style="text-align: right; margin-top: 1rem;">
-                <p>
-                    <strong>Tổng tiền:</strong> 
-                    <span style="font-size: 1.2rem; color: #e74c3c;">@Model.TotalPrice.ToString("N0")₫</span>
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Update Status Form -->
-    <div class="card">
-        <div class="card-header bg-warning">
-            <h6 class="mb-0">🔧 Cập Nhật Trạng Thái</h6>
-        </div>
-        <div class="card-body">
-            <form method="post" asp-action="UpdateStatus" asp-route-id="@Model.Id">
-                <div class="form-group mb-3">
-                    <label for="newStatus" class="form-label">
-                        <strong>Trạng thái mới:</strong>
-                    </label>
-                    <select id="newStatus" name="newStatus" class="form-select" required>
-                        <option value="">-- Chọn trạng thái --</option>
-                        @if (ViewBag.AvailableStatuses != null)
-                        {
-                            @foreach (var status in ViewBag.AvailableStatuses)
-                            {
-                                var displayText = status switch
+            <div class="od-card">
+                <div class="od-card-header">
+                    <h2 class="od-card-title">📋 Chi tiết sản phẩm</h2>
+                </div>
+                <div class="od-card-body" style="padding:0;">
+                    <div style="overflow-x:auto;">
+                        <table class="products-table">
+                            <thead>
+                                <tr>
+                                    <th>Sản phẩm</th>
+                                    <th style="text-align:center;">SL</th>
+                                    <th style="text-align:right;">Giá</th>
+                                    <th style="text-align:right;">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var detail in Model.OrderDetails)
                                 {
-                                    "Pending" => "⏳ Chờ xử lý",
-                                    "Confirmed" => "✅ Đã xác nhận",
-                                    "Shipped" => "📦 Đang giao",
-                                    "Delivered" => "✔️ Đã giao hàng",
-                                    "Cancelled" => "❌ Đã hủy",
-                                    _ => status
-                                };
-                                var isSelected = (string)status == Model.Status;
-                                if (isSelected)
-                                {
-                                    <option value="@status" selected>@displayText</option>
+                                    <tr>
+                                        <td>
+                                            <div class="product-name">@(detail.ProductName ?? detail.Product?.Name ?? "Sản phẩm")</div>
+                                        </td>
+                                        <td style="text-align:center;">@detail.Quantity</td>
+                                        <td style="text-align:right;">@detail.Price.ToString("N0")₫</td>
+                                        <td style="text-align:right;"><span class="money">@((detail.Quantity * detail.Price).ToString("N0"))₫</span></td>
+                                    </tr>
                                 }
-                                else
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="od-card">
+                <div class="od-card-header">
+                    <h2 class="od-card-title">💰 Thanh toán</h2>
+                </div>
+                <div class="od-card-body">
+                    <div class="price-summary">
+                        <div class="price-row">
+                            <span>Tạm tính</span>
+                            <span>@subTotal.ToString("N0")₫</span>
+                        </div>
+
+                        @if (Model.DiscountAmount > 0)
+                        {
+                            <div class="price-row discount">
+                                <span>Coupon @(!string.IsNullOrWhiteSpace(Model.CouponCode) ? $"({Model.CouponCode})" : "")</span>
+                                <span>-@Model.DiscountAmount.ToString("N0")₫</span>
+                            </div>
+
+                            <div class="price-row">
+                                <span>Sau coupon</span>
+                                <span>@priceAfterCoupon.ToString("N0")₫</span>
+                            </div>
+                        }
+
+                        @if (Model.MemberDiscountAmount > 0)
+                        {
+                            <div class="price-row discount">
+                                <span>Hội viên (@Model.MemberDiscountPercentage.ToString("0.##")%)</span>
+                                <span>-@Model.MemberDiscountAmount.ToString("N0")₫</span>
+                            </div>
+                        }
+
+                        <div class="price-row total">
+                            <span>Thành tiền</span>
+                            <span>@Model.TotalPrice.ToString("N0")₫</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="od-card">
+                <div class="od-card-header">
+                    <h2 class="od-card-title">🔄 Cập nhật trạng thái</h2>
+                </div>
+                <div class="od-card-body">
+                    <form method="post" asp-action="UpdateStatus" asp-route-id="@Model.Id" class="status-form">
+                        @Html.AntiForgeryToken()
+                        <label for="newStatus" class="form-label-modern">Trạng thái mới</label>
+                        <select id="newStatus" name="newStatus" class="form-select-modern" required>
+                            <option value="">-- Chọn trạng thái --</option>
+                            @if (ViewBag.AvailableStatuses != null)
+                            {
+                                @foreach (var status in ViewBag.AvailableStatuses)
                                 {
-                                    <option value="@status">@displayText</option>
+                                    var displayText = status switch
+                                    {
+                                        "Pending" => "⏳ Chờ xử lý",
+                                        "PendingReview" => "📝 Chờ xác nhận",
+                                        "Confirmed" => "✅ Đã xác nhận",
+                                        "Shipped" => "📦 Đang giao",
+                                        "Delivered" => "✔️ Đã giao hàng",
+                                        "Cancelled" => "❌ Đã hủy",
+                                        _ => status
+                                    };
+                                    var isSelected = (string)status == Model.Status;
+                                    if (isSelected)
+                                    {
+                                        <option value="@status" selected>@displayText</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@status">@displayText</option>
+                                    }
                                 }
                             }
-                        }
-                    </select>
+                        </select>
+
+                        <button type="submit" class="btn-save-status" onclick="return confirm('Bạn chắc chắn muốn cập nhật trạng thái đơn hàng?')">
+                            💾 Lưu trạng thái
+                        </button>
+                    </form>
                 </div>
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary" onclick="return confirm('Bạn chắc chắn muốn cập nhật trạng thái?')">
-                        💾 Cập nhật
-                    </button>
-                    <a asp-action="Index" class="btn btn-secondary">
-                        ❌ Hủy
-                    </a>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
-
-<style>
-    .card {
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    }
-
-    .card-header {
-        border-bottom: 2px solid #e9ecef;
-    }
-
-    .form-select {
-        border: 1px solid #ddd;
-        border-radius: 0.25rem;
-        padding: 0.5rem;
-    }
-
-    .badge {
-        font-size: 1rem;
-        padding: 0.5rem 1rem;
-    }
-
-    .btn-sm {
-        padding: 0.4rem 0.75rem;
-        font-size: 0.85rem;
-    }
-</style>

@@ -3,55 +3,146 @@
 
 @{
     ViewData["Title"] = "Quản lý quyền role";
+    var totalRoles = Model?.Count ?? 0;
+    var totalAssigned = Model?.Sum(x => x.PermissionCount) ?? 0;
+    var fullAccessRoles = Model?.Count(x => x.PermissionCount >= 8) ?? 0;
+    string PermissionLabel(string permission)
+    {
+        return permission switch
+        {
+            "Dashboard.Access" => "Dashboard",
+            "Audit.View" => "Audit",
+            "Product.Manage" => "Sản phẩm",
+            "Order.Manage" => "Đơn hàng",
+            "Order.View" => "Xem đơn",
+            "Return.Manage" => "Trả hàng",
+            "Return.View" => "Xem trả hàng",
+            "Coupon.Manage" => "Coupon",
+            "Review.Manage" => "Đánh giá",
+            "Role.Manage" => "Phân quyền",
+            _ => permission
+        };
+    }
 }
 
-<div class="admin-page-header mb-4">
-    <div>
-        <h1 class="h3">@ViewData["Title"]</h1>
-        <p class="text-muted">Quản lý quyền truy cập cho mỗi role của hệ thống.</p>
+<style>
+    .rp-page { padding: 28px 0 46px; color: #111827; }
+    .rp-hero {
+        position: relative;
+        overflow: hidden;
+        border-radius: 24px;
+        padding: 28px;
+        margin-bottom: 22px;
+        background:
+            radial-gradient(circle at top right, rgba(255,255,255,.22), transparent 32%),
+            linear-gradient(135deg, #111827 0%, #1f2937 48%, #d92e2e 100%);
+        color: white;
+        box-shadow: 0 24px 50px rgba(17,24,39,.18);
+    }
+    .rp-hero::after { content:""; position:absolute; inset:auto -60px -90px auto; width:260px; height:260px; border-radius:50%; background:rgba(255,255,255,.10); }
+    .rp-kicker { display:inline-flex; align-items:center; gap:8px; padding:8px 13px; border-radius:999px; background:rgba(255,255,255,.14); font-weight:900; font-size:12px; text-transform:uppercase; letter-spacing:.6px; margin-bottom:12px; }
+    .rp-title { font-size:32px; font-weight:950; margin:0 0 8px; letter-spacing:-.6px; }
+    .rp-subtitle { max-width:720px; color:rgba(255,255,255,.78); margin:0; line-height:1.75; }
+    .rp-toolbar { display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; align-items:center; margin-bottom:18px; }
+    .rp-search { flex:1; min-width:240px; max-width:420px; height:44px; border:1px solid #e5e7eb; border-radius:14px; padding:0 14px; font-weight:700; box-shadow:0 10px 24px rgba(15,23,42,.05); }
+    .rp-mini-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-bottom:18px; }
+    .rp-stat { background:#fff; border:1px solid #edf0f3; border-radius:18px; padding:18px; box-shadow:0 14px 30px rgba(15,23,42,.06); }
+    .rp-stat-label { color:#6b7280; font-weight:800; font-size:12px; text-transform:uppercase; letter-spacing:.5px; }
+    .rp-stat-value { font-size:28px; font-weight:950; margin-top:5px; color:#111827; }
+    .role-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+    .role-card { background:white; border:1px solid #e9edf2; border-radius:22px; padding:20px; box-shadow:0 16px 34px rgba(15,23,42,.07); transition:.22s ease; display:flex; flex-direction:column; min-height:240px; }
+    .role-card:hover { transform:translateY(-4px); box-shadow:0 24px 48px rgba(15,23,42,.11); border-color:rgba(217,46,46,.28); }
+    .role-head { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:14px; }
+    .role-icon { width:48px; height:48px; border-radius:16px; background:#fff1f2; color:#d92e2e; display:flex; align-items:center; justify-content:center; font-size:23px; flex:0 0 auto; }
+    .role-name { font-size:20px; font-weight:950; margin:0 0 4px; color:#111827; }
+    .role-desc { margin:0; color:#6b7280; font-size:13px; }
+    .role-count { min-width:42px; height:36px; border-radius:999px; background:#111827; color:white; display:flex; align-items:center; justify-content:center; font-weight:950; }
+    .permission-chips { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 18px; }
+    .permission-chip { display:inline-flex; align-items:center; gap:6px; min-height:30px; padding:0 10px; border-radius:999px; background:#f3f4f6; color:#374151; font-size:12px; font-weight:800; }
+    .permission-empty { padding:12px; border-radius:14px; background:#fff7ed; color:#9a3412; font-weight:800; font-size:13px; }
+    .role-actions { margin-top:auto; display:flex; justify-content:space-between; gap:10px; align-items:center; }
+    .rp-btn { border:0; border-radius:14px; min-height:42px; padding:0 16px; display:inline-flex; align-items:center; justify-content:center; gap:8px; text-decoration:none; font-weight:900; transition:.2s ease; }
+    .rp-btn-primary { background:linear-gradient(135deg,#d92e2e,#b82222); color:white; box-shadow:0 12px 22px rgba(217,46,46,.18); }
+    .rp-btn-primary:hover { color:white; transform:translateY(-2px); box-shadow:0 18px 30px rgba(217,46,46,.26); }
+    .role-health { color:#6b7280; font-size:12px; font-weight:800; }
+    .rp-alert { border:0; border-radius:16px; padding:14px 16px; font-weight:800; box-shadow:0 10px 24px rgba(16,185,129,.12); }
+    @@media(max-width: 992px) { .role-grid, .rp-mini-stats { grid-template-columns:1fr; } .rp-title{font-size:25px;} }
+</style>
+
+<div class="container rp-page">
+    <div class="rp-hero">
+        <div class="rp-kicker"><i class="bi bi-shield-lock"></i> Admin Permission Center</div>
+        <h1 class="rp-title">Quản lý quyền theo Role</h1>
+        <p class="rp-subtitle">Kiểm soát role nào được truy cập Dashboard, sản phẩm, đơn hàng, coupon, đổi trả, audit và phân quyền. Mỗi thẻ bên dưới đại diện cho một role trong hệ thống.</p>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success rp-alert">@TempData["Success"]</div>
+    }
+
+    <div class="rp-mini-stats">
+        <div class="rp-stat"><div class="rp-stat-label">Tổng role</div><div class="rp-stat-value">@totalRoles</div></div>
+        <div class="rp-stat"><div class="rp-stat-label">Tổng quyền đã gán</div><div class="rp-stat-value">@totalAssigned</div></div>
+        <div class="rp-stat"><div class="rp-stat-label">Role nhiều quyền</div><div class="rp-stat-value">@fullAccessRoles</div></div>
+    </div>
+
+    <div class="rp-toolbar">
+        <input id="roleSearch" class="rp-search" type="text" placeholder="Tìm role hoặc quyền..." oninput="filterRoles()" />
+        <a class="rp-btn rp-btn-primary" asp-area="Admin" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-speedometer2"></i> Về Dashboard</a>
+    </div>
+
+    <div class="role-grid" id="roleGrid">
+        @foreach (var item in Model)
+        {
+            var permissions = item.Permissions?.ToList() ?? new List<string>();
+            <div class="role-card" data-search="@((item.RoleName + " " + string.Join(" ", permissions)).ToLower())">
+                <div class="role-head">
+                    <div style="display:flex; gap:12px; align-items:center;">
+                        <div class="role-icon"><i class="bi bi-person-gear"></i></div>
+                        <div>
+                            <h2 class="role-name">@item.RoleName</h2>
+                            <p class="role-desc">@item.PermissionCount quyền đang được gán</p>
+                        </div>
+                    </div>
+                    <div class="role-count">@item.PermissionCount</div>
+                </div>
+
+                @if (permissions.Any())
+                {
+                    <div class="permission-chips">
+                        @foreach (var permission in permissions.Take(8))
+                        {
+                            <span class="permission-chip"><i class="bi bi-check2-circle"></i>@PermissionLabel(permission)</span>
+                        }
+                        @if (permissions.Count > 8)
+                        {
+                            <span class="permission-chip">+@(permissions.Count - 8) quyền</span>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="permission-empty"><i class="bi bi-exclamation-triangle"></i> Role này chưa có quyền nào.</div>
+                }
+
+                <div class="role-actions">
+                    <span class="role-health">@(item.PermissionCount == 0 ? "Cần cấu hình" : "Đã cấu hình")</span>
+                    <a class="rp-btn rp-btn-primary" href="@Url.Action("Edit", "RolePermission", new { area = "Admin", id = item.RoleId })">
+                        <i class="bi bi-sliders"></i> Chỉnh quyền
+                    </a>
+                </div>
+            </div>
+        }
     </div>
 </div>
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success rounded-3 shadow-sm">@TempData["Success"]</div>
-}
-
-<div class="row g-4">
-    @foreach (var item in Model)
-    {
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body d-flex flex-column">
-                    <div class="d-flex align-items-start justify-content-between mb-3">
-                        <div>
-                            <h2 class="h5 mb-1">@item.RoleName</h2>
-                            <p class="text-muted mb-0">@item.PermissionCount quyền đã gán</p>
-                        </div>
-                        <span class="badge bg-primary align-self-start">@item.PermissionCount</span>
-                    </div>
-
-                    <div class="mb-3">
-                        <strong>Quyền hiện có</strong>
-                        <div class="small text-truncate" title="@string.Join(", ", item.Permissions)">
-                            @if (item.Permissions.Any())
-                            {
-                                @string.Join(", ", item.Permissions.Take(5))@((item.Permissions.Count() > 5) ? "..." : "")
-                            }
-                            else
-                            {
-                                <span class="text-muted">Chưa có quyền nào</span>
-                            }
-                        </div>
-                    </div>
-
-                    <div class="mt-auto">
-                        <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Edit", "RolePermission", new { area = "Admin", id = item.RoleId })">
-                            Chỉnh sửa
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
+<script>
+    function filterRoles() {
+        const keyword = document.getElementById('roleSearch').value.toLowerCase().trim();
+        document.querySelectorAll('.role-card').forEach(card => {
+            const text = card.dataset.search || '';
+            card.style.display = text.includes(keyword) ? '' : 'none';
+        });
     }
-</div>
+</script>

@@ -1,7 +1,7 @@
 @model IEnumerable<GAMINGSTORE.Models.Category>
 @{
     ViewData["Title"] = "Quản lý Danh mục";
-    Layout = "_LayoutAdmin"; // Assuming there is an admin layout
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml"; // Assuming there is an admin layout
 
     // Helper to render tree
     void RenderCategoryRow(GAMINGSTORE.Models.Category category, int level)

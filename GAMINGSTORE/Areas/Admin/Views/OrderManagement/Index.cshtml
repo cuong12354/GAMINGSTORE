@@ -2,14 +2,348 @@
 
 @{
     ViewData["Title"] = "Quản lý đơn hàng";
+
+    int totalOrders = Model?.Count ?? 0;
+    int pendingOrders = Model?.Count(o => o.Status == "Pending" || o.Status == "PendingReview") ?? 0;
+    int shippedOrders = Model?.Count(o => o.Status == "Shipped") ?? 0;
+    int completedOrders = Model?.Count(o => o.Status == "Delivered" || o.Status == "Confirmed") ?? 0;
+    decimal totalRevenue = Model?.Where(o => o.Status != "Cancelled").Sum(o => o.TotalPrice) ?? 0;
 }
 
-<div class="container mt-4">
-    <div class="row mb-4">
-        <div class="col">
-            <h2>📦 Quản lý Đơn Hàng</h2>
-            <p class="text-muted">Danh sách tất cả đơn hàng trong hệ thống</p>
-        </div>
+<style>
+    :root {
+        --admin-primary: #d92e2e;
+        --admin-primary-dark: #b82222;
+        --admin-bg: #f5f7fb;
+        --admin-card: #ffffff;
+        --admin-text: #111827;
+        --admin-muted: #6b7280;
+        --admin-border: rgba(15, 23, 42, 0.08);
+        --admin-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+    }
+
+    body {
+        background: var(--admin-bg);
+    }
+
+    .om-page {
+        padding: 28px 0 52px;
+    }
+
+    .om-hero {
+        position: relative;
+        overflow: hidden;
+        border-radius: 24px;
+        padding: 28px;
+        margin-bottom: 22px;
+        color: white;
+        background:
+            radial-gradient(circle at top right, rgba(255,255,255,0.28), transparent 28%),
+            linear-gradient(135deg, #111827 0%, #d92e2e 100%);
+        box-shadow: var(--admin-shadow);
+    }
+
+    .om-hero::after {
+        content: "";
+        position: absolute;
+        right: -80px;
+        bottom: -90px;
+        width: 260px;
+        height: 260px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.08);
+    }
+
+    .om-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 13px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.16);
+        border: 1px solid rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: .5px;
+        text-transform: uppercase;
+        margin-bottom: 13px;
+    }
+
+    .om-title {
+        font-size: 34px;
+        line-height: 1.1;
+        font-weight: 900;
+        margin: 0 0 8px;
+    }
+
+    .om-subtitle {
+        margin: 0;
+        max-width: 720px;
+        color: rgba(255,255,255,0.84);
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    .om-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 22px;
+    }
+
+    .om-stat {
+        background: var(--admin-card);
+        border: 1px solid var(--admin-border);
+        border-radius: 18px;
+        padding: 18px;
+        box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .om-stat::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--admin-primary), #ff8a65);
+    }
+
+    .om-stat-label {
+        color: var(--admin-muted);
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .4px;
+        margin-bottom: 8px;
+    }
+
+    .om-stat-value {
+        color: var(--admin-text);
+        font-size: 23px;
+        font-weight: 900;
+        line-height: 1.15;
+    }
+
+    .om-panel {
+        background: var(--admin-card);
+        border: 1px solid var(--admin-border);
+        border-radius: 22px;
+        box-shadow: var(--admin-shadow);
+        overflow: hidden;
+    }
+
+    .om-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+        padding: 18px;
+        border-bottom: 1px solid var(--admin-border);
+        background: linear-gradient(180deg, #ffffff 0%, #fbfbfd 100%);
+    }
+
+    .om-toolbar-title {
+        font-size: 18px;
+        font-weight: 900;
+        color: var(--admin-text);
+        margin: 0;
+    }
+
+    .om-toolbar-note {
+        color: var(--admin-muted);
+        font-size: 13px;
+        margin: 3px 0 0;
+    }
+
+    .om-search {
+        min-width: 280px;
+        height: 42px;
+        border: 1px solid var(--admin-border);
+        border-radius: 13px;
+        padding: 0 14px;
+        font-size: 13px;
+        background: #fff;
+        color: var(--admin-text);
+        outline: none;
+        transition: all .2s ease;
+    }
+
+    .om-search:focus {
+        border-color: rgba(217,46,46,.45);
+        box-shadow: 0 0 0 4px rgba(217,46,46,.09);
+    }
+
+    .om-table-wrap {
+        overflow-x: auto;
+    }
+
+    .om-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+    .om-table thead {
+        background: #f9fafb;
+    }
+
+    .om-table th {
+        padding: 15px 18px;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: .55px;
+        border-bottom: 1px solid var(--admin-border);
+        white-space: nowrap;
+    }
+
+    .om-table td {
+        padding: 16px 18px;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.055);
+        color: var(--admin-text);
+        vertical-align: middle;
+        font-size: 14px;
+    }
+
+    .om-table tbody tr {
+        transition: background .2s ease, transform .2s ease;
+    }
+
+    .om-table tbody tr:hover {
+        background: #fff7f7;
+    }
+
+    .order-id {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 62px;
+        height: 34px;
+        border-radius: 999px;
+        background: #111827;
+        color: white;
+        font-weight: 900;
+        font-size: 12px;
+    }
+
+    .customer-name {
+        font-weight: 850;
+        color: var(--admin-text);
+    }
+
+    .muted-small {
+        color: var(--admin-muted);
+        font-size: 12px;
+        margin-top: 3px;
+    }
+
+    .money {
+        color: var(--admin-primary);
+        font-weight: 950;
+        font-size: 15px;
+        white-space: nowrap;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 32px;
+        padding: 0 11px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 900;
+        white-space: nowrap;
+        border: 1px solid transparent;
+    }
+
+    .status-pending { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+    .status-review { background: #fefce8; color: #a16207; border-color: #fde68a; }
+    .status-confirmed { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .status-shipped { background: #eef2ff; color: #4338ca; border-color: #c7d2fe; }
+    .status-delivered { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+    .status-cancelled { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+    .status-default { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
+
+    .btn-detail {
+        min-height: 38px;
+        padding: 0 14px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        text-decoration: none;
+        background: linear-gradient(135deg, var(--admin-primary), var(--admin-primary-dark));
+        color: white;
+        font-size: 13px;
+        font-weight: 900;
+        box-shadow: 0 10px 18px rgba(217, 46, 46, .18);
+        transition: all .22s ease;
+        white-space: nowrap;
+    }
+
+    .btn-detail:hover {
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 16px 26px rgba(217, 46, 46, .25);
+    }
+
+    .empty-state {
+        padding: 70px 24px;
+        text-align: center;
+        background: white;
+        border-radius: 22px;
+        border: 1px solid var(--admin-border);
+        box-shadow: var(--admin-shadow);
+    }
+
+    .empty-icon {
+        width: 76px;
+        height: 76px;
+        border-radius: 20px;
+        background: #fff1f2;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        margin-bottom: 16px;
+    }
+
+    .alert {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 10px 24px rgba(15,23,42,.08);
+        font-weight: 750;
+    }
+
+    @@media (max-width: 1200px) {
+        .om-stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @@media (max-width: 768px) {
+        .om-title { font-size: 26px; }
+        .om-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .om-search { min-width: 100%; width: 100%; }
+        .om-toolbar { align-items: stretch; }
+    }
+
+    @@media (max-width: 480px) {
+        .om-stat-grid { grid-template-columns: 1fr; }
+        .om-page { padding-top: 16px; }
+        .om-hero { padding: 22px; border-radius: 18px; }
+    }
+</style>
+
+<div class="container om-page">
+    <div class="om-hero">
+        <div class="om-kicker">📦 Order management</div>
+        <h1 class="om-title">Quản lý đơn hàng</h1>
+        <p class="om-subtitle">Theo dõi đơn hàng, trạng thái xử lý, doanh thu và chuyển nhanh tới trang chi tiết để cập nhật tiến trình giao hàng.</p>
     </div>
 
     @if (TempData["Success"] != null)
@@ -28,95 +362,125 @@
         </div>
     }
 
-    @if (Model.Count == 0)
+    <div class="om-stat-grid">
+        <div class="om-stat">
+            <div class="om-stat-label">Tổng đơn</div>
+            <div class="om-stat-value">@totalOrders</div>
+        </div>
+        <div class="om-stat">
+            <div class="om-stat-label">Chờ xử lý</div>
+            <div class="om-stat-value">@pendingOrders</div>
+        </div>
+        <div class="om-stat">
+            <div class="om-stat-label">Đang giao</div>
+            <div class="om-stat-value">@shippedOrders</div>
+        </div>
+        <div class="om-stat">
+            <div class="om-stat-label">Hoàn tất / xác nhận</div>
+            <div class="om-stat-value">@completedOrders</div>
+        </div>
+        <div class="om-stat">
+            <div class="om-stat-label">Doanh thu</div>
+            <div class="om-stat-value">@totalRevenue.ToString("N0")₫</div>
+        </div>
+    </div>
+
+    @if (Model == null || Model.Count == 0)
     {
-        <div class="alert alert-info">
-            Không có đơn hàng nào.
+        <div class="empty-state">
+            <div class="empty-icon">🧾</div>
+            <h3>Chưa có đơn hàng nào</h3>
+            <p class="text-muted mb-0">Khi khách đặt hàng, đơn sẽ tự động xuất hiện tại đây.</p>
         </div>
     }
     else
     {
-        <div class="table-responsive">
-            <table class="table table-hover table-striped">
-                <thead class="table-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>Khách hàng</th>
-                        <th>Ngày đặt hàng</th>
-                        <th>Tổng tiền</th>
-                        <th>Trạng thái</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var order in Model)
-                    {
-                        var statusColor = order.Status switch
-                        {
-                            "Pending" => "warning",
-                            "Confirmed" => "info",
-                            "Shipped" => "primary",
-                            "Delivered" => "success",
-                            "Cancelled" => "danger",
-                            _ => "secondary"
-                        };
+        <div class="om-panel">
+            <div class="om-toolbar">
+                <div>
+                    <h2 class="om-toolbar-title">Danh sách đơn hàng</h2>
+                    <p class="om-toolbar-note">Tìm kiếm nhanh theo mã đơn, khách hàng, trạng thái hoặc ngày đặt.</p>
+                </div>
+                <input id="orderSearchInput" class="om-search" type="search" placeholder="Tìm đơn hàng..." />
+            </div>
 
-                        var statusText = order.Status switch
-                        {
-                            "Pending" => "⏳ Chờ xử lý",
-                            "Confirmed" => "✅ Đã xác nhận",
-                            "Shipped" => "📦 Đang giao",
-                            "Delivered" => "✔️ Đã giao hàng",
-                            "Cancelled" => "❌ Đã hủy",
-                            _ => order.Status
-                        };
-
+            <div class="om-table-wrap">
+                <table class="om-table" id="orderTable">
+                    <thead>
                         <tr>
-                            <td>
-                                <strong>#@order.Id</strong>
-                            </td>
-                            <td>
-                                @order.CustomerName
-                            </td>
-                            <td>
-                                @order.OrderDate.ToString("dd/MM/yyyy HH:mm")
-                            </td>
-                            <td>
-                                <strong>@order.TotalPrice.ToString("N0")₫</strong>
-                            </td>
-                            <td>
-                                <span class="badge bg-@statusColor">@statusText</span>
-                            </td>
-                            <td>
-                                <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm btn-primary">
-                                    🔍 Chi tiết
-                                </a>
-                            </td>
+                            <th>Mã đơn</th>
+                            <th>Khách hàng</th>
+                            <th>Ngày đặt</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th style="text-align:right;">Hành động</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in Model)
+                        {
+                            var statusClass = order.Status switch
+                            {
+                                "Pending" => "status-pending",
+                                "PendingReview" => "status-review",
+                                "Confirmed" => "status-confirmed",
+                                "Shipped" => "status-shipped",
+                                "Delivered" => "status-delivered",
+                                "Cancelled" => "status-cancelled",
+                                _ => "status-default"
+                            };
+
+                            var statusText = order.Status switch
+                            {
+                                "Pending" => "⏳ Chờ xử lý",
+                                "PendingReview" => "📝 Chờ xác nhận",
+                                "Confirmed" => "✅ Đã xác nhận",
+                                "Shipped" => "📦 Đang giao",
+                                "Delivered" => "✔️ Đã giao hàng",
+                                "Cancelled" => "❌ Đã hủy",
+                                _ => order.Status
+                            };
+
+                            <tr>
+                                <td><span class="order-id">#@order.Id</span></td>
+                                <td>
+                                    <div class="customer-name">@(!string.IsNullOrWhiteSpace(order.CustomerName) ? order.CustomerName : "Khách hàng")</div>
+                                    <div class="muted-small">@(!string.IsNullOrWhiteSpace(order.Phone) ? order.Phone : "Chưa có SĐT")</div>
+                                </td>
+                                <td>
+                                    <div>@order.OrderDate.ToString("dd/MM/yyyy")</div>
+                                    <div class="muted-small">@order.OrderDate.ToString("HH:mm")</div>
+                                </td>
+                                <td><span class="money">@order.TotalPrice.ToString("N0")₫</span></td>
+                                <td><span class="status-badge @statusClass">@statusText</span></td>
+                                <td style="text-align:right;">
+                                    <a asp-action="Details" asp-route-id="@order.Id" class="btn-detail">
+                                        🔍 Chi tiết
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     }
 </div>
 
-<style>
-    .table-hover tbody tr:hover {
-        background-color: #f5f5f5;
-    }
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const input = document.getElementById('orderSearchInput');
+        const rows = document.querySelectorAll('#orderTable tbody tr');
 
-    .badge {
-        font-size: 0.85rem;
-        padding: 0.5rem 0.75rem;
-    }
+        if (!input || !rows.length) return;
 
-    h2 {
-        color: #1f2937;
-        font-weight: 700;
-    }
+        input.addEventListener('input', function () {
+            const keyword = this.value.toLowerCase().trim();
 
-    .btn-sm {
-        padding: 0.4rem 0.75rem;
-        font-size: 0.85rem;
-    }
-</style>
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(keyword) ? '' : 'none';
+            });
+        });
+    });
+</script>

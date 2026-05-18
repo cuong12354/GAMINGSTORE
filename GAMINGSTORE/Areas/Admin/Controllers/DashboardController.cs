@@ -3,7 +3,6 @@ using GAMINGSTORE.Data;
 using GAMINGSTORE.Models;
 using GAMINGSTORE.Repositories;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +16,10 @@ namespace GAMINGSTORE.Areas.Admin.Controllers
         private readonly IProductRepository _productRepository;
         private readonly ICategoryRepository _categoryRepository;
 
-        public DashboardController(ApplicationDbContext context, IProductRepository productRepository, ICategoryRepository categoryRepository)
+        public DashboardController(
+            ApplicationDbContext context,
+            IProductRepository productRepository,
+            ICategoryRepository categoryRepository)
         {
             _context = context;
             _productRepository = productRepository;
@@ -29,52 +31,75 @@ namespace GAMINGSTORE.Areas.Admin.Controllers
         {
             var today = DateTime.UtcNow.Date;
             var thisMonth = DateTime.UtcNow.AddMonths(-1);
+            var now = DateTime.UtcNow;
 
-            // Orders Data
-            var totalOrders = _context.Orders.Count();
-            var pendingOrders = _context.Orders.Count(o => o.Status == "Pending");
-            var todayOrders = _context.Orders.Where(o => o.OrderDate.Date == today).Count();
-            var monthlyOrders = _context.Orders.Where(o => o.OrderDate >= thisMonth).Count();
+            var totalOrders = await _context.Orders.CountAsync();
+            var pendingOrders = await _context.Orders.CountAsync(o => o.Status == "Pending" || o.Status == "PendingReview");
+            var confirmedOrders = await _context.Orders.CountAsync(o => o.Status == "Confirmed");
+            var todayOrders = await _context.Orders.CountAsync(o => o.OrderDate.Date == today);
+            var monthlyOrders = await _context.Orders.CountAsync(o => o.OrderDate >= thisMonth);
 
-            // Revenue Data
-            var totalRevenue = _context.Orders.Sum(o => o.TotalPrice);
-            var todayRevenue = _context.Orders
+            var totalRevenue = await _context.Orders.SumAsync(o => (decimal?)o.TotalPrice) ?? 0;
+            var todayRevenue = await _context.Orders
                 .Where(o => o.OrderDate.Date == today)
-                .Sum(o => o.TotalPrice);
-            var monthlyRevenue = _context.Orders
+                .SumAsync(o => (decimal?)o.TotalPrice) ?? 0;
+            var monthlyRevenue = await _context.Orders
                 .Where(o => o.OrderDate >= thisMonth)
-                .Sum(o => o.TotalPrice);
+                .SumAsync(o => (decimal?)o.TotalPrice) ?? 0;
 
-            // Product Data
-            var totalProducts = _context.Products.Count();
-            var activeProducts = _context.Products.Where(p => p.IsActive).Count();
-            var lowStockProducts = _context.Inventories.Where(i => i.StockQuantity < (i.MinimumStockLevel ?? 10)).Count();
+            var totalProducts = await _context.Products.CountAsync();
+            var activeProducts = await _context.Products.CountAsync(p => p.IsActive);
+            var inactiveProducts = totalProducts - activeProducts;
+            var lowStockProducts = await _context.Inventories.CountAsync(i => i.StockQuantity < (i.MinimumStockLevel ?? 10));
+            var outOfStockProducts = await _context.Inventories.CountAsync(i => i.StockQuantity <= 0);
 
-            // User Data
-            var totalUsers = _context.Users.Count();
-            var totalReviews = _context.ProductReviews.Count();
+            var totalUsers = await _context.Users.CountAsync();
+            var totalReviews = await _context.ProductReviews.CountAsync();
+            var totalCategories = await _context.Categories.CountAsync();
 
-            // Category Data
-            var categories = await _categoryRepository.GetAllAsync();
+            var totalCoupons = await _context.Coupons.CountAsync();
+            var activeCoupons = await _context.Coupons.CountAsync(c => c.IsActive && c.StartDate <= now && c.ExpiryDate >= now);
+            var expiredCoupons = await _context.Coupons.CountAsync(c => c.ExpiryDate < now);
+            var upcomingCoupons = await _context.Coupons.CountAsync(c => c.StartDate > now);
 
-            // Recent Orders
+            var totalReturns = await _context.ReturnRequests.CountAsync();
+            var pendingReturns = await _context.ReturnRequests.CountAsync(r => r.Status == "Pending");
+
+            var totalWishlistItems = await _context.Wishlists.CountAsync();
+            var totalMemberTiers = await _context.MemberTiers.CountAsync();
+            var totalLoyaltyTransactions = await _context.LoyaltyPoints.CountAsync();
+
+            var unreadNotifications = await _context.CustomerNotifications.CountAsync(n => !n.IsRead);
+            var totalNotifications = await _context.CustomerNotifications.CountAsync();
+            var totalAuditLogs = await _context.AuditLogs.CountAsync();
+            var totalNewsletterSubscriptions = await _context.NewsletterSubscriptions.CountAsync();
+
             var recentOrders = await _context.Orders
                 .Include(o => o.ApplicationUser)
                 .OrderByDescending(o => o.OrderDate)
                 .Take(10)
                 .ToListAsync();
 
-            // Top Products by Sales
-            var topProducts = (await _context.OrderDetails
-                .GroupBy(od => od.ProductId)
-                .Select(g => new { ProductId = g.Key, Quantity = g.Sum(od => od.Quantity) })
-                .OrderByDescending(x => x.Quantity)
-                .Take(5)
-                .ToListAsync())
-                .Cast<dynamic>()
-                .ToList();
+            var lowStockItems = await _context.Inventories
+                .Include(i => i.Product)
+                .Where(i => i.StockQuantity < (i.MinimumStockLevel ?? 10))
+                .OrderBy(i => i.StockQuantity)
+                .Take(8)
+                .ToListAsync();
 
-            // Monthly Revenue Data (Last 12 months)
+            var topProducts = (await _context.OrderDetails
+                .GroupBy(od => new { od.ProductId, od.ProductName })
+                .Select(g => new TopProductDataItem
+                {
+                    ProductId = g.Key.ProductId,
+                    ProductName = g.Key.ProductName ?? ("Sản phẩm #" + g.Key.ProductId),
+                    Quantity = g.Sum(od => od.Quantity),
+                    Revenue = g.Sum(od => od.Price * od.Quantity)
+                })
+                .OrderByDescending(x => x.Quantity)
+                .Take(6)
+                .ToListAsync());
+
             var last12Months = DateTime.UtcNow.AddMonths(-11);
             var monthlyRevenueData = await _context.Orders
                 .Where(o => o.OrderDate >= last12Months)
@@ -94,6 +119,7 @@ namespace GAMINGSTORE.Areas.Admin.Controllers
             {
                 TotalOrders = totalOrders,
                 PendingOrders = pendingOrders,
+                ConfirmedOrders = confirmedOrders,
                 TodayOrders = todayOrders,
                 MonthlyOrders = monthlyOrders,
                 TotalRevenue = totalRevenue,
@@ -101,11 +127,27 @@ namespace GAMINGSTORE.Areas.Admin.Controllers
                 MonthlyRevenue = monthlyRevenue,
                 TotalProducts = totalProducts,
                 ActiveProducts = activeProducts,
+                InactiveProducts = inactiveProducts,
                 LowStockProducts = lowStockProducts,
+                OutOfStockProducts = outOfStockProducts,
                 TotalUsers = totalUsers,
                 TotalReviews = totalReviews,
-                TotalCategories = categories.Count(),
+                TotalCategories = totalCategories,
+                TotalCoupons = totalCoupons,
+                ActiveCoupons = activeCoupons,
+                ExpiredCoupons = expiredCoupons,
+                UpcomingCoupons = upcomingCoupons,
+                TotalReturns = totalReturns,
+                PendingReturns = pendingReturns,
+                TotalWishlistItems = totalWishlistItems,
+                TotalMemberTiers = totalMemberTiers,
+                TotalLoyaltyTransactions = totalLoyaltyTransactions,
+                UnreadNotifications = unreadNotifications,
+                TotalNotifications = totalNotifications,
+                TotalAuditLogs = totalAuditLogs,
+                TotalNewsletterSubscriptions = totalNewsletterSubscriptions,
                 RecentOrders = recentOrders,
+                LowStockItems = lowStockItems,
                 TopProducts = topProducts,
                 MonthlyRevenueData = monthlyRevenueData
             };
@@ -113,7 +155,6 @@ namespace GAMINGSTORE.Areas.Admin.Controllers
             return View(model);
         }
 
-        // Sales Report
         public async Task<IActionResult> SalesReport()
         {
             var monthlyData = await _context.Orders
@@ -132,17 +173,17 @@ namespace GAMINGSTORE.Areas.Admin.Controllers
             return View(monthlyData);
         }
 
-        // Inventory Report
         public async Task<IActionResult> InventoryReport()
         {
             var lowStockInventory = await _context.Inventories
+                .Include(i => i.Product)
                 .Where(i => i.StockQuantity < (i.MinimumStockLevel ?? 10))
+                .OrderBy(i => i.StockQuantity)
                 .ToListAsync();
 
             return View(lowStockInventory);
         }
 
-        // Customer Report
         public async Task<IActionResult> CustomerReport()
         {
             var topCustomers = await _context.Orders
@@ -169,10 +210,19 @@ namespace GAMINGSTORE.Areas.Admin.Controllers
         public int Orders { get; set; }
     }
 
+    public class TopProductDataItem
+    {
+        public int ProductId { get; set; }
+        public string ProductName { get; set; } = string.Empty;
+        public int Quantity { get; set; }
+        public decimal Revenue { get; set; }
+    }
+
     public class DashboardViewModel
     {
         public int TotalOrders { get; set; }
         public int PendingOrders { get; set; }
+        public int ConfirmedOrders { get; set; }
         public int TodayOrders { get; set; }
         public int MonthlyOrders { get; set; }
         public decimal TotalRevenue { get; set; }
@@ -180,12 +230,28 @@ namespace GAMINGSTORE.Areas.Admin.Controllers
         public decimal MonthlyRevenue { get; set; }
         public int TotalProducts { get; set; }
         public int ActiveProducts { get; set; }
+        public int InactiveProducts { get; set; }
         public int LowStockProducts { get; set; }
+        public int OutOfStockProducts { get; set; }
         public int TotalUsers { get; set; }
         public int TotalReviews { get; set; }
         public int TotalCategories { get; set; }
-        public List<Order> RecentOrders { get; set; }
-        public List<dynamic> TopProducts { get; set; } = new List<dynamic>();
+        public int TotalCoupons { get; set; }
+        public int ActiveCoupons { get; set; }
+        public int ExpiredCoupons { get; set; }
+        public int UpcomingCoupons { get; set; }
+        public int TotalReturns { get; set; }
+        public int PendingReturns { get; set; }
+        public int TotalWishlistItems { get; set; }
+        public int TotalMemberTiers { get; set; }
+        public int TotalLoyaltyTransactions { get; set; }
+        public int UnreadNotifications { get; set; }
+        public int TotalNotifications { get; set; }
+        public int TotalAuditLogs { get; set; }
+        public int TotalNewsletterSubscriptions { get; set; }
+        public List<Order> RecentOrders { get; set; } = new List<Order>();
+        public List<Inventory> LowStockItems { get; set; } = new List<Inventory>();
+        public List<TopProductDataItem> TopProducts { get; set; } = new List<TopProductDataItem>();
         public List<MonthlyRevenueDataItem> MonthlyRevenueData { get; set; } = new List<MonthlyRevenueDataItem>();
     }
 }

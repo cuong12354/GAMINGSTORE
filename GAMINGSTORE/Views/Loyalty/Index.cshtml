@@ -2,96 +2,431 @@
     ViewData["Title"] = "Chương Trình Thành Viên";
     var currentPoints = (int)ViewBag.CurrentPoints;
     var memberTier = ViewBag.MemberTier;
+    var tierName = memberTier?.Name ?? "Thành viên";
+    var discount = memberTier?.DiscountPercentage ?? 0;
+
+    int nextTarget = currentPoints < 1000 ? 1000 : currentPoints < 5000 ? 5000 : currentPoints < 15000 ? 15000 : currentPoints;
+    int prevTarget = currentPoints < 1000 ? 0 : currentPoints < 5000 ? 1000 : currentPoints < 15000 ? 5000 : 15000;
+    int progress = nextTarget == prevTarget ? 100 : Math.Min(100, Math.Max(0, (int)Math.Round(((decimal)(currentPoints - prevTarget) / (nextTarget - prevTarget)) * 100)));
+    int pointsToNext = Math.Max(0, nextTarget - currentPoints);
 }
 
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-8">
-            <h1>🎖️ Chương Trình Thành Viên GAMINGSTORE</h1>
-            <p class="text-muted">Tích lũy điểm từ mỗi lần mua hàng và nâng cấp thành viên</p>
+<style>
+    .loyalty-page {
+        padding: 34px 0 56px;
+        color: #111827;
+    }
+
+    .loyalty-hero {
+        position: relative;
+        overflow: hidden;
+        border-radius: 26px;
+        padding: 34px;
+        background:
+            radial-gradient(circle at 85% 10%, rgba(255, 212, 59, .35), transparent 26%),
+            radial-gradient(circle at 10% 90%, rgba(217, 46, 46, .25), transparent 28%),
+            linear-gradient(135deg, #161617 0%, #2a1010 54%, #d92e2e 100%);
+        box-shadow: 0 24px 60px rgba(15, 23, 42, .20);
+        color: #fff;
+        margin-bottom: 26px;
+    }
+
+    .loyalty-hero::after {
+        content: "";
+        position: absolute;
+        inset: auto -80px -120px auto;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, .10);
+        pointer-events: none;
+    }
+
+    .hero-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 34px;
+        padding: 0 14px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.14);
+        border: 1px solid rgba(255,255,255,.18);
+        backdrop-filter: blur(10px);
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        margin-bottom: 14px;
+    }
+
+    .hero-title {
+        font-size: clamp(28px, 4vw, 46px);
+        line-height: 1.08;
+        font-weight: 950;
+        margin: 0 0 12px;
+        letter-spacing: -.8px;
+    }
+
+    .hero-desc {
+        max-width: 680px;
+        color: rgba(255,255,255,.82);
+        font-size: 15px;
+        line-height: 1.8;
+        margin: 0;
+    }
+
+    .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        margin-bottom: 26px;
+    }
+
+    .metric-card {
+        border-radius: 22px;
+        border: 1px solid rgba(15, 23, 42, .08);
+        background: #fff;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, .08);
+        padding: 24px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .metric-card::after {
+        content: "";
+        position: absolute;
+        right: -44px;
+        top: -44px;
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        background: rgba(217,46,46,.08);
+    }
+
+    .metric-label {
+        color: #6b7280;
+        font-size: 13px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        margin-bottom: 8px;
+    }
+
+    .metric-value {
+        font-size: 42px;
+        line-height: 1;
+        font-weight: 950;
+        color: #d92e2e;
+        margin-bottom: 10px;
+    }
+
+    .metric-sub {
+        color: #6b7280;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .tier-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 14px;
+        border-radius: 999px;
+        background: #fff7ed;
+        color: #b45309;
+        font-weight: 900;
+        margin-top: 4px;
+    }
+
+    .progress-panel,
+    .section-card {
+        background: #fff;
+        border-radius: 22px;
+        border: 1px solid rgba(15, 23, 42, .08);
+        box-shadow: 0 18px 40px rgba(15, 23, 42, .07);
+        padding: 24px;
+        margin-bottom: 26px;
+    }
+
+    .panel-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 16px;
+    }
+
+    .panel-title h3 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 950;
+        color: #111827;
+    }
+
+    .panel-title span {
+        color: #6b7280;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .progress-track {
+        height: 14px;
+        background: #f3f4f6;
+        border-radius: 999px;
+        overflow: hidden;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,.08);
+    }
+
+    .progress-fill {
+        height: 100%;
+        width: @progress%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #d92e2e, #ff8a3d, #ffd43b);
+    }
+
+    .progress-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        color: #6b7280;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .tiers-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .tier-card {
+        border: 1px solid #edf0f3;
+        border-radius: 18px;
+        padding: 18px;
+        background: linear-gradient(180deg, #fff, #fbfcfd);
+        transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .tier-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(217,46,46,.28);
+        box-shadow: 0 16px 30px rgba(15,23,42,.10);
+    }
+
+    .tier-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        background: #fff4f1;
+        margin-bottom: 12px;
+    }
+
+    .tier-card h5 {
+        margin: 0 0 8px;
+        font-weight: 950;
+        color: #111827;
+    }
+
+    .tier-card p {
+        margin: 0 0 6px;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .tier-discount {
+        display: inline-flex;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #ecfdf5;
+        color: #059669;
+        font-size: 12px;
+        font-weight: 900;
+        margin-top: 6px;
+    }
+
+    .history-table-wrap {
+        overflow: hidden;
+        border: 1px solid #edf0f3;
+        border-radius: 16px;
+    }
+
+    .history-table {
+        width: 100%;
+        margin: 0;
+        border-collapse: collapse;
+    }
+
+    .history-table thead {
+        background: #f9fafb;
+    }
+
+    .history-table th {
+        padding: 14px 16px;
+        color: #6b7280;
+        font-size: 12px;
+        font-weight: 950;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        border-bottom: 1px solid #edf0f3;
+    }
+
+    .history-table td {
+        padding: 15px 16px;
+        border-bottom: 1px solid #f1f3f5;
+        vertical-align: middle;
+        color: #374151;
+        font-size: 14px;
+    }
+
+    .history-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 28px;
+        padding: 0 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 900;
+    }
+
+    .type-purchase { background: #ecfdf5; color: #059669; }
+    .type-redemption { background: #fffbeb; color: #b45309; }
+    .type-info { background: #eff6ff; color: #2563eb; }
+    .points-plus { color: #059669; font-weight: 950; }
+    .points-minus { color: #dc2626; font-weight: 950; }
+
+    .empty-history {
+        text-align: center;
+        padding: 44px 16px;
+        color: #6b7280;
+    }
+
+    .empty-history div {
+        font-size: 42px;
+        margin-bottom: 8px;
+    }
+
+    @@media (max-width: 992px) {
+        .metric-grid,
+        .tiers-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .loyalty-page { padding-top: 18px; }
+        .loyalty-hero { padding: 24px 18px; border-radius: 18px; }
+        .metric-grid,
+        .tiers-grid { grid-template-columns: 1fr; }
+        .metric-value { font-size: 34px; }
+        .panel-title { align-items: flex-start; flex-direction: column; }
+        .history-table th:nth-child(4),
+        .history-table td:nth-child(4) { display: none; }
+    }
+</style>
+
+<div class="container loyalty-page">
+    <div class="loyalty-hero">
+        <div class="hero-kicker">🎖️ Loyalty Program</div>
+        <h1 class="hero-title">Chương Trình Thành Viên GAMINGSTORE</h1>
+        <p class="hero-desc">Tích lũy điểm từ mỗi đơn hàng, nâng cấp hạng thành viên và nhận ưu đãi giảm giá tự động khi thanh toán.</p>
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric-card">
+            <div class="metric-label">Điểm hiện có</div>
+            <div class="metric-value">@currentPoints.ToString("N0")</div>
+            <p class="metric-sub">Điểm tích lũy từ lịch sử mua hàng của bạn.</p>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Hạng thành viên</div>
+            <div class="tier-badge">🏆 @tierName</div>
+            <div class="metric-value" style="font-size: 34px; margin-top: 14px;">@discount%</div>
+            <p class="metric-sub">Ưu đãi giảm giá đang áp dụng cho tài khoản.</p>
         </div>
     </div>
 
-    <div class="row mt-4">
-        <!-- Current Points Card -->
-        <div class="col-md-6 mb-4">
-            <div class="card border-orange shadow-sm" style="border-left: 5px solid #d92e2e;">
-                <div class="card-body">
-                    <h5 class="card-title">Điểm Của Bạn</h5>
-                    <h2 class="text-orange mb-3" style="color: #d92e2e;">@currentPoints</h2>
-                    <small class="text-muted">Tổng điểm: @ViewBag.MemberTier.Name</small>
-                </div>
-            </div>
+    <div class="progress-panel">
+        <div class="panel-title">
+            <h3>🚀 Tiến độ nâng hạng</h3>
+            @if (pointsToNext > 0)
+            {
+                <span>Cần thêm @pointsToNext.ToString("N0") điểm để lên hạng tiếp theo</span>
+            }
+            else
+            {
+                <span>Bạn đang ở hạng cao nhất</span>
+            }
+        </div>
+        <div class="progress-track">
+            <div class="progress-fill"></div>
+        </div>
+        <div class="progress-meta">
+            <span>@prevTarget.ToString("N0") điểm</span>
+            <span>@progress%</span>
+            <span>@nextTarget.ToString("N0") điểm</span>
+        </div>
+    </div>
+
+    <div class="section-card">
+        <div class="panel-title">
+            <h3>📊 Các Hạng Thành Viên</h3>
+            <span>Mua càng nhiều, ưu đãi càng cao</span>
         </div>
 
-        <!-- Member Tier Card -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm" style="border-left: 5px solid #@(memberTier?.Color == "platinum" ? "ffd700" : memberTier?.Color == "gold" ? "ffa500" : memberTier?.Color == "silver" ? "c0c0c0" : "8b4513");">
-                <div class="card-body">
-                    <h5 class="card-title">Hạng Thành Viên</h5>
-                    <h2 class="mb-3">@memberTier?.Name</h2>
-                    <small class="text-muted">Ưu đãi: Giảm @memberTier?.DiscountPercentage%</small>
-                </div>
+        <div class="tiers-grid">
+            <div class="tier-card">
+                <div class="tier-icon">🥉</div>
+                <h5>Đồng</h5>
+                <p>0 - 999 điểm</p>
+                <span class="tier-discount">Giảm 0%</span>
+            </div>
+            <div class="tier-card">
+                <div class="tier-icon">🥈</div>
+                <h5>Bạc</h5>
+                <p>1.000 - 4.999 điểm</p>
+                <span class="tier-discount">Giảm 5%</span>
+            </div>
+            <div class="tier-card">
+                <div class="tier-icon">🥇</div>
+                <h5>Vàng</h5>
+                <p>5.000 - 14.999 điểm</p>
+                <span class="tier-discount">Giảm 10%</span>
+            </div>
+            <div class="tier-card">
+                <div class="tier-icon">💎</div>
+                <h5>Bạch Kim</h5>
+                <p>15.000+ điểm</p>
+                <span class="tier-discount">Giảm 15% + VIP</span>
             </div>
         </div>
     </div>
 
-    <!-- Member Tiers Info -->
-    <div class="row mt-5">
-        <div class="col-12">
-            <h4>📊 Các Hạng Thành Viên</h4>
-            <div class="row">
-                <div class="col-md-3 mb-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h5 class="card-title">🥉 Đồng</h5>
-                            <p>0 - 999 điểm</p>
-                            <p>Giảm: 0%</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h5 class="card-title">🥈 Bạc</h5>
-                            <p>1.000 - 4.999 điểm</p>
-                            <p>Giảm: 5%</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h5 class="card-title">🥇 Vàng</h5>
-                            <p>5.000 - 14.999 điểm</p>
-                            <p>Giảm: 10%</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h5 class="card-title">💎 Bạch Kim</h5>
-                            <p>15.000+ điểm</p>
-                            <p>Giảm: 15% + VIP</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="section-card">
+        <div class="panel-title">
+            <h3>📜 Lịch Sử Giao Dịch Điểm</h3>
+            <span>Theo dõi mọi thay đổi điểm trong tài khoản</span>
         </div>
-    </div>
 
-    <!-- Points History -->
-    <div class="row mt-5">
-        <div class="col-12">
-            <h4>📜 Lịch Sử Giao Dịch Điểm</h4>
-            <table class="table table-hover">
-                <thead class="table-light">
+        <div class="history-table-wrap">
+            <table class="history-table">
+                <thead>
                     <tr>
                         <th>Ngày</th>
-                        <th>Loại Giao Dịch</th>
+                        <th>Loại giao dịch</th>
                         <th>Điểm</th>
-                        <th>Mô Tả</th>
+                        <th>Mô tả</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -104,20 +439,20 @@
                                 <td>
                                     @if (point.TransactionType == "Purchase")
                                     {
-                                        <span class="badge bg-success">Mua Hàng</span>
+                                        <span class="type-badge type-purchase">🛒 Mua hàng</span>
                                     }
                                     else if (point.TransactionType == "Redemption")
                                     {
-                                        <span class="badge bg-warning">Đổi Điểm</span>
+                                        <span class="type-badge type-redemption">🎁 Đổi điểm</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-info">@point.TransactionType</span>
+                                        <span class="type-badge type-info">ℹ️ @point.TransactionType</span>
                                     }
                                 </td>
                                 <td>
-                                    <span class="@(point.Points > 0 ? "text-success" : "text-danger")">
-                                        @(point.Points > 0 ? "+" : "")@point.Points
+                                    <span class="@(point.Points > 0 ? "points-plus" : "points-minus")">
+                                        @(point.Points > 0 ? "+" : "")@point.Points.ToString("N0")
                                     </span>
                                 </td>
                                 <td>@point.Description</td>
@@ -127,7 +462,13 @@
                     else
                     {
                         <tr>
-                            <td colspan="4" class="text-center text-muted">Chưa có giao dịch nào</td>
+                            <td colspan="4">
+                                <div class="empty-history">
+                                    <div>🧾</div>
+                                    <strong>Chưa có giao dịch điểm nào</strong>
+                                    <p class="mb-0">Sau khi mua hàng, điểm tích lũy sẽ xuất hiện tại đây.</p>
+                                </div>
+                            </td>
                         </tr>
                     }
                 </tbody>
@@ -135,18 +476,3 @@
         </div>
     </div>
 </div>
-
-<style>
-    .border-orange {
-        border-color: #d92e2e !important;
-    }
-
-    .card {
-        border-radius: 12px;
-    }
-
-    .badge {
-        padding: 6px 12px;
-        border-radius: 6px;
-    }
-</style>
