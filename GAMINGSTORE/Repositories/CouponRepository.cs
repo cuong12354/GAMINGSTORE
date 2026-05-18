@@ -7,6 +7,7 @@ namespace GAMINGSTORE.Repositories
     {
         Task<Coupon> GetByCodeAsync(string code);
         Task<List<Coupon>> GetActiveAsync();
+        Task<List<Coupon>> GetAllAsync();
         Task<Coupon> GetByIdAsync(int id);
         Task AddAsync(Coupon coupon);
         Task UpdateAsync(Coupon coupon);
@@ -35,6 +36,11 @@ namespace GAMINGSTORE.Repositories
             return await Task.FromResult(_context.Coupons
                 .Where(c => c.IsActive && c.StartDate <= now && c.ExpiryDate > now)
                 .ToList());
+        }
+
+        public async Task<List<Coupon>> GetAllAsync()
+        {
+            return await Task.FromResult(_context.Coupons.ToList());
         }
 
         public async Task<Coupon> GetByIdAsync(int id)

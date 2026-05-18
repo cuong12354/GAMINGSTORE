@@ -20,79 +20,94 @@ namespace GAMINGSTORE.Controllers
         }
 
         // ✨ API: Validate coupon code
-        [HttpPost("validate")]
-        [AllowAnonymous]
-        public async Task<IActionResult> ValidateCoupon([FromBody] ValidateCouponRequest request)
+        // ✨ API: Validate coupon code
+[HttpPost("validate")]
+[AllowAnonymous]
+public async Task<IActionResult> ValidateCoupon([FromBody] ValidateCouponRequest request)
+{
+    if (string.IsNullOrEmpty(request?.Code))
+    {
+        return BadRequest(new { success = false, message = "Mã giảm giá không hợp lệ" });
+    }
+
+    try
+    {
+        var coupon = await _couponRepository.GetByCodeAsync(request.Code);
+        var now = DateTime.UtcNow; // Lấy thời gian hiện tại để so sánh
+
+        if (coupon == null)
         {
-            if (string.IsNullOrEmpty(request?.Code))
-            {
-                return BadRequest(new { success = false, message = "Mã giảm giá không hợp lệ" });
-            }
-
-            try
-            {
-                var coupon = await _couponRepository.GetByCodeAsync(request.Code);
-
-                if (coupon == null)
-                {
-                    return Ok(new 
-                    { 
-                        success = false, 
-                        message = "Mã giảm giá không tồn tại",
-                        code = request.Code 
-                    });
-                }
-
-                // Check if expired
-                if (coupon.ExpiryDate < DateTime.UtcNow)
-                {
-                    return Ok(new 
-                    { 
-                        success = false, 
-                        message = "Mã giảm giá đã hết hạn",
-                        code = request.Code 
-                    });
-                }
-
-                // Check minimum order value
-                decimal totalPrice = request.TotalPrice ?? 0;
-                if (totalPrice < coupon.MinimumOrderValue)
-                {
-                    decimal minRequired = coupon.MinimumOrderValue;
-                    return Ok(new 
-                    { 
-                        success = false, 
-                        message = $"Đơn hàng phải tối thiểu {minRequired.ToString("F0")} ₫",
-                        code = request.Code 
-                    });
-                }
-
-                // Calculate discount
-                decimal discountAmount = 0;
-                if (coupon.DiscountPercent > 0)
-                {
-                    discountAmount = Math.Round(totalPrice * (coupon.DiscountPercent / 100));
-                }
-                else if (coupon.DiscountAmount > 0)
-                {
-                    discountAmount = coupon.DiscountAmount;
-                }
-
-                return Ok(new 
-                { 
-                    success = true, 
-                    message = "Áp dụng mã giảm giá thành công!",
-                    code = coupon.Code,
-                    discountAmount = discountAmount,
-                    discountPercent = coupon.DiscountPercent,
-                    discountFixed = coupon.DiscountAmount
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, message = "Lỗi server: " + ex.Message });
-            }
+            return Ok(new 
+            { 
+                success = false, 
+                message = "Mã giảm giá không tồn tại",
+                code = request.Code 
+            });
         }
+
+        // 1. Kiểm tra mã có đang được kích hoạt không
+        if (!coupon.IsActive)
+        {
+            return Ok(new { success = false, message = "Mã giảm giá này đang tạm khóa", code = request.Code });
+        }
+
+        // 2. Kiểm tra thời gian bắt đầu
+        if (coupon.StartDate > now)
+        {
+            return Ok(new { success = false, message = "Mã giảm giá chưa đến thời gian áp dụng", code = request.Code });
+        }
+
+        // 3. Kiểm tra thời gian hết hạn (code cũ của bạn)
+        if (coupon.ExpiryDate < now)
+        {
+            return Ok(new { success = false, message = "Mã giảm giá đã hết hạn", code = request.Code });
+        }
+
+        // 4. KIỂM TRA LƯỢT SỬ DỤNG (Chống spam vượt quá số lượng)
+        if (coupon.CurrentUsageCount >= coupon.MaxUsageCount)
+        {
+            return Ok(new { success = false, message = "Mã giảm giá đã hết lượt sử dụng", code = request.Code });
+        }
+
+        // Check minimum order value
+        decimal totalPrice = request.TotalPrice ?? 0;
+        if (totalPrice < coupon.MinimumOrderValue)
+        {
+            decimal minRequired = coupon.MinimumOrderValue;
+            return Ok(new 
+            { 
+                success = false, 
+                message = $"Đơn hàng phải tối thiểu {minRequired.ToString("F0")} ₫",
+                code = request.Code 
+            });
+        }
+
+        // Calculate discount
+        decimal discountAmount = 0;
+        if (coupon.DiscountPercent > 0)
+        {
+            discountAmount = Math.Round(totalPrice * (coupon.DiscountPercent / 100));
+        }
+        else if (coupon.DiscountAmount > 0)
+        {
+            discountAmount = coupon.DiscountAmount;
+        }
+
+        return Ok(new 
+        { 
+            success = true, 
+            message = "Áp dụng mã giảm giá thành công!",
+            code = coupon.Code,
+            discountAmount = discountAmount,
+            discountPercent = coupon.DiscountPercent,
+            discountFixed = coupon.DiscountAmount
+        });
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new { success = false, message = "Lỗi server: " + ex.Message });
+    }
+}
 
         // ✨ Test coupon codes for demo
         [HttpPost("test")]
