@@ -6,9 +6,7 @@ using System.Security.Claims;
 namespace GAMINGSTORE.Controllers
 {
     [Authorize]
-    [Route("api/[controller]")]
-    [ApiController]
-    public class NotificationController : ControllerBase
+    public class NotificationController : Controller
     {
         private readonly INotificationService _notificationService;
 
@@ -18,9 +16,23 @@ namespace GAMINGSTORE.Controllers
         }
 
         /// <summary>
+        /// Trang hiển thị danh sách thông báo chưa đọc
+        /// </summary>
+        [HttpGet("/Notification/GetUnreadNotifications")]
+        public async Task<IActionResult> GetUnreadNotificationsPage()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var notifications = await _notificationService.GetUnreadNotificationsAsync(userId);
+            return View("UnreadNotifications", notifications);
+        }
+
+        /// <summary>
         /// Get unread count for current user
         /// </summary>
-        [HttpGet("unread-count")]
+        [HttpGet("api/notification/unread-count")]
         public async Task<IActionResult> GetUnreadCount()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -34,7 +46,7 @@ namespace GAMINGSTORE.Controllers
         /// <summary>
         /// Get recent notifications for current user
         /// </summary>
-        [HttpGet("recent")]
+        [HttpGet("api/notification/recent")]
         public async Task<IActionResult> GetRecentNotifications(int count = 10)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -46,10 +58,10 @@ namespace GAMINGSTORE.Controllers
         }
 
         /// <summary>
-        /// Get unread notifications for current user
+        /// Get unread notifications for current user (API)
         /// </summary>
-        [HttpGet("unread")]
-        public async Task<IActionResult> GetUnreadNotifications()
+        [HttpGet("api/notification/unread")]
+        public async Task<IActionResult> GetUnreadNotificationsApi()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -62,7 +74,7 @@ namespace GAMINGSTORE.Controllers
         /// <summary>
         /// Mark notification as read
         /// </summary>
-        [HttpPost("mark-as-read/{id}")]
+        [HttpPost("api/notification/mark-as-read/{id}")]
         public async Task<IActionResult> MarkAsRead(int id)
         {
             var success = await _notificationService.MarkAsReadAsync(id);
@@ -75,7 +87,7 @@ namespace GAMINGSTORE.Controllers
         /// <summary>
         /// Mark all notifications as read for current user
         /// </summary>
-        [HttpPost("mark-all-as-read")]
+        [HttpPost("api/notification/mark-all-as-read")]
         public async Task<IActionResult> MarkAllAsRead()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

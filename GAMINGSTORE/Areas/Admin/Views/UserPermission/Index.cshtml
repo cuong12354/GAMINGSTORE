@@ -1,0 +1,369 @@
+@model IEnumerable<GAMINGSTORE.Areas.Admin.Controllers.UserPermissionOverviewModel>
+
+@{
+    ViewData["Title"] = "Phân quyền tài khoản";
+}
+
+<style>
+    .user-permission-page {
+        padding: 28px;
+        background: #f6f7fb;
+        min-height: calc(100vh - 80px);
+    }
+
+    .up-hero {
+        background: linear-gradient(135deg, #111827 0%, #1f2937 45%, #d92e2e 100%);
+        color: #fff;
+        border-radius: 24px;
+        padding: 28px;
+        margin-bottom: 22px;
+        box-shadow: 0 22px 42px rgba(17, 24, 39, .18);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .up-hero::after {
+        content: "";
+        position: absolute;
+        width: 260px;
+        height: 260px;
+        border-radius: 50%;
+        right: -80px;
+        top: -90px;
+        background: rgba(255,255,255,.12);
+    }
+
+    .up-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 12px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.14);
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: .7px;
+        margin-bottom: 12px;
+    }
+
+    .up-title {
+        font-size: 30px;
+        font-weight: 900;
+        margin: 0 0 8px;
+    }
+
+    .up-subtitle {
+        color: rgba(255,255,255,.78);
+        margin: 0;
+        max-width: 740px;
+        line-height: 1.7;
+    }
+
+    .up-toolbar {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        padding: 16px;
+        margin-bottom: 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        box-shadow: 0 12px 28px rgba(15,23,42,.06);
+    }
+
+    .up-search {
+        display: flex;
+        flex: 1;
+        max-width: 560px;
+        gap: 10px;
+    }
+
+    .up-search input {
+        flex: 1;
+        min-height: 44px;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        padding: 0 14px;
+        outline: none;
+        font-weight: 700;
+    }
+
+    .up-search input:focus {
+        border-color: #d92e2e;
+        box-shadow: 0 0 0 4px rgba(217,46,46,.09);
+    }
+
+    .up-btn {
+        min-height: 44px;
+        border: 0;
+        border-radius: 12px;
+        padding: 0 16px;
+        font-weight: 900;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .up-btn-primary {
+        background: linear-gradient(135deg, #d92e2e, #b82222);
+        color: white;
+    }
+
+    .up-btn-soft {
+        background: #f3f4f6;
+        color: #111827;
+    }
+
+    .up-stats {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .up-pill {
+        min-height: 36px;
+        padding: 0 12px;
+        border-radius: 999px;
+        background: #fff1f2;
+        color: #b82222;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 900;
+        border: 1px solid rgba(217,46,46,.14);
+    }
+
+    .user-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+        gap: 16px;
+    }
+
+    .user-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 20px;
+        padding: 18px;
+        box-shadow: 0 12px 28px rgba(15,23,42,.06);
+        transition: .22s ease;
+        display: flex;
+        flex-direction: column;
+        min-height: 255px;
+    }
+
+    .user-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(15,23,42,.1);
+        border-color: rgba(217,46,46,.25);
+    }
+
+    .user-top {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 14px;
+    }
+
+    .avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #d92e2e, #111827);
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        font-size: 18px;
+        flex: 0 0 auto;
+    }
+
+    .user-name {
+        font-weight: 900;
+        color: #111827;
+        font-size: 16px;
+        margin-bottom: 3px;
+    }
+
+    .user-email {
+        color: #6b7280;
+        font-size: 13px;
+        word-break: break-all;
+    }
+
+    .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin: 10px 0;
+    }
+
+    .tag {
+        min-height: 28px;
+        padding: 0 10px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .tag-role {
+        background: #eef2ff;
+        color: #4338ca;
+    }
+
+    .tag-permission {
+        background: #ecfdf5;
+        color: #047857;
+    }
+
+    .tag-empty {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+
+    .permission-preview {
+        color: #6b7280;
+        font-size: 13px;
+        line-height: 1.6;
+        margin-top: 4px;
+        flex: 1;
+    }
+
+    .user-actions {
+        margin-top: 16px;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .edit-btn {
+        min-height: 42px;
+        padding: 0 14px;
+        border-radius: 12px;
+        background: #111827;
+        color: #fff;
+        font-weight: 900;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .edit-btn:hover {
+        color: #fff;
+        background: #d92e2e;
+    }
+
+    .alert-box {
+        padding: 13px 16px;
+        border-radius: 14px;
+        margin-bottom: 16px;
+        font-weight: 800;
+    }
+
+    .alert-success {
+        background: #ecfdf5;
+        color: #047857;
+        border: 1px solid #bbf7d0;
+    }
+
+    @@media(max-width: 768px) {
+        .user-permission-page { padding: 16px; }
+        .up-toolbar { flex-direction: column; align-items: stretch; }
+        .up-search { max-width: none; }
+        .up-title { font-size: 24px; }
+    }
+</style>
+
+<div class="user-permission-page">
+    <div class="up-hero">
+        <div class="up-kicker">🔐 User Permission</div>
+        <h1 class="up-title">Phân quyền từng tài khoản</h1>
+        <p class="up-subtitle">
+            Quản lý role và quyền riêng cho từng người dùng. Quyền riêng sẽ hoạt động cùng với quyền theo role hiện có.
+        </p>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-box alert-success">@TempData["Success"]</div>
+    }
+
+    <div class="up-toolbar">
+        <form asp-area="Admin" asp-controller="UserPermission" asp-action="Index" method="get" class="up-search">
+            <input type="text" name="search" value="@ViewBag.Search" placeholder="Tìm theo tên, email hoặc số điện thoại..." />
+            <button type="submit" class="up-btn up-btn-primary">🔎 Tìm</button>
+            <a asp-area="Admin" asp-controller="UserPermission" asp-action="Index" class="up-btn up-btn-soft">Làm mới</a>
+        </form>
+
+        <div class="up-stats">
+            <span class="up-pill">👥 @Model.Count() tài khoản</span>
+            <span class="up-pill">🔑 @Model.Sum(x => x.DirectPermissionCount) quyền riêng</span>
+        </div>
+    </div>
+
+    <div class="user-grid">
+        @foreach (var user in Model)
+        {
+            var firstLetter = string.IsNullOrWhiteSpace(user.UserName) ? "U" : user.UserName.Substring(0, 1).ToUpper();
+
+            <div class="user-card">
+                <div class="user-top">
+                    <div class="avatar">@firstLetter</div>
+                    <div>
+                        <div class="user-name">@user.UserName</div>
+                        <div class="user-email">@user.Email</div>
+                    </div>
+                </div>
+
+                <div class="tag-row">
+                    @if (user.Roles.Any())
+                    {
+                        foreach (var role in user.Roles)
+                        {
+                            <span class="tag tag-role">@role</span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="tag tag-empty">Chưa có role</span>
+                    }
+
+                    <span class="tag tag-permission">@user.DirectPermissionCount quyền riêng</span>
+                </div>
+
+                <div class="permission-preview">
+                    @if (user.DirectPermissions.Any())
+                    {
+                        <span>@string.Join(", ", user.DirectPermissions.Take(3))</span>
+                        @if (user.DirectPermissions.Count > 3)
+                        {
+                            <span>...</span>
+                        }
+                    }
+                    else
+                    {
+                        <span>Chưa có quyền riêng. Tài khoản này đang dùng quyền từ role.</span>
+                    }
+                </div>
+
+                <div class="user-actions">
+                    <a asp-area="Admin"
+                       asp-controller="UserPermission"
+                       asp-action="Edit"
+                       asp-route-id="@user.UserId"
+                       class="edit-btn">
+                        ⚙️ Phân quyền
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,439 @@
+@model List<MonthlyRevenueDataItem>
+
+@{
+    ViewData["Title"] = "Báo Cáo Doanh Thu";
+}
+
+<style>
+    .report-container {
+        padding: 30px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .report-header {
+        margin-bottom: 30px;
+    }
+
+    .report-header h1 {
+        font-size: 28px;
+        font-weight: 900;
+        color: #1f2937;
+        margin: 0;
+    }
+
+    .report-section {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 900;
+        color: #1f2937;
+        margin: 0 0 20px 0;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .summary-card {
+        background: linear-gradient(135deg, #fff 0%, #f9fafb 100%);
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 16px;
+        text-align: center;
+    }
+
+    .summary-card.highlight {
+        background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%);
+        color: white;
+        border-color: #d92e2e;
+    }
+
+    .summary-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #6b7280;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .summary-card.highlight .summary-label {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .summary-value {
+        font-size: 28px;
+        font-weight: 900;
+        color: #1f2937;
+    }
+
+    .summary-card.highlight .summary-value {
+        color: white;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    table thead {
+        background: #f3f4f6;
+    }
+
+    table th {
+        padding: 12px;
+        text-align: left;
+        font-weight: 700;
+        color: #1f2937;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    table td {
+        padding: 12px;
+        border-bottom: 1px solid #e5e7eb;
+        color: #4b5563;
+    }
+
+    table tbody tr:hover {
+        background: #f9fafb;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 400px;
+        margin-bottom: 24px;
+    }
+
+    .month-badge {
+        display: inline-block;
+        background: #f3f4f6;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .month-badge.current {
+        background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%);
+        color: white;
+    }
+
+    .trend-up {
+        color: #10b981;
+        font-weight: 700;
+    }
+
+    .trend-down {
+        color: #ef4444;
+        font-weight: 700;
+    }
+
+    .filters {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        background: white;
+        border: 1px solid #e5e7eb;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .filter-btn.active {
+        background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%);
+        color: white;
+        border-color: #d92e2e;
+    }
+
+    .filter-btn:hover {
+        border-color: #d92e2e;
+    }
+
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .stat-item {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 12px;
+    }
+
+    .stat-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #6b7280;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+
+    .stat-value {
+        font-size: 18px;
+        font-weight: 900;
+        color: #1f2937;
+    }
+
+    @@media (max-width: 768px) {
+        .report-container {
+            padding: 16px;
+        }
+
+        .summary-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .report-header h1 {
+            font-size: 22px;
+        }
+    }
+</style>
+
+<div class="report-container">
+    <div class="report-header">
+        <h1>📈 Báo Cáo Doanh Thu</h1>
+    </div>
+
+    <!-- Summary Cards -->
+    @{
+        var totalRevenue = Model?.Sum(m => (decimal)m.Revenue) ?? 0;
+        var totalOrders = Model?.Sum(m => (int)m.Orders) ?? 0;
+        var avgRevenuePerMonth = Model?.Count > 0 ? totalRevenue / Model.Count : 0;
+        var avgOrdersPerMonth = Model?.Count > 0 ? totalOrders / Model.Count : 0;
+    }
+
+    <div class="summary-grid">
+        <div class="summary-card highlight">
+            <div class="summary-label">Tổng Doanh Thu</div>
+            <div class="summary-value">@totalRevenue.ToString("C0")</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Tổng Đơn Hàng</div>
+            <div class="summary-value">@totalOrders</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Trung Bình/Tháng</div>
+            <div class="summary-value">@avgRevenuePerMonth.ToString("C0")</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Trung Bình Đơn/Tháng</div>
+            <div class="summary-value">@avgOrdersPerMonth.ToString("F0")</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="report-section">
+        <div class="filters">
+            <button class="filter-btn active">📊 Tất Cả Thời Gian</button>
+            <button class="filter-btn">📅 12 Tháng Gần Nhất</button>
+            <button class="filter-btn">🔥 Tháng Này</button>
+            <button class="filter-btn">📉 So Sánh Năm</button>
+        </div>
+    </div>
+
+    <!-- Monthly Sales Table -->
+    <div class="report-section">
+        <h3 class="section-title">💰 Doanh Thu Theo Tháng</h3>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tháng/Năm</th>
+                        <th>Doanh Thu</th>
+                        <th>Số Đơn Hàng</th>
+                        <th>Giá Trị Trung Bình/Đơn</th>
+                        <th>Xu Hướng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Count > 0)
+                    {
+                        var previousRevenue = 0m;
+                        @foreach (var item in Model.OrderBy(m => m.Year).ThenBy(m => m.Month))
+                        {
+                            var revenue = (decimal)item.Revenue;
+                            var orders = (int)item.Orders;
+                            var avgPerOrder = orders > 0 ? revenue / orders : 0;
+                            var trend = previousRevenue > 0 ? ((revenue - previousRevenue) / previousRevenue * 100) : 0;
+                            var trendClass = trend > 0 ? "trend-up" : (trend < 0 ? "trend-down" : "");
+                            var trendIcon = trend > 0 ? "📈" : (trend < 0 ? "📉" : "➡️");
+                            var monthName = new System.Globalization.CultureInfo("vi-VN").DateTimeFormat.GetMonthName(item.Month);
+
+                            <tr>
+                                <td>
+                                    <strong>@monthName @item.Year</strong>
+                                </td>
+                                <td>
+                                    <strong>@revenue.ToString("C0")</strong>
+                                </td>
+                                <td>
+                                    @orders đơn
+                                </td>
+                                <td>
+                                    @avgPerOrder.ToString("C0")
+                                </td>
+                                <td>
+                                    @if (previousRevenue > 0)
+                                    {
+                                        <span class="@trendClass">
+                                            @trendIcon @trend.ToString("F1")%
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span>Tháng đầu</span>
+                                    }
+                                </td>
+                            </tr>
+
+                            previousRevenue = revenue;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 30px; color: #9ca3af;">
+                                Chưa có dữ liệu
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="report-section">
+        <h3 class="section-title">📊 Chỉ Số Hiệu Suất</h3>
+
+        @{
+            var bestMonth = Model?.OrderByDescending(m => (decimal)m.Revenue).FirstOrDefault();
+            var worstMonth = Model?.OrderBy(m => (decimal)m.Revenue).FirstOrDefault();
+            var bestMonthName = bestMonth != null ? new System.Globalization.CultureInfo("vi-VN").DateTimeFormat.GetMonthName(bestMonth.Month) : "N/A";
+            var worstMonthName = worstMonth != null ? new System.Globalization.CultureInfo("vi-VN").DateTimeFormat.GetMonthName(worstMonth.Month) : "N/A";
+        }
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+            <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px;">
+                <div style="font-weight: 700; color: #1f2937; margin-bottom: 12px;">🏆 Tháng Tốt Nhất</div>
+                <div style="font-size: 24px; font-weight: 900; color: #10b981; margin-bottom: 8px;">
+                    @(bestMonth != null ? ((decimal)bestMonth.Revenue).ToString("C0") : "N/A")
+                </div>
+                <div style="font-size: 12px; color: #6b7280;">
+                    @bestMonthName @bestMonth?.Year - @bestMonth?.Orders đơn hàng
+                </div>
+            </div>
+
+            <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px;">
+                <div style="font-weight: 700; color: #1f2937; margin-bottom: 12px;">📉 Tháng Thấp Nhất</div>
+                <div style="font-size: 24px; font-weight: 900; color: #ef4444; margin-bottom: 8px;">
+                    @(worstMonth != null ? ((decimal)worstMonth.Revenue).ToString("C0") : "N/A")
+                </div>
+                <div style="font-size: 12px; color: #6b7280;">
+                    @worstMonthName @worstMonth?.Year - @worstMonth?.Orders đơn hàng
+                </div>
+            </div>
+
+            <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px;">
+                <div style="font-weight: 700; color: #1f2937; margin-bottom: 12px;">📈 Tăng Trưởng Trung Bình</div>
+                <div style="font-size: 24px; font-weight: 900; color: #3b82f6; margin-bottom: 8px;">
+                    @{
+                        var growthRate = 0m;
+                        if (Model?.Count > 1)
+                        {
+                            var firstMonth = Model.OrderBy(m => m.Year).ThenBy(m => m.Month).First();
+                            var lastMonth = Model.OrderByDescending(m => m.Year).ThenByDescending(m => m.Month).First();
+                            var firstRevenue = (decimal)firstMonth.Revenue;
+                            var lastRevenue = (decimal)lastMonth.Revenue;
+                            if (firstRevenue > 0)
+                            {
+                                growthRate = ((lastRevenue - firstRevenue) / firstRevenue * 100) / (Model.Count - 1);
+                            }
+                        }
+                    }
+                    @growthRate.ToString("F2")%
+                </div>
+                <div style="font-size: 12px; color: #6b7280;">
+                    Tăng trưởng hàng tháng
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display: flex; gap: 12px; margin-top: 30px; flex-wrap: wrap;">
+        <a href="@Url.Action("Index", "Dashboard", new { area = "Admin" })" class="btn btn-secondary">
+            ← Quay Lại Dashboard
+        </a>
+        <button onclick="window.print()" class="btn btn-secondary">
+            🖨️ In Báo Cáo
+        </button>
+        <button onclick="exportToCSV()" class="btn btn-secondary">
+            📥 Xuất CSV
+        </button>
+    </div>
+</div>
+
+<script>
+    function exportToCSV() {
+        const table = document.querySelector('table');
+        let csv = [];
+        
+        // Get headers
+        const headers = [];
+        table.querySelectorAll('thead th').forEach(th => {
+            headers.push(th.textContent.trim());
+        });
+        csv.push(headers.join(','));
+        
+        // Get rows
+        table.querySelectorAll('tbody tr').forEach(tr => {
+            const row = [];
+            tr.querySelectorAll('td').forEach(td => {
+                row.push('"' + td.textContent.trim().replace(/"/g, '""') + '"');
+            });
+            csv.push(row.join(','));
+        });
+        
+        // Download
+        const csvContent = csv.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'bao-cao-doanh-thu.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+

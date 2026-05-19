@@ -159,7 +159,7 @@ namespace GAMINGSTORE.Areas.Admin.Controllers
         {
             var monthlyData = await _context.Orders
                 .GroupBy(o => new { o.OrderDate.Year, o.OrderDate.Month })
-                .Select(g => new
+                .Select(g => new MonthlyRevenueDataItem
                 {
                     Month = g.Key.Month,
                     Year = g.Key.Year,

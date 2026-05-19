@@ -1,0 +1,402 @@
+@model GAMINGSTORE.Areas.Admin.Controllers.UserPermissionEditModel
+
+@{
+    ViewData["Title"] = "Phân quyền tài khoản";
+}
+
+<style>
+    .edit-permission-page {
+        padding: 28px;
+        background: #f6f7fb;
+        min-height: calc(100vh - 80px);
+    }
+
+    .edit-hero {
+        background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #d92e2e 100%);
+        color: #fff;
+        border-radius: 24px;
+        padding: 26px;
+        margin-bottom: 18px;
+        box-shadow: 0 22px 42px rgba(17,24,39,.18);
+    }
+
+    .back-link {
+        color: rgba(255,255,255,.8);
+        text-decoration: none;
+        font-weight: 800;
+        display: inline-flex;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .back-link:hover { color: white; }
+
+    .edit-title {
+        margin: 0 0 8px;
+        font-size: 28px;
+        font-weight: 900;
+    }
+
+    .edit-subtitle {
+        margin: 0;
+        color: rgba(255,255,255,.78);
+    }
+
+    .user-info-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+    }
+
+    .info-pill {
+        min-height: 34px;
+        padding: 0 12px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.13);
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .edit-layout {
+        display: grid;
+        grid-template-columns: 330px 1fr;
+        gap: 18px;
+        align-items: start;
+    }
+
+    .side-card,
+    .permission-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 20px;
+        box-shadow: 0 12px 28px rgba(15,23,42,.06);
+        overflow: hidden;
+    }
+
+    .card-header {
+        padding: 18px;
+        border-bottom: 1px solid #e5e7eb;
+        background: linear-gradient(180deg, #fff, #fafafa);
+    }
+
+    .card-title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 900;
+        color: #111827;
+    }
+
+    .card-desc {
+        margin: 6px 0 0;
+        font-size: 13px;
+        color: #6b7280;
+        line-height: 1.6;
+    }
+
+    .card-body {
+        padding: 18px;
+    }
+
+    .role-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .role-item,
+    .permission-item {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        padding: 13px;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        background: #fff;
+        cursor: pointer;
+        transition: .2s ease;
+    }
+
+    .role-item:hover,
+    .permission-item:hover {
+        border-color: rgba(217,46,46,.35);
+        background: #fff8f8;
+    }
+
+    .role-item input,
+    .permission-item input {
+        margin-top: 3px;
+        width: 18px;
+        height: 18px;
+        accent-color: #d92e2e;
+    }
+
+    .role-name,
+    .permission-name {
+        font-weight: 900;
+        color: #111827;
+        margin-bottom: 2px;
+    }
+
+    .role-help,
+    .permission-code {
+        color: #6b7280;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .permission-tools {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 14px;
+    }
+
+    .permission-search {
+        flex: 1;
+        min-height: 42px;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        padding: 0 13px;
+        font-weight: 700;
+        outline: none;
+    }
+
+    .permission-search:focus {
+        border-color: #d92e2e;
+        box-shadow: 0 0 0 4px rgba(217,46,46,.09);
+    }
+
+    .tool-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .small-btn {
+        min-height: 42px;
+        padding: 0 12px;
+        border-radius: 12px;
+        border: 0;
+        font-weight: 900;
+        cursor: pointer;
+        background: #f3f4f6;
+        color: #111827;
+    }
+
+    .small-btn:hover {
+        background: #e5e7eb;
+    }
+
+    .selected-counter {
+        margin-bottom: 14px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: #fff1f2;
+        color: #b82222;
+        font-weight: 900;
+        border: 1px solid rgba(217,46,46,.14);
+    }
+
+    .permission-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(265px, 1fr));
+        gap: 12px;
+    }
+
+    .permission-desc {
+        font-size: 13px;
+        color: #374151;
+        line-height: 1.55;
+        margin-bottom: 4px;
+    }
+
+    .form-footer {
+        margin-top: 18px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        padding: 16px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        box-shadow: 0 12px 28px rgba(15,23,42,.06);
+        position: sticky;
+        bottom: 12px;
+        z-index: 5;
+    }
+
+    .main-btn {
+        min-height: 46px;
+        padding: 0 18px;
+        border-radius: 14px;
+        border: 0;
+        font-weight: 900;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .save-btn {
+        background: linear-gradient(135deg, #d92e2e, #b82222);
+        color: #fff;
+    }
+
+    .cancel-btn {
+        background: #f3f4f6;
+        color: #111827;
+    }
+
+    .validation-summary-errors {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fca5a5;
+        padding: 12px;
+        border-radius: 14px;
+        margin-bottom: 16px;
+        font-weight: 800;
+    }
+
+    @@media(max-width: 991px) {
+        .edit-layout { grid-template-columns: 1fr; }
+    }
+
+    @@media(max-width: 640px) {
+        .edit-permission-page { padding: 16px; }
+        .permission-tools { flex-direction: column; align-items: stretch; }
+        .tool-buttons { display: grid; grid-template-columns: 1fr 1fr; }
+        .form-footer { flex-direction: column; }
+    }
+</style>
+
+<div class="edit-permission-page">
+    <div class="edit-hero">
+        <a asp-area="Admin" asp-controller="UserPermission" asp-action="Index" class="back-link">← Quay lại danh sách</a>
+        <h1 class="edit-title">Phân quyền tài khoản</h1>
+        <p class="edit-subtitle">Chỉnh role và quyền riêng cho từng tài khoản.</p>
+
+        <div class="user-info-bar">
+            <span class="info-pill">👤 @Model.UserName</span>
+            <span class="info-pill">✉️ @Model.Email</span>
+            @if (!string.IsNullOrWhiteSpace(Model.PhoneNumber))
+            {
+                <span class="info-pill">📞 @Model.PhoneNumber</span>
+            }
+        </div>
+    </div>
+
+    <form asp-area="Admin" asp-controller="UserPermission" asp-action="Edit" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="UserId" />
+        <input type="hidden" asp-for="UserName" />
+        <input type="hidden" asp-for="Email" />
+        <input type="hidden" asp-for="PhoneNumber" />
+
+        <div asp-validation-summary="All"></div>
+
+        <div class="edit-layout">
+            <div class="side-card">
+                <div class="card-header">
+                    <h2 class="card-title">Vai trò tài khoản</h2>
+                    <p class="card-desc">Role là bộ quyền mặc định. Có thể gán nhiều role cho một tài khoản.</p>
+                </div>
+                <div class="card-body">
+                    <div class="role-list">
+                        @foreach (var role in Model.AllRoles)
+                        {
+                            var checkedRole = Model.SelectedRoles.Contains(role);
+
+                            <label class="role-item">
+                                <input type="checkbox"
+                                       name="SelectedRoles"
+                                       value="@role"
+                                       @(checkedRole ? "checked" : "") />
+                                <div>
+                                    <div class="role-name">@role</div>
+                                    <div class="role-help">Gán role @role cho tài khoản này.</div>
+                                </div>
+                            </label>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="permission-card">
+                <div class="card-header">
+                    <h2 class="card-title">Quyền riêng của tài khoản</h2>
+                    <p class="card-desc">Quyền riêng dùng để cộng thêm quyền cho tài khoản mà không cần tạo role mới.</p>
+                </div>
+
+                <div class="card-body">
+                    <div class="permission-tools">
+                        <input type="text" id="permissionSearch" class="permission-search" placeholder="Tìm quyền..." oninput="filterPermissions()" />
+
+                        <div class="tool-buttons">
+                            <button type="button" class="small-btn" onclick="selectAllPermissions()">Chọn tất cả</button>
+                            <button type="button" class="small-btn" onclick="clearPermissions()">Bỏ chọn</button>
+                        </div>
+                    </div>
+
+                    <div class="selected-counter">
+                        Đang chọn <span id="selectedCount">0</span> quyền riêng
+                    </div>
+
+                    <div class="permission-grid" id="permissionGrid">
+                        @foreach (var item in Model.Permissions)
+                        {
+                            <label class="permission-item" data-search="@($"{item.Description} {item.Permission}".ToLower())">
+                                <input type="checkbox"
+                                       class="permission-checkbox"
+                                       name="SelectedPermissions"
+                                       value="@item.Permission"
+                                       @(item.Assigned ? "checked" : "")
+                                       onchange="updateSelectedCount()" />
+                                <div>
+                                    <div class="permission-name">@item.Description</div>
+                                    <div class="permission-code">@item.Permission</div>
+                                </div>
+                            </label>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-footer">
+            <a asp-area="Admin" asp-controller="UserPermission" asp-action="Index" class="main-btn cancel-btn">Hủy</a>
+            <button type="submit" class="main-btn save-btn">💾 Lưu phân quyền</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function updateSelectedCount() {
+        const checked = document.querySelectorAll('.permission-checkbox:checked').length;
+        document.getElementById('selectedCount').textContent = checked;
+    }
+
+    function selectAllPermissions() {
+        document.querySelectorAll('.permission-checkbox').forEach(cb => cb.checked = true);
+        updateSelectedCount();
+    }
+
+    function clearPermissions() {
+        document.querySelectorAll('.permission-checkbox').forEach(cb => cb.checked = false);
+        updateSelectedCount();
+    }
+
+    function filterPermissions() {
+        const keyword = document.getElementById('permissionSearch').value.toLowerCase().trim();
+        document.querySelectorAll('.permission-item').forEach(item => {
+            const text = item.dataset.search || '';
+            item.style.display = text.includes(keyword) ? 'flex' : 'none';
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', updateSelectedCount);
+</script>

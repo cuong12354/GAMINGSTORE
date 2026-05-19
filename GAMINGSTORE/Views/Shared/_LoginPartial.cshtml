@@ -292,21 +292,16 @@
                         ⭐ Chương trình thành viên
                     </a>
 
-                    @if (User.HasPermission(PermissionConstants.OrderView))
-                    {
-                        <a href="/OrderHistory/AllOrders">
-                            📊 Tất cả lịch sử mua hàng
-                        </a>
-                    }
-                    else
-                    {
-                        <a href="/OrderHistory/Index">
-                            📦 Lịch sử mua hàng của tôi
-                        </a>
-                    }
+                    <a href="/OrderHistory/Index">
+                        📦 Lịch sử mua hàng của tôi
+                    </a>
 
                     <a asp-controller="Return" asp-action="Index">
                         🔄 Lịch sử trả hàng
+                    </a>
+
+                    <a href="/GeminiChatViewer/Index">
+                        🤖 Tư vấn AI
                     </a>
 
                     @if (User.HasPermission(PermissionConstants.DashboardAccess))

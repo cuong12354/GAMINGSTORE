@@ -1,553 +1,228 @@
 @model Order
+@using GAMINGSTORE.Authorization
+@using GAMINGSTORE.Extensions
 @{
     ViewData["Title"] = $"Chi tiết đơn hàng #{Model.Id}";
+
+    string Money(decimal value) => value.ToString("N0", System.Globalization.CultureInfo.CreateSpecificCulture("vi-VN")) + "₫";
+    var subTotal = Model.OrderDetails?.Sum(x => x.Price * x.Quantity) ?? 0;
+    var discountAmount = Model.DiscountAmount;
+    var memberDiscount = Model.MemberDiscountAmount;
+    var statuses = new[] { "Pending", "Confirmed", "Shipped", "Delivered" };
+    var currentStatusIndex = System.Array.IndexOf(statuses, Model.Status);
+    if (currentStatusIndex < 0) currentStatusIndex = 0;
+
+    string StatusText(string? status) => status switch
+    {
+        "Pending" => "Chờ xử lý",
+        "Confirmed" => "Đã xác nhận",
+        "Shipped" => "Đang giao",
+        "Delivered" => "Đã giao",
+        "Cancelled" => "Đã hủy",
+        _ => status ?? "Không xác định"
+    };
+
+    string StatusClass(string? status) => status switch
+    {
+        "Pending" => "status-pending",
+        "Confirmed" => "status-confirmed",
+        "Shipped" => "status-shipped",
+        "Delivered" => "status-delivered",
+        "Cancelled" => "status-cancelled",
+        _ => "status-pending"
+    };
 }
 
 <style>
-    .order-details-container {
-        padding: 40px 0;
+    :root {
+        --od-primary: #d92e2e;
+        --od-primary-dark: #b82222;
+        --od-dark: #111827;
+        --od-muted: #6b7280;
+        --od-border: rgba(15,23,42,.08);
+        --od-shadow: 0 18px 42px rgba(15,23,42,.08);
     }
 
-    .breadcrumb-nav {
-        background: transparent;
-        padding: 0 0 20px 0;
-        margin-bottom: 30px;
-    }
+    body { background: #f3f5f9 !important; }
+    .od-page { max-width: 1180px; margin: 0 auto; padding: 28px 18px 56px; color: var(--od-dark); }
+    .od-hero { position: relative; overflow: hidden; border-radius: 28px; padding: 30px; color: white; margin-bottom: 20px; background: radial-gradient(circle at 90% 8%, rgba(255,255,255,.32), transparent 26%), linear-gradient(135deg, #111827 0%, #d92e2e 58%, #ff6b4a 100%); box-shadow: 0 24px 58px rgba(217,46,46,.2); }
+    .back-link { color: rgba(255,255,255,.85); text-decoration: none; font-weight: 900; display: inline-flex; gap: 8px; margin-bottom: 14px; }
+    .back-link:hover { color: #fff; }
+    .od-hero h1 { margin: 0 0 8px; font-size: clamp(28px,4vw,42px); line-height: 1.06; font-weight: 950; }
+    .od-hero p { margin: 0; color: rgba(255,255,255,.86); font-weight: 650; }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    .hero-tag { min-height: 34px; padding: 0 12px; border-radius: 999px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22); display: inline-flex; align-items: center; font-size: 13px; font-weight: 900; }
 
-    .breadcrumb-nav a {
-        color: #5a7ba8;
-        text-decoration: none;
-        font-weight: 600;
-    }
+    .timeline-card, .info-card, .items-card, .totals-card, .actions-card { background: #fff; border: 1px solid rgba(255,255,255,.72); border-radius: 22px; padding: 20px; box-shadow: var(--od-shadow); margin-bottom: 18px; }
+    .section-title { font-size: 18px; font-weight: 950; color: var(--od-dark); margin-bottom: 16px; }
+    .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .timeline-item { position: relative; padding: 16px 12px; border-radius: 18px; background: #f8fafc; border: 1px solid #edf0f5; text-align: center; }
+    .timeline-item.active { background: #fff1f2; border-color: rgba(217,46,46,.2); }
+    .timeline-icon { width: 42px; height: 42px; border-radius: 16px; margin: 0 auto 10px; display: inline-flex; align-items: center; justify-content: center; background: #e5e7eb; color: #64748b; font-weight: 950; }
+    .timeline-item.active .timeline-icon { background: linear-gradient(135deg, var(--od-primary), #ff6b4a); color: #fff; }
+    .timeline-label { font-size: 12px; font-weight: 950; color: #475569; text-transform: uppercase; }
 
-    .breadcrumb-nav a:hover {
-        text-decoration: underline;
-    }
+    .info-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    .info-box { background: #f8fafc; border: 1px solid #edf0f5; border-radius: 16px; padding: 14px; }
+    .info-label { color: var(--od-muted); font-size: 11px; font-weight: 950; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+    .info-value { color: var(--od-dark); font-weight: 900; word-break: break-word; }
+    .info-value.highlight { color: var(--od-primary); font-size: 18px; }
 
-    .details-header {
-        background: linear-gradient(135deg, #6b8fb8 0%, #5a7ba8 100%);
-        color: white;
-        border-radius: 8px;
-        padding: 30px;
-        margin-bottom: 30px;
-        box-shadow: 0 2px 8px rgba(91, 122, 168, 0.1);
-    }
+    .status-badge { min-height: 29px; padding: 0 11px; border-radius: 999px; display: inline-flex; align-items: center; font-size: 12px; font-weight: 950; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-confirmed { background: #dbeafe; color: #1d4ed8; }
+    .status-shipped { background: #ede9fe; color: #6d28d9; }
+    .status-delivered { background: #dcfce7; color: #166534; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
 
-    .details-header h1 {
-        font-weight: 600;
-    }
+    .address-box { margin-top: 14px; background: #f8fafc; border: 1px solid #edf0f5; border-radius: 16px; padding: 14px; color: #334155; font-weight: 750; line-height: 1.6; }
 
-    .order-status-progress {
-        margin-bottom: 30px;
-    }
+    .items-list { display: grid; gap: 12px; }
+    .item-row { display: grid; grid-template-columns: 64px 1fr 90px 120px; gap: 14px; align-items: center; background: #f8fafc; border: 1px solid #edf0f5; border-radius: 18px; padding: 12px; }
+    .item-img { width: 64px; height: 64px; border-radius: 14px; object-fit: contain; background: #fff; border: 1px solid #e5e7eb; padding: 6px; }
+    .item-name { font-weight: 950; color: var(--od-dark); margin-bottom: 4px; }
+    .item-meta { color: var(--od-muted); font-size: 13px; font-weight: 700; }
+    .item-qty { text-align: center; font-weight: 950; color: var(--od-dark); }
+    .item-price { text-align: right; color: var(--od-primary); font-weight: 950; }
 
-    .status-timeline {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        background: white;
-        padding: 30px;
-        border-radius: 8px;
-        border: 1px solid var(--border-color);
-        box-shadow: 0 1px 3px var(--shadow-color);
-    }
+    .totals-grid { display: grid; gap: 10px; max-width: 520px; margin-left: auto; }
+    .total-row { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid #edf0f5; font-weight: 800; color: #475569; }
+    .total-row strong, .total-row .value { color: var(--od-dark); font-weight: 950; }
+    .total-row.discount .value { color: #059669; }
+    .total-row.final { border-bottom: 0; margin-top: 4px; padding-top: 16px; font-size: 18px; color: var(--od-dark); }
+    .total-row.final .value { color: var(--od-primary); font-size: 24px; }
 
-    .status-item {
-        flex: 1;
-        text-align: center;
-        position: relative;
-    }
+    .action-buttons { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+    .od-btn { min-height: 44px; padding: 0 16px; border-radius: 14px; border: 0; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 950; cursor: pointer; }
+    .btn-back { background: #f3f4f6; color: var(--od-dark); }
+    .btn-print { background: #111827; color: #fff; }
+    .btn-return { background: linear-gradient(135deg, #059669, #10b981); color: #fff; }
+    .btn-return-disabled { background: #e5e7eb; color: #64748b; cursor: not-allowed; }
+    .btn-view-return { background: linear-gradient(135deg, #0891b2, #06b6d4); color: #fff; }
+    .od-btn:hover { color: inherit; transform: translateY(-2px); }
+    .btn-print:hover, .btn-return:hover, .btn-view-return:hover { color: #fff; }
 
-    .status-item::before {
-        content: '';
-        position: absolute;
-        top: 20px;
-        right: -50%;
-        width: 100%;
-        height: 2px;
-        background-color: var(--border-color);
-        z-index: 1;
-    }
+    @@media(max-width: 992px) { .info-grid { grid-template-columns: repeat(2, 1fr); } .timeline { grid-template-columns: repeat(2,1fr); } }
+    @@media(max-width: 640px) { .od-page { padding: 16px 12px 40px; } .info-grid, .timeline { grid-template-columns: 1fr; } .item-row { grid-template-columns: 54px 1fr; } .item-qty, .item-price { text-align: left; grid-column: 2; } .action-buttons { flex-direction: column; } .od-btn { width: 100%; } .totals-grid { max-width: none; } }
 
-    .status-item:last-child::before {
-        display: none;
-    }
-
-    .status-item.active::before {
-        background-color: #8fa3c0;
-    }
-
-    .status-circle {
-        width: 40px;
-        height: 40px;
-        background-color: var(--gray-100);
-        border: 2px solid var(--border-color);
-        border-radius: 50%;
-        margin: 0 auto 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        position: relative;
-        z-index: 2;
-        font-size: 18px;
-    }
-
-    .status-item.active .status-circle {
-        background-color: #8fa3c0;
-        border-color: #8fa3c0;
-        color: white;
-    }
-
-    .status-label {
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--text-secondary);
-        text-transform: uppercase;
-    }
-
-    .details-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 20px;
-        margin-bottom: 30px;
-    }
-
-    .detail-box {
-        background: white;
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        padding: 20px;
-        box-shadow: 0 1px 3px var(--shadow-color);
-    }
-
-    .detail-label {
-        color: #5a7ba8;
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 8px;
-    }
-
-    .detail-value {
-        color: var(--text-primary);
-        font-size: 16px;
-        font-weight: 600;
-    }
-
-    .detail-value.highlight {
-        color: #5a7ba8;
-        font-weight: 700;
-        font-size: 20px;
-    }
-
-    .items-section {
-        background: #f8fafb;
-        border: 1px solid #e0e3e8;
-        border-radius: 8px;
-        padding: 30px;
-        margin-bottom: 30px;
-        box-shadow: 0 1px 2px rgba(91, 122, 168, 0.05);
-    }
-
-    .items-title {
-        color: #5a7ba8;
-        font-size: 20px;
-        font-weight: 600;
-        margin-bottom: 20px;
-    }
-
-    .order-items-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .order-items-table thead th {
-        background-color: var(--gray-50);
-        color: var(--text-primary);
-        padding: 16px;
-        text-align: left;
-        font-weight: 600;
-        border-bottom: 2px solid var(--border-color);
-        font-size: 14px;
-    }
-
-    .order-items-table tbody td {
-        padding: 16px;
-        border-bottom: 1px solid var(--border-color);
-        color: var(--text-secondary);
-    }
-
-    .order-items-table tbody tr:last-child td {
-        border-bottom: none;
-    }
-
-    .order-items-table tbody tr:hover {
-        background-color: var(--gray-50);
-    }
-
-    .item-image {
-        width: 50px;
-        height: 50px;
-        border-radius: 6px;
-        object-fit: cover;
-        border: 1px solid var(--border-color);
-    }
-
-    .item-name {
-        color: var(--text-primary);
-        font-weight: 600;
-    }
-
-    .item-price {
-        color: #5a7ba8;
-        font-weight: 600;
-    }
-
-    .totals-section {
-        background: #f8fafb;
-        border: 1px solid #e0e3e8;
-        border-radius: 8px;
-        padding: 30px;
-        margin-bottom: 30px;
-        box-shadow: 0 1px 2px rgba(91, 122, 168, 0.05);
-    }
-
-    .totals-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 12px 0;
-        border-bottom: 1px solid var(--border-color);
-        font-size: 16px;
-    }
-
-    .totals-row.total {
-        border: none;
-        padding-top: 20px;
-        font-size: 20px;
-        font-weight: 700;
-    }
-
-    .totals-row.total .label {
-        color: #5a7ba8;
-    }
-
-    .totals-row.total .value {
-        color: #5a7ba8;
-    }
-
-    .totals-row .label {
-        color: var(--text-secondary);
-    }
-
-    .totals-row .value {
-        color: var(--text-primary);
-        font-weight: 600;
-    }
-
-    .action-buttons {
-        display: flex;
-        gap: 12px;
-        margin-top: 30px;
-    }
-
-    .btn-back {
-        background: white;
-        border: 2px solid var(--primary-blue);
-        color: var(--primary-blue);
-        padding: 12px 24px;
-        border-radius: 6px;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-block;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .btn-back:hover {
-        background-color: var(--primary-blue-light);
-        color: var(--primary-blue-dark);
-    }
-
-    .btn-print {
-        background-color: var(--primary-blue);
-        border: none;
-        color: white;
-        padding: 12px 24px;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .btn-print:hover {
-        background-color: var(--primary-blue-dark);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
-    }
-
-    .btn-return {
-        background-color: #28a745;
-        border: none;
-        color: white;
-        padding: 12px 24px;
-        border-radius: 6px;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-block;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .btn-return:hover {
-        background-color: #218838;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
-    }
-
-    .btn-return-disabled {
-        background-color: #ccc;
-        border: none;
-        color: #666;
-        padding: 12px 24px;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: not-allowed;
-        opacity: 0.6;
-    }
-
-    .btn-view-return {
-        background-color: #17a2b8;
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        font-size: 14px;
-        text-decoration: none;
-        display: inline-block;
-    }
-
-    .btn-view-return:hover {
-        background-color: #138496;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(23, 162, 184, 0.2);
-    }
-
-    @@media print {
-        .action-buttons,
-        .breadcrumb-nav {
-            display: none;
-        }
-    }
+    @@media print { .action-buttons, .back-link { display: none; } body { background: white !important; } .timeline-card, .info-card, .items-card, .totals-card, .actions-card { box-shadow: none; border: 1px solid #ddd; } }
 </style>
 
-<div class="order-details-container">
-    <div class="container">
-        <!-- Breadcrumb -->
-        <div class="breadcrumb-nav">
-            <a href="/OrderHistory"><i class="bi bi-arrow-left"></i> Quay lại lịch sử</a>
+<div class="od-page">
+    <div class="od-hero">
+        <a href="/OrderHistory" class="back-link">← Quay lại lịch sử</a>
+        <h1>Chi tiết đơn hàng #@Model.Id</h1>
+        <p>Thông tin đơn hàng cá nhân, sản phẩm, thanh toán và trạng thái xử lý.</p>
+        <div class="hero-tags">
+            <span class="hero-tag">📅 @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</span>
+            <span class="hero-tag">💳 @(Model.PaymentMethod ?? "Chưa chọn")</span>
+            <span class="hero-tag">💰 @Money(Model.TotalPrice)</span>
         </div>
+    </div>
 
-        <!-- Header -->
-        <div class="details-header">
-            <h1 class="glow-red"><i class="bi bi-receipt"></i> Chi tiết đơn hàng #@Model.Id</h1>
-            <p class="text-muted mt-2">Ngày đặt: @Model.OrderDate.ToString("dd/MM/yyyy HH:mm:ss")</p>
-        </div>
-
-        <!-- Status Progress -->
-        <div class="order-status-progress">
-            <div class="status-timeline">
-                @{
-                    var statuses = new[] { "Pending", "Confirmed", "Shipped", "Delivered" };
-                    var currentStatusIndex = System.Array.IndexOf(statuses, Model.Status);
-                    
-                    foreach (var (status, index) in statuses.Select((s, i) => (s, i)))
-                    {
-                        var isActive = index <= currentStatusIndex;
-                        var statusDisplay = status switch
-                        {
-                            "Pending" => "Chờ xử lý",
-                            "Confirmed" => "Xác nhận",
-                            "Shipped" => "Đang giao",
-                            "Delivered" => "Đã giao",
-                            _ => status
-                        };
-                        var statusIcon = status switch
-                        {
-                            "Pending" => "⏳",
-                            "Confirmed" => "✓",
-                            "Shipped" => "📦",
-                            "Delivered" => "✓",
-                            _ => "?"
-                        };
-
-                        <div class="status-item @(isActive ? "active" : "")">
-                            <div class="status-circle">@statusIcon</div>
-                            <div class="status-label">@statusDisplay</div>
-                        </div>
-                    }
-                }
-            </div>
-        </div>
-
-        <!-- Order Info Grid -->
-        <div class="details-grid">
-            <div class="detail-box">
-                <div class="detail-label">Tên khách hàng</div>
-                <div class="detail-value">@Model.CustomerName</div>
-            </div>
-
-            <div class="detail-box">
-                <div class="detail-label">Trạng thái</div>
-                <div class="detail-value">
-                    @{
-                        var statusClass = Model.Status switch
-                        {
-                            "Pending" => "status-pending",
-                            "Confirmed" => "status-confirmed",
-                            "Shipped" => "status-shipped",
-                            "Delivered" => "status-delivered",
-                            "Cancelled" => "status-cancelled",
-                            _ => ""
-                        };
-                        var statusText = Model.Status switch
-                        {
-                            "Pending" => "Chờ xử lý",
-                            "Confirmed" => "Đã xác nhận",
-                            "Shipped" => "Đang giao",
-                            "Delivered" => "Đã giao",
-                            "Cancelled" => "Đã hủy",
-                            _ => Model.Status
-                        };
-                    }
-                    <span class="badge @statusClass">@statusText</span>
-                </div>
-            </div>
-
-            <div class="detail-box">
-                <div class="detail-label">Phương thức thanh toán</div>
-                <div class="detail-value">@(Model.PaymentMethod ?? "Chưa chọn")</div>
-            </div>
-
-            <div class="detail-box">
-                <div class="detail-label">Tổng tiền</div>
-                <div class="detail-value highlight">@(Model.TotalPrice.ToString("N0", System.Globalization.CultureInfo.CreateSpecificCulture("vi-VN")))₫</div>
-            </div>
-        </div>
-
-        <!-- Shipping Address -->
-        <div class="detail-box mb-4">
-            <div class="detail-label">Địa chỉ giao hàng</div>
-            <div class="detail-value">
-                <i class="bi bi-geo-alt"></i> @Model.ShippingAddress
-            </div>
-            @if (!string.IsNullOrEmpty(Model.Notes))
+    <div class="timeline-card">
+        <div class="section-title">🚚 Tiến độ đơn hàng</div>
+        <div class="timeline">
+            @foreach (var item in statuses.Select((status, index) => new { status, index }))
             {
-                <div class="detail-value mt-3">
-                    <strong>Ghi chú:</strong> @Model.Notes
+                var isActive = item.index <= currentStatusIndex && Model.Status != "Cancelled";
+                var icon = item.status switch
+                {
+                    "Pending" => "⏳",
+                    "Confirmed" => "✓",
+                    "Shipped" => "📦",
+                    "Delivered" => "🏁",
+                    _ => "?"
+                };
+
+                <div class="timeline-item @(isActive ? "active" : "")">
+                    <div class="timeline-icon">@icon</div>
+                    <div class="timeline-label">@StatusText(item.status)</div>
                 </div>
             }
         </div>
+    </div>
 
-        <!-- Order Items -->
-        <div class="items-section">
-            <div class="items-title">
-                <i class="bi bi-box-seam"></i> Chi tiết sản phẩm
-            </div>
-            <table class="order-items-table">
-                <thead>
-                    <tr>
-                        <th>Hình ảnh</th>
-                        <th>Tên sản phẩm</th>
-                        <th>Số lượng</th>
-                        <th>Giá</th>
-                        <th>Tổng</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model.OrderDetails ?? new List<OrderDetail>())
-                    {
-                        var imageUrl = item.Product?.ImageUrl?.Split(';').FirstOrDefault() ?? "/images/no-image.png";
-                        
-                        <tr>
-                            <td>
-                                <img src="@imageUrl" alt="@(item.ProductName ?? item.Product?.Name)" class="item-image" />
-                            </td>
-                            <td class="item-name">@(item.ProductName ?? item.Product?.Name ?? "(Unknown Product)")</td>
-                            <td>@item.Quantity</td>
-                            <td class="item-price">@(item.Price.ToString("N0", System.Globalization.CultureInfo.CreateSpecificCulture("vi-VN")))₫</td>
-                            <td class="item-price">@((item.Quantity * item.Price).ToString("N0", System.Globalization.CultureInfo.CreateSpecificCulture("vi-VN")))₫</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+    <div class="info-card">
+        <div class="section-title">👤 Thông tin đơn hàng</div>
+        <div class="info-grid">
+            <div class="info-box"><div class="info-label">Khách hàng</div><div class="info-value">@Model.CustomerName</div></div>
+            <div class="info-box"><div class="info-label">Trạng thái</div><div class="info-value"><span class="status-badge @StatusClass(Model.Status)">@StatusText(Model.Status)</span></div></div>
+            <div class="info-box"><div class="info-label">Thanh toán</div><div class="info-value">@(Model.PaymentMethod ?? "Chưa chọn")</div></div>
+            <div class="info-box"><div class="info-label">Thành tiền</div><div class="info-value highlight">@Money(Model.TotalPrice)</div></div>
         </div>
-
-        <!-- Totals -->
-        <div class="totals-section">
-            <div class="totals-row">
-                <span class="label">Tổng sản phẩm:</span>
-                <span class="value">@(Model.OrderDetails?.Sum(x => x.Quantity) ?? 0)</span>
-            </div>
-            <div class="totals-row">
-                <span class="label">Thanh toán:</span>
-                <span class="value">@Model.PaymentMethod ?? "Chưa thanh toán"</span>
-            </div>
-            <div class="totals-row total">
-                <span class="label">Tổng cộng:</span>
-                <span class="value">@(Model.TotalPrice.ToString("N0", System.Globalization.CultureInfo.CreateSpecificCulture("vi-VN")))₫</span>
-            </div>
+        <div class="address-box">
+            <strong>📍 Địa chỉ giao hàng:</strong> @Model.ShippingAddress
+            @if (!string.IsNullOrEmpty(Model.Notes))
+            {
+                <br />
+                <strong>📝 Ghi chú:</strong> @Model.Notes
+            }
         </div>
+    </div>
 
-        <!-- Actions -->
+    <div class="items-card">
+        <div class="section-title">📦 Sản phẩm đã đặt</div>
+        <div class="items-list">
+            @foreach (var item in Model.OrderDetails ?? new List<OrderDetail>())
+            {
+                var imageUrl = item.Product?.ImageUrl?.Split(';').FirstOrDefault() ?? "/images/no-image.png";
+                <div class="item-row">
+                    <img src="@imageUrl" alt="@(item.ProductName ?? item.Product?.Name)" class="item-img" />
+                    <div>
+                        <div class="item-name">@(item.ProductName ?? item.Product?.Name ?? "(Unknown Product)")</div>
+                        <div class="item-meta">Đơn giá: @Money(item.Price)</div>
+                    </div>
+                    <div class="item-qty">SL: @item.Quantity</div>
+                    <div class="item-price">@Money(item.Quantity * item.Price)</div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="totals-card">
+        <div class="section-title">💰 Chi tiết thanh toán</div>
+        <div class="totals-grid">
+            <div class="total-row"><span>Tạm tính:</span><span class="value">@Money(subTotal)</span></div>
+            @if (discountAmount > 0)
+            {
+                <div class="total-row discount"><span>Coupon @(string.IsNullOrEmpty(Model.CouponCode) ? "" : $"({Model.CouponCode})"):</span><span class="value">-@Money(discountAmount)</span></div>
+            }
+            @if (memberDiscount > 0)
+            {
+                <div class="total-row discount"><span>Giảm hội viên (@Model.MemberDiscountPercentage.ToString("0.##")%):</span><span class="value">-@Money(memberDiscount)</span></div>
+            }
+            <div class="total-row"><span>Tổng sản phẩm:</span><span class="value">@(Model.OrderDetails?.Sum(x => x.Quantity) ?? 0)</span></div>
+            <div class="total-row final"><strong>Tổng cộng:</strong><span class="value">@Money(Model.TotalPrice)</span></div>
+        </div>
+    </div>
+
+    <div class="actions-card">
         <div class="action-buttons">
-            <a href="/OrderHistory" class="btn-back">
-                <i class="bi bi-arrow-left"></i> Quay lại
-            </a>
-            <button class="btn-print" onclick="window.print()">
-                <i class="bi bi-printer"></i> In đơn hàng
-            </button>
-            
+            <a href="/OrderHistory" class="od-btn btn-back">← Quay lại</a>
+            <button class="od-btn btn-print" onclick="window.print()">🖨️ In đơn hàng</button>
+
             @{
                 var daysSinceOrder = (DateTime.Now - Model.OrderDate).Days;
                 var canReturn = Model.Status == "Delivered" && daysSinceOrder <= 30;
                 var returnRequest = Model.ReturnRequests?.FirstOrDefault();
             }
 
-            @if (!User.HasPermission(PermissionConstants.ReturnManage))
+            @if (returnRequest != null)
             {
-                @if (canReturn)
-                {
-                    <a href="/Return/Create?orderId=@Model.Id" class="btn-return">
-                        <i class="bi bi-arrow-counterclockwise"></i> Trả hàng
-                    </a>
-                }
-                else if (Model.Status != "Delivered")
-                {
-                    <button class="btn-return-disabled" disabled title="Đơn hàng phải đã giao mới có thể trả">
-                        <i class="bi bi-arrow-counterclockwise"></i> Trả hàng
-                    </button>
-                }
-                else if (daysSinceOrder > 30)
-                {
-                    <button class="btn-return-disabled" disabled title="Quá 30 ngày, không thể trả hàng">
-                        <i class="bi bi-arrow-counterclockwise"></i> Trả hàng (Hết hạn)
-                    </button>
-                }
+                <a href="/Return/Details/@returnRequest.Id" class="od-btn btn-view-return">🔄 Xem yêu cầu trả hàng</a>
             }
-            else
+            else if (canReturn)
             {
-                @if (returnRequest != null)
-                {
-                    <a href="/Return/Details/@returnRequest.Id" class="btn-view-return">
-                        <i class="bi bi-arrow-counterclockwise"></i> Xem yêu cầu trả hàng
-                    </a>
-                }
+                <a href="/Return/Create?orderId=@Model.Id" class="od-btn btn-return">↩️ Trả hàng</a>
+            }
+            else if (Model.Status != "Delivered")
+            {
+                <button class="od-btn btn-return-disabled" disabled>↩️ Trả hàng khi đơn đã giao</button>
+            }
+            else if (daysSinceOrder > 30)
+            {
+                <button class="od-btn btn-return-disabled" disabled>↩️ Hết hạn trả hàng</button>
             }
         </div>
     </div>

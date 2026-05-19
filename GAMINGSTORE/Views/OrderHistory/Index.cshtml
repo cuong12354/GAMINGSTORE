@@ -1,325 +1,266 @@
 @model List<Order>
 @{
     ViewData["Title"] = "Lịch sử đơn hàng";
+
+    var totalOrders = Model?.Count ?? 0;
+    var pendingOrders = Model?.Count(o => o.Status == "Pending") ?? 0;
+    var deliveredOrders = Model?.Count(o => o.Status == "Delivered") ?? 0;
+    var totalSpent = Model?.Sum(o => o.TotalPrice) ?? 0;
+
+    string Money(decimal value) => value.ToString("N0", System.Globalization.CultureInfo.CreateSpecificCulture("vi-VN")) + "₫";
+
+    string StatusText(string? status) => status switch
+    {
+        "Pending" => "Chờ xử lý",
+        "Confirmed" => "Đã xác nhận",
+        "Shipped" => "Đang giao",
+        "Delivered" => "Đã giao",
+        "Cancelled" => "Đã hủy",
+        _ => status ?? "Không xác định"
+    };
+
+    string StatusClass(string? status) => status switch
+    {
+        "Pending" => "status-pending",
+        "Confirmed" => "status-confirmed",
+        "Shipped" => "status-shipped",
+        "Delivered" => "status-delivered",
+        "Cancelled" => "status-cancelled",
+        _ => "status-pending"
+    };
+
+    int ProgressStep(string? status) => status switch
+    {
+        "Pending" => 1,
+        "Confirmed" => 2,
+        "Shipped" => 3,
+        "Delivered" => 4,
+        "Cancelled" => 0,
+        _ => 1
+    };
 }
 
 <style>
-    .order-history-container {
-        padding: 40px 0;
+    :root {
+        --oh-primary: #d92e2e;
+        --oh-primary-dark: #b82222;
+        --oh-dark: #111827;
+        --oh-muted: #6b7280;
+        --oh-border: rgba(15,23,42,.08);
+        --oh-shadow: 0 18px 42px rgba(15,23,42,.08);
     }
 
-    .order-header {
-        background: linear-gradient(135deg, #6b8fb8 0%, #5a7ba8 100%);
-        color: white;
-        padding: 40px 30px;
-        border-radius: 12px;
-        margin-bottom: 40px;
-        box-shadow: 0 2px 8px rgba(91, 122, 168, 0.1);
-    }
+    body { background: #f3f5f9 !important; }
 
-    .order-header h1 {
-        font-size: 32px;
-        font-weight: 600;
-        margin-bottom: 10px;
+    .oh-page { max-width: 1180px; margin: 0 auto; padding: 28px 18px 56px; color: var(--oh-dark); }
+    .oh-hero {
+        position: relative; overflow: hidden; border-radius: 28px; padding: 30px; color: white; margin-bottom: 20px;
+        background: radial-gradient(circle at 90% 8%, rgba(255,255,255,.32), transparent 26%), linear-gradient(135deg, #111827 0%, #d92e2e 58%, #ff6b4a 100%);
+        box-shadow: 0 24px 58px rgba(217,46,46,.2);
     }
+    .oh-hero-inner { position: relative; z-index: 1; display: grid; grid-template-columns: 1.15fr .85fr; gap: 24px; align-items: center; }
+    .oh-kicker { display: inline-flex; align-items: center; gap: 8px; min-height: 34px; padding: 0 13px; border-radius: 999px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22); font-size: 12px; font-weight: 900; letter-spacing: .8px; text-transform: uppercase; margin-bottom: 12px; }
+    .oh-hero h1 { margin: 0 0 10px; font-size: clamp(28px,4vw,42px); line-height: 1.06; font-weight: 950; }
+    .oh-hero p { margin: 0; color: rgba(255,255,255,.86); line-height: 1.75; font-weight: 600; }
+    .oh-panel { background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.22); backdrop-filter: blur(14px); border-radius: 22px; padding: 18px; }
+    .oh-panel-row { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,.16); }
+    .oh-panel-row:last-child { border-bottom: 0; }
+    .panel-label { color: rgba(255,255,255,.75); font-weight: 800; font-size: 13px; }
+    .panel-value { color: #fff; font-weight: 950; text-align: right; }
 
-    .order-header p {
-        font-size: 16px;
-        margin: 0;
-        opacity: 0.95;
-    }
+    .stats-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 14px; margin-bottom: 18px; }
+    .stat-card { background: white; border: 1px solid rgba(255,255,255,.72); border-radius: 20px; padding: 17px; box-shadow: var(--oh-shadow); }
+    .stat-label { color: var(--oh-muted); font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 8px; }
+    .stat-value { font-size: 25px; font-weight: 950; color: var(--oh-dark); }
 
-    .orders-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 24px;
-        margin-bottom: 40px;
-    }
+    .toolbar { background: #fff; border: 1px solid rgba(255,255,255,.72); border-radius: 20px; box-shadow: var(--oh-shadow); padding: 16px; margin-bottom: 16px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .toolbar-title { font-size: 18px; font-weight: 950; }
+    .toolbar-subtitle { color: var(--oh-muted); font-size: 13px; font-weight: 700; margin-top: 3px; }
+    .toolbar-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .action-btn { min-height: 42px; padding: 0 15px; border-radius: 999px; background: #f8fafc; color: var(--oh-dark); border: 1px solid #e5e7eb; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 900; transition: .2s ease; }
+    .action-btn:hover { background: var(--oh-primary); border-color: var(--oh-primary); color: #fff; transform: translateY(-2px); }
 
-    .order-card {
-        background: #f8fafb;
-        border: 1px solid #e0e3e8;
-        border-radius: 8px;
-        padding: 24px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 1px 2px rgba(91, 122, 168, 0.05);
-    }
+    /* Search Bar */
+    .search-bar { width: 100%; max-width: 400px; }
+    .search-input { width: 100%; min-height: 42px; padding: 0 14px; border: 1px solid #e5e7eb; border-radius: 999px; font-size: 14px; background: #f8fafc; color: var(--oh-dark); transition: all 0.2s; }
+    .search-input:focus { outline: none; border-color: var(--oh-primary); background: #fff; box-shadow: 0 0 0 3px rgba(217, 46, 46, 0.1); }
+    .search-input::placeholder { color: var(--oh-muted); }
 
-    .order-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: #8fa3c0;
-    }
+    .orders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 16px; }
+    .order-card { background: #fff; border: 1px solid rgba(255,255,255,.72); border-radius: 22px; padding: 18px; box-shadow: var(--oh-shadow); text-decoration: none; color: var(--oh-dark); transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease; display: flex; flex-direction: column; min-height: 285px; }
+    .order-card:hover { color: var(--oh-dark); transform: translateY(-4px); box-shadow: 0 22px 46px rgba(15,23,42,.12); border-color: rgba(217,46,46,.24); }
+    .order-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; margin-bottom: 12px; }
+    .order-code { font-size: 18px; font-weight: 950; }
+    .order-date { color: var(--oh-muted); font-size: 13px; font-weight: 750; margin-top: 4px; }
+    .badge { min-height: 29px; padding: 0 11px; border-radius: 999px; display: inline-flex; align-items: center; font-size: 12px; font-weight: 950; white-space: nowrap; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-confirmed { background: #dbeafe; color: #1d4ed8; }
+    .status-shipped { background: #ede9fe; color: #6d28d9; }
+    .status-delivered { background: #dcfce7; color: #166534; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
+    .return-badge { margin-top: 8px; background: #fff1f2; color: #b82222; }
 
-    .order-card:hover {
-        border-color: #8fa3c0;
-        box-shadow: 0 4px 12px rgba(91, 122, 168, 0.08);
-        transform: translateY(-2px);
-    }
+    .order-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+    .meta-box { background: #f8fafc; border: 1px solid #edf0f5; border-radius: 16px; padding: 12px; }
+    .meta-label { color: var(--oh-muted); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
+    .meta-value { color: var(--oh-dark); font-weight: 950; }
+    .price-value { color: var(--oh-primary); font-size: 18px; }
 
-    .order-number {
-        color: #5a7ba8;
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 8px;
-    }
+    .progress { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-top: auto; padding-top: 8px; }
+    .progress-step { height: 7px; border-radius: 99px; background: #e5e7eb; }
+    .progress-step.active { background: linear-gradient(90deg, var(--oh-primary), #ff6b4a); }
+    .card-footer { margin-top: 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; color: var(--oh-primary); font-size: 13px; font-weight: 950; }
 
-    .order-id {
-        color: var(--text-primary);
-        font-size: 20px;
-        font-weight: 600;
-        margin-bottom: 16px;
-    }
+    .empty-state { background: #fff; border-radius: 28px; padding: 64px 24px; text-align: center; box-shadow: var(--oh-shadow); }
+    .empty-icon { width: 92px; height: 92px; border-radius: 28px; background: #fff1f2; display: inline-flex; align-items: center; justify-content: center; font-size: 42px; margin-bottom: 18px; }
+    .empty-title { font-size: 22px; font-weight: 950; margin-bottom: 8px; }
+    .empty-desc { color: var(--oh-muted); font-weight: 700; margin-bottom: 20px; }
+    .empty-btn { min-height: 44px; padding: 0 18px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--oh-primary), var(--oh-primary-dark)); color: #fff; text-decoration: none; font-weight: 950; }
+    .empty-btn:hover { color: #fff; }
 
-    .order-date {
-        color: var(--text-secondary);
-        font-size: 14px;
-        margin-bottom: 16px;
-    }
-
-    .order-status {
-        display: inline-block;
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-        margin-bottom: 16px;
-    }
-
-    .status-pending { background-color: #fef3c7; color: #92400e; }
-    .status-confirmed { background-color: #dbeafe; color: #0c4a6e; }
-    .status-shipped { background-color: #e9d5ff; color: #581c87; }
-    .status-delivered { background-color: #dcfce7; color: #166534; }
-    .status-cancelled { background-color: #fee2e2; color: #991b1b; }
-
-    .order-price {
-        color: #5a7ba8;
-        font-size: 24px;
-        font-weight: 700;
-        margin-bottom: 16px;
-    }
-
-    .order-items-count {
-        color: var(--text-secondary);
-        font-size: 14px;
-        margin-bottom: 16px;
-    }
-
-    .order-action {
-        display: flex;
-        gap: 10px;
-    }
-
-    .btn-view {
-        flex: 1;
-        background-color: #6b8fb8;
-        color: white;
-        border: none;
-        padding: 10px 16px;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        font-size: 14px;
-    }
-
-    .btn-view:hover {
-        background-color: #5a7ba8;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(91, 122, 168, 0.12);
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 80px 30px;
-        background: var(--gray-50);
-        border: 2px dashed var(--border-color);
-        border-radius: 12px;
-    }
-
-    .empty-state i {
-        font-size: 64px;
-        color: #8fa3c0;
-        margin-bottom: 20px;
-        display: block;
-        opacity: 0.4;
-    }
-
-    .empty-state h3 {
-        color: var(--text-primary);
-        font-size: 24px;
-        margin-bottom: 10px;
-    }
-
-    .empty-state p {
-        color: var(--text-secondary);
-        margin-bottom: 30px;
-    }
-
-    .empty-state a {
-        background-color: #6b8fb8;
-        color: white;
-        padding: 12px 32px;
-        border-radius: 6px;
-        text-decoration: none;
-        font-weight: 600;
-        display: inline-block;
-        transition: all 0.2s ease;
-    }
-
-    .empty-state a:hover {
-        background-color: #5a7ba8;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(91, 122, 168, 0.12);
-    }
-
-    .progress-bar-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 8px;
-        margin-top: 16px;
-    }
-
-    .progress-step {
-        flex: 1;
-        height: 3px;
-        background-color: var(--border-color);
-        border-radius: 2px;
-        position: relative;
-    }
-
-    .progress-step.active {
-        background-color: var(--primary-blue);
-    }
-
-    .return-status-badge {
-        display: inline-block;
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: bold;
-        text-transform: uppercase;
-        margin-left: 8px;
-    }
-
-    .return-pending {
-        background-color: #fff3cd;
-        color: #856404;
-    }
-
-    .return-approved {
-        background-color: #d4edda;
-        color: #155724;
-    }
-
-    .return-rejected {
-        background-color: #f8d7da;
-        color: #721c24;
-    }
-
-    .return-completed {
-        background-color: #d1ecf1;
-        color: #0c5460;
-    }
+    @@media(max-width: 992px) { .oh-hero-inner { grid-template-columns: 1fr; } .stats-grid { grid-template-columns: repeat(2,1fr); } }
+    @@media(max-width: 576px) { .oh-page { padding: 16px 12px 40px; } .stats-grid { grid-template-columns: 1fr; } .orders-grid { grid-template-columns: 1fr; } .toolbar { align-items: stretch; } .toolbar-actions { width: 100%; } .action-btn { flex: 1; justify-content: center; } }
 </style>
 
-<div class="order-history-container">
-    <div class="container">
-        <!-- Header -->
-        <div class="order-header">
-            <h1><i class="bi bi-bag-check"></i> Lịch sử đơn hàng</h1>
-            <p style="color: black;">Xem chi tiết và theo dõi tiến độ của các đơn hàng của bạn</p>
+<div class="oh-page">
+    <div class="oh-hero">
+        <div class="oh-hero-inner">
+            <div>
+                <div class="oh-kicker">🧾 Order History</div>
+                <h1>Lịch sử đơn hàng của bạn</h1>
+                <p>Trang này chỉ hiển thị đơn hàng thuộc tài khoản đang đăng nhập. Tài khoản khác không thể xem đơn của bạn.</p>
+            </div>
+            <div class="oh-panel">
+                <div class="oh-panel-row"><span class="panel-label">Tài khoản</span><span class="panel-value">@(ViewBag.UserFullName ?? ViewBag.UserEmail ?? "Người dùng")</span></div>
+                <div class="oh-panel-row"><span class="panel-label">Tổng đơn</span><span class="panel-value">@totalOrders đơn</span></div>
+                <div class="oh-panel-row"><span class="panel-label">Tổng chi tiêu</span><span class="panel-value">@Money(totalSpent)</span></div>
+            </div>
         </div>
-
-        @if (Model != null && Model.Count > 0)
-        {
-            <p class="text-muted mb-4">Tổng cộng: <strong>@Model.Count</strong> đơn hàng</p>
-
-            <div class="orders-grid">
-                @foreach (var order in Model)
-                {
-                    var statusClass = $"status-{order.Status?.ToLower() ?? "pending"}";
-                    var statusDisplay = order.Status switch
-                    {
-                        "Pending" => "Chờ xử lý",
-                        "Confirmed" => "Đã xác nhận",
-                        "Shipped" => "Đang giao",
-                        "Delivered" => "Đã giao",
-                        "Cancelled" => "Đã hủy",
-                        _ => order.Status
-                    };
-
-                    <div class="order-card" onclick="window.location='/OrderHistory/Details/@order.Id'">
-                        <div class="order-number">
-                            <i class="bi bi-hash"></i> Đơn hàng
-                        </div>
-                        <div class="order-id">#@order.Id</div>
-                        <div class="order-date">
-                            <i class="bi bi-calendar3"></i> @order.OrderDate.ToString("dd/MM/yyyy HH:mm")
-                        </div>
-
-                        <div>
-                            <div class="order-status @statusClass">@statusDisplay</div>
-                            @{
-                                var returnRequest = order.ReturnRequests?.FirstOrDefault();
-                                if (returnRequest != null)
-                                {
-                                    var returnStatusClass = $"return-{returnRequest.Status?.ToLower() ?? "pending"}";
-                                    var returnStatusDisplay = returnRequest.Status switch
-                                    {
-                                        "Pending" => "⏳ Đang xem xét",
-                                        "Approved" => "✅ Đã phê duyệt",
-                                        "Rejected" => "❌ Từ chối",
-                                        "Completed" => "✔️ Hoàn tất",
-                                        _ => returnRequest.Status
-                                    };
-                                    <span class="return-status-badge @returnStatusClass">@returnStatusDisplay</span>
-                                }
-                            }
-                        </div>
-
-                        <div class="order-price">@(order.TotalPrice.ToString("N0", System.Globalization.CultureInfo.CreateSpecificCulture("vi-VN")))₫</div>
-                        <div class="order-items-count">
-                            <i class="bi bi-box-seam"></i> @(order.OrderDetails?.Count ?? 0) sản phẩm
-                        </div>
-
-                        <div class="progress-bar-container">
-                            <div class="progress-step @(new[] { "Pending" }.Contains(order.Status) ? "active" : "")"></div>
-                            <div class="progress-step @(new[] { "Pending", "Confirmed" }.Contains(order.Status) ? "active" : "")"></div>
-                            <div class="progress-step @(new[] { "Pending", "Confirmed", "Shipped" }.Contains(order.Status) ? "active" : "")"></div>
-                            <div class="progress-step @(order.Status == "Delivered" ? "active" : "")"></div>
-                        </div>
-
-                        <div class="order-action mt-3">
-                            <button class="btn-view" onclick="event.stopPropagation(); window.location='/OrderHistory/Details/@order.Id'">
-                                <i class="bi bi-arrow-right"></i> Xem chi tiết
-                            </button>
-                        </div>
-                    </div>
-                }
-            </div>
-        }
-        else
-        {
-            <div class="empty-state">
-                <i class="bi bi-inbox"></i>
-                <h3>Chưa có đơn hàng nào</h3>
-                <p>Bạn chưa đặt bất kỳ đơn hàng nào. Hãy bắt đầu mua sắm ngay!</p>
-                <a href="/" class="btn btn-primary">
-                    <i class="bi bi-shop"></i> Tiếp tục mua sắm
-                </a>
-            </div>
-        }
     </div>
+
+    <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">Tổng đơn hàng</div><div class="stat-value">@totalOrders</div></div>
+        <div class="stat-card"><div class="stat-label">Chờ xử lý</div><div class="stat-value">@pendingOrders</div></div>
+        <div class="stat-card"><div class="stat-label">Đã giao</div><div class="stat-value">@deliveredOrders</div></div>
+        <div class="stat-card"><div class="stat-label">Tổng chi tiêu</div><div class="stat-value">@Money(totalSpent)</div></div>
+    </div>
+
+    <div class="toolbar">
+        <div>
+            <div class="toolbar-title">Danh sách đơn hàng cá nhân</div>
+            <div class="toolbar-subtitle">Sắp xếp theo đơn mới nhất.</div>
+        </div>
+        <div class="search-bar">
+            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Tìm kiếm theo ID đơn, trạng thái, hoặc ngày..." />
+        </div>
+        <div class="toolbar-actions">
+            <a href="/" class="action-btn">🏪 Tiếp tục mua</a>
+            <a href="/Return" class="action-btn">🔄 Lịch sử trả hàng</a>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="orders-grid">
+            @foreach (var order in Model)
+            {
+                var step = ProgressStep(order.Status);
+                var returnRequest = order.ReturnRequests?.FirstOrDefault();
+                <a class="order-card" href="/OrderHistory/Details/@order.Id">
+                    <div class="order-top">
+                        <div>
+                            <div class="order-code">Đơn hàng #@order.Id</div>
+                            <div class="order-date">📅 @order.OrderDate.ToString("dd/MM/yyyy HH:mm")</div>
+                        </div>
+                        <span class="badge @StatusClass(order.Status)">@StatusText(order.Status)</span>
+                    </div>
+
+                    @if (returnRequest != null)
+                    {
+                        <span class="badge return-badge">↩️ Trả hàng: @returnRequest.Status</span>
+                    }
+
+                    <div class="order-meta">
+                        <div class="meta-box"><div class="meta-label">Sản phẩm</div><div class="meta-value">@(order.OrderDetails?.Count ?? 0) mục</div></div>
+                        <div class="meta-box"><div class="meta-label">Tổng tiền</div><div class="meta-value price-value">@Money(order.TotalPrice)</div></div>
+                    </div>
+
+                    <div class="progress">
+                        <span class="progress-step @(step >= 1 ? "active" : "")"></span>
+                        <span class="progress-step @(step >= 2 ? "active" : "")"></span>
+                        <span class="progress-step @(step >= 3 ? "active" : "")"></span>
+                        <span class="progress-step @(step >= 4 ? "active" : "")"></span>
+                    </div>
+
+                    <div class="card-footer"><span>Xem chi tiết</span><span>→</span></div>
+                </a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <div class="empty-icon">🛒</div>
+            <div class="empty-title">Bạn chưa có đơn hàng nào</div>
+            <div class="empty-desc">Hãy chọn sản phẩm yêu thích và đặt đơn hàng đầu tiên.</div>
+            <a href="/" class="empty-btn">Bắt đầu mua sắm</a>
+        </div>
+    }
 </div>
+
+<script>
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        const searchValue = this.value.toLowerCase().trim();
+        const orderCards = document.querySelectorAll('.order-card');
+        let visibleCount = 0;
+
+        orderCards.forEach(card => {
+            const orderCode = card.querySelector('.order-code').textContent.toLowerCase();
+            const orderDate = card.querySelector('.order-date').textContent.toLowerCase();
+            const statusBadge = card.querySelector('.badge').textContent.toLowerCase();
+            const totalPrice = card.querySelector('.price-value').textContent.toLowerCase();
+
+            // Check if search value matches any field
+            const matches = orderCode.includes(searchValue) || 
+                          orderDate.includes(searchValue) || 
+                          statusBadge.includes(searchValue) ||
+                          totalPrice.includes(searchValue);
+
+            if (searchValue === '' || matches) {
+                card.style.display = '';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Show/hide empty state
+        const ordersGrid = document.querySelector('.orders-grid');
+        const emptyState = document.querySelector('.empty-state');
+        
+        if (visibleCount === 0 && searchValue !== '') {
+            if (ordersGrid) ordersGrid.style.display = 'none';
+            if (emptyState) {
+                emptyState.style.display = 'none';
+            }
+            // Show custom no results message
+            if (!document.getElementById('noResultsMsg')) {
+                const noResultsDiv = document.createElement('div');
+                noResultsDiv.id = 'noResultsMsg';
+                noResultsDiv.className = 'empty-state';
+                noResultsDiv.innerHTML = `
+                    <div class="empty-icon">🔍</div>
+                    <div class="empty-title">Không tìm thấy đơn hàng</div>
+                    <div class="empty-desc">Không có đơn hàng nào khớp với tìm kiếm của bạn.</div>
+                `;
+                ordersGrid.parentNode.insertBefore(noResultsDiv, ordersGrid);
+            }
+        } else {
+            if (ordersGrid) ordersGrid.style.display = '';
+            if (emptyState) emptyState.style.display = '';
+            const noResultsMsg = document.getElementById('noResultsMsg');
+            if (noResultsMsg) noResultsMsg.remove();
+        }
+    });
+</script>

@@ -22,55 +22,53 @@ namespace GAMINGSTORE.Controllers
         }
 
         /// <summary>
-        /// Hiển thị danh sách lịch sử đơn hàng
-        /// Admin: Xem tất cả đơn hàng | User: Chỉ xem đơn hàng của mình
+        /// Lịch sử đơn hàng cá nhân.
+        /// Trang này LUÔN chỉ hiển thị đơn của tài khoản đang đăng nhập.
+        /// Admin/Staff muốn xem toàn bộ đơn thì dùng AllOrders hoặc Admin/OrderManagement.
         /// </summary>
         [HttpGet]
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
+
             if (user == null)
             {
                 return Challenge();
             }
 
-            // ✅ Logic rõ ràng: Admin xem tất cả, User xem của mình
-            IQueryable<Order> query = _context.Orders
+            var orders = await _context.Orders
+                .Where(o => o.UserId == user.Id)
                 .Include(o => o.OrderDetails)
-                .ThenInclude(od => od.Product)
-                .Include(o => o.ReturnRequests); // Added to include return requests
-
-            if (!User.HasPermission(PermissionConstants.OrderView))
-            {
-                query = query.Where(o => o.UserId == user.Id);
-            }
-
-            var orders = await query.OrderByDescending(o => o.OrderDate).ToListAsync();
+                    .ThenInclude(od => od.Product)
+                .Include(o => o.ReturnRequests)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
 
             ViewBag.UserFullName = user.FullName;
             ViewBag.UserEmail = user.Email;
-            ViewBag.CanViewAllOrders = User.HasPermission(PermissionConstants.OrderView);
+            ViewBag.CanViewAllOrders = false;
 
             return View(orders);
         }
 
         /// <summary>
-        /// Hiển thị chi tiết của 1 đơn hàng cụ thể
-        /// Admin có thể xem bất kỳ đơn hàng nào, user thường chỉ xem đơn hàng của mình
+        /// Chi tiết đơn hàng cá nhân.
+        /// User chỉ được xem chi tiết đơn hàng của chính mình.
         /// </summary>
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
             var user = await _userManager.GetUserAsync(User);
+
             if (user == null)
             {
                 return Challenge();
             }
 
             var order = await _context.Orders
-                .Where(o => o.Id == id && (User.HasPermission(PermissionConstants.OrderView) || o.UserId == user.Id))
+                .Where(o => o.Id == id && o.UserId == user.Id)
                 .Include(o => o.OrderDetails)
-                .ThenInclude(od => od.Product)
+                    .ThenInclude(od => od.Product)
                 .Include(o => o.ReturnRequests)
                 .FirstOrDefaultAsync();
 
@@ -83,17 +81,21 @@ namespace GAMINGSTORE.Controllers
         }
 
         /// <summary>
-        /// Lấy trạng thái tiến độ của đơn hàng (để cập nhật UI)
-        /// Admin: Xem bất kỳ đơn nào | User: Chỉ xem đơn hàng của mình
+        /// Lấy trạng thái đơn hàng cá nhân cho UI.
+        /// User chỉ được lấy trạng thái đơn hàng của chính mình.
         /// </summary>
         [HttpGet]
         public async Task<IActionResult> GetOrderStatus(int id)
         {
             var user = await _userManager.GetUserAsync(User);
-            
-            // ✅ Logic rõ ràng: Admin xem tất cả, User xem của mình
+
+            if (user == null)
+            {
+                return Challenge();
+            }
+
             var order = await _context.Orders
-                .Where(o => o.Id == id && (User.HasPermission(PermissionConstants.OrderView) || o.UserId == user.Id))
+                .Where(o => o.Id == id && o.UserId == user.Id)
                 .FirstOrDefaultAsync();
 
             if (order == null)
@@ -119,34 +121,54 @@ namespace GAMINGSTORE.Controllers
         }
 
         /// <summary>
-        /// Cập nhật trạng thái đơn hàng (chỉ Admin)
+        /// Cập nhật trạng thái đơn hàng.
+        /// Chỉ tài khoản có quyền OrderManage mới được cập nhật.
+        /// Dùng cho AllOrders.cshtml đang gọi bằng fetch.
         /// </summary>
         [HttpPost]
         [Authorize(Policy = PermissionConstants.OrderManage)]
         public async Task<IActionResult> UpdateStatus(int id, string status)
         {
             var validStatuses = new[] { "Pending", "Confirmed", "Shipped", "Delivered", "Cancelled" };
-            
-            if (!validStatuses.Contains(status))
+
+            if (string.IsNullOrWhiteSpace(status) || !validStatuses.Contains(status))
             {
-                return BadRequest("Trạng thái không hợp lệ");
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Trạng thái không hợp lệ"
+                });
             }
 
             var order = await _context.Orders.FindAsync(id);
+
             if (order == null)
             {
-                return NotFound();
+                return NotFound(new
+                {
+                    success = false,
+                    message = "Không tìm thấy đơn hàng"
+                });
             }
 
             order.Status = status;
+
             _context.Orders.Update(order);
             await _context.SaveChangesAsync();
 
-            return Ok(new { success = true, newStatus = status, message = $"Cập nhật trạng thái thành: {GetStatusDisplay(status)}" });
+            return Ok(new
+            {
+                success = true,
+                newStatus = status,
+                statusDisplay = GetStatusDisplay(status),
+                message = $"Cập nhật trạng thái thành: {GetStatusDisplay(status)}"
+            });
         }
 
         /// <summary>
-        /// Hiển thị lịch sử tất cả đơn hàng (chỉ Admin)
+        /// Xem tất cả đơn hàng.
+        /// Chỉ tài khoản có quyền OrderView mới được xem toàn bộ đơn.
+        /// Đây là trang quản trị, không phải lịch sử cá nhân.
         /// </summary>
         [HttpGet]
         [Authorize(Policy = PermissionConstants.OrderView)]
@@ -154,17 +176,16 @@ namespace GAMINGSTORE.Controllers
         {
             var orders = await _context.Orders
                 .Include(o => o.OrderDetails)
-                .ThenInclude(od => od.Product)
+                    .ThenInclude(od => od.Product)
                 .Include(o => o.ApplicationUser)
+                .Include(o => o.ReturnRequests)
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
 
             return View(orders);
         }
 
-        // ===== HELPER METHODS =====
-
-        private string GetStatusDisplay(string status)
+        private string GetStatusDisplay(string? status)
         {
             return status switch
             {
@@ -177,20 +198,20 @@ namespace GAMINGSTORE.Controllers
             };
         }
 
-        private string GetStatusColor(string status)
+        private string GetStatusColor(string? status)
         {
             return status switch
             {
-                "Pending" => "#fbbf24",      // Gold
-                "Confirmed" => "#3b82f6",    // Blue
-                "Shipped" => "#8b5cf6",      // Purple
-                "Delivered" => "#22c55e",    // Green
-                "Cancelled" => "#dc2626",    // Red
-                _ => "#6b7280"               // Gray
+                "Pending" => "#fbbf24",
+                "Confirmed" => "#3b82f6",
+                "Shipped" => "#8b5cf6",
+                "Delivered" => "#22c55e",
+                "Cancelled" => "#dc2626",
+                _ => "#6b7280"
             };
         }
 
-        private int GetProgressPercentage(string status)
+        private int GetProgressPercentage(string? status)
         {
             return status switch
             {

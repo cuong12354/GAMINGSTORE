@@ -2,206 +2,591 @@
 
 @{
     ViewData["Title"] = "Lịch Sử Trả Hàng";
+
+    var totalRequests = Model?.Count ?? 0;
+    var pendingCount = Model?.Count(x => x.Status == "Pending") ?? 0;
+    var approvedCount = Model?.Count(x => x.Status == "Approved") ?? 0;
+    var completedCount = Model?.Count(x => x.Status == "Completed") ?? 0;
+    var rejectedCount = Model?.Count(x => x.Status == "Rejected") ?? 0;
+    var totalAmount = Model?.Sum(x => x.ReturnAmount) ?? 0;
 }
 
 <style>
-    .return-container {
-        max-width: 1000px;
+    :root {
+        --rs-primary: #d92e2e;
+        --rs-primary-dark: #b82222;
+        --rs-dark: #111827;
+        --rs-muted: #6b7280;
+        --rs-soft: #f6f7fb;
+        --rs-border: rgba(15, 23, 42, .08);
+        --rs-shadow: 0 18px 42px rgba(15, 23, 42, .08);
+        --rs-radius: 22px;
+    }
+
+    body {
+        background: #f3f5f9 !important;
+    }
+
+    .return-history-page {
+        max-width: 1180px;
         margin: 0 auto;
-        padding: 20px;
+        padding: 28px 18px 56px;
+        color: var(--rs-dark);
     }
 
-    .return-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 40px 20px;
-        border-radius: 10px;
-        margin-bottom: 30px;
-        text-align: center;
+    .return-hero {
+        position: relative;
+        overflow: hidden;
+        border-radius: 28px;
+        padding: 30px;
+        margin-bottom: 20px;
+        color: #fff;
+        background:
+            radial-gradient(circle at 90% 8%, rgba(255,255,255,.32), transparent 26%),
+            radial-gradient(circle at 12% 84%, rgba(255,255,255,.14), transparent 34%),
+            linear-gradient(135deg, #111827 0%, #d92e2e 55%, #ff6b4a 100%);
+        box-shadow: 0 24px 58px rgba(217, 46, 46, .2);
     }
 
-    .return-header h1 {
+    .return-hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
+        background-size: 42px 42px;
+        opacity: .35;
+        pointer-events: none;
+    }
+
+    .return-hero-inner {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: 1.15fr .85fr;
+        gap: 24px;
+        align-items: center;
+    }
+
+    .hero-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 34px;
+        padding: 0 13px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.14);
+        border: 1px solid rgba(255,255,255,.22);
+        backdrop-filter: blur(10px);
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: .8px;
+        margin-bottom: 12px;
+    }
+
+    .return-hero h1 {
+        margin: 0 0 10px;
+        font-size: clamp(28px, 4vw, 42px);
+        line-height: 1.06;
+        font-weight: 950;
+        letter-spacing: -.5px;
+    }
+
+    .return-hero p {
         margin: 0;
-        font-size: 32px;
-        font-weight: bold;
+        max-width: 720px;
+        color: rgba(255,255,255,.86);
+        font-size: 15px;
+        line-height: 1.75;
+        font-weight: 600;
     }
 
-    .return-header p {
-        margin: 5px 0 0 0;
-        font-size: 14px;
-        opacity: 0.9;
+    .hero-panel {
+        background: rgba(255,255,255,.13);
+        border: 1px solid rgba(255,255,255,.22);
+        backdrop-filter: blur(14px);
+        border-radius: 22px;
+        padding: 18px;
+    }
+
+    .hero-panel-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255,255,255,.16);
+    }
+
+    .hero-panel-row:last-child {
+        border-bottom: 0;
+    }
+
+    .panel-label {
+        color: rgba(255,255,255,.74);
+        font-weight: 800;
+        font-size: 13px;
+    }
+
+    .panel-value {
+        color: #fff;
+        font-weight: 950;
+        font-size: 16px;
+        text-align: right;
+    }
+
+    .success-alert {
+        margin-bottom: 18px;
+        border-radius: 16px;
+        padding: 14px 16px;
+        background: #ecfdf5;
+        color: #047857;
+        border: 1px solid #bbf7d0;
+        font-weight: 800;
+        box-shadow: 0 10px 24px rgba(15,23,42,.04);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        background: #fff;
+        border: 1px solid rgba(255,255,255,.72);
+        border-radius: 20px;
+        padding: 17px;
+        box-shadow: var(--rs-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::after {
+        content: "";
+        position: absolute;
+        right: -26px;
+        bottom: -26px;
+        width: 92px;
+        height: 92px;
+        border-radius: 999px;
+        background: rgba(217,46,46,.08);
+    }
+
+    .stat-label {
+        position: relative;
+        z-index: 1;
+        color: var(--rs-muted);
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        margin-bottom: 8px;
+    }
+
+    .stat-value {
+        position: relative;
+        z-index: 1;
+        font-size: 26px;
+        font-weight: 950;
+        color: var(--rs-dark);
+        line-height: 1.1;
+    }
+
+    .return-toolbar {
+        background: #fff;
+        border: 1px solid rgba(255,255,255,.72);
+        border-radius: 20px;
+        box-shadow: var(--rs-shadow);
+        padding: 16px;
+        margin-bottom: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .toolbar-title {
+        font-weight: 950;
+        font-size: 18px;
+        color: var(--rs-dark);
+    }
+
+    .toolbar-subtitle {
+        color: var(--rs-muted);
+        font-size: 13px;
+        font-weight: 700;
+        margin-top: 3px;
+    }
+
+    .toolbar-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        min-height: 42px;
+        padding: 0 15px;
+        border-radius: 999px;
+        background: #f8fafc;
+        color: var(--rs-dark);
+        border: 1px solid #e5e7eb;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 900;
+        transition: all .2s ease;
+    }
+
+    .action-btn:hover {
+        background: var(--rs-primary);
+        border-color: var(--rs-primary);
+        color: #fff;
+        transform: translateY(-2px);
     }
 
     .return-list {
         display: grid;
-        gap: 15px;
+        gap: 14px;
     }
 
     .return-card {
-        background: white;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 20px;
-        display: flex;
-        justify-content: space-between;
+        background: #fff;
+        border: 1px solid rgba(255,255,255,.72);
+        border-radius: var(--rs-radius);
+        padding: 18px;
+        box-shadow: var(--rs-shadow);
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 180px 138px;
+        gap: 18px;
         align-items: center;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
     }
 
     .return-card:hover {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        transform: translateY(-2px);
+        transform: translateY(-4px);
+        box-shadow: 0 22px 46px rgba(15,23,42,.12);
+        border-color: rgba(217,46,46,.24);
     }
 
-    .return-info {
-        flex: 1;
+    .return-main {
+        min-width: 0;
+    }
+
+    .return-id-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
     }
 
     .return-id {
-        font-weight: bold;
-        color: #333;
         font-size: 16px;
-        margin-bottom: 5px;
+        font-weight: 950;
+        color: var(--rs-dark);
     }
 
-    .return-date {
-        color: #666;
-        font-size: 13px;
-    }
-
-    .return-status {
-        display: inline-block;
-        padding: 6px 12px;
-        border-radius: 20px;
+    .status-badge {
+        min-height: 29px;
+        padding: 0 11px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
         font-size: 12px;
-        font-weight: bold;
-        margin: 5px 0;
+        font-weight: 950;
+        white-space: nowrap;
     }
 
     .status-pending {
-        background: #fff3cd;
-        color: #856404;
+        background: #fef3c7;
+        color: #92400e;
     }
 
     .status-approved {
-        background: #d4edda;
-        color: #155724;
+        background: #dcfce7;
+        color: #166534;
     }
 
     .status-rejected {
-        background: #f8d7da;
-        color: #721c24;
+        background: #fee2e2;
+        color: #991b1b;
     }
 
     .status-completed {
-        background: #d1ecf1;
-        color: #0c5460;
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .return-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .meta-pill {
+        min-height: 28px;
+        padding: 0 10px;
+        border-radius: 999px;
+        background: #f8fafc;
+        color: #64748b;
+        border: 1px solid #edf0f5;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 850;
+    }
+
+    .reason-box {
+        background: #f8fafc;
+        border: 1px solid #edf0f5;
+        border-radius: 14px;
+        padding: 11px 12px;
+        color: #475569;
+        font-size: 13px;
+        line-height: 1.55;
+        font-weight: 700;
+        max-width: 100%;
+    }
+
+    .amount-box {
+        text-align: center;
+        border-radius: 18px;
+        padding: 14px 12px;
+        background: linear-gradient(180deg, #fff7f7, #fff);
+        border: 1px solid rgba(217,46,46,.12);
+    }
+
+    .amount-label {
+        color: var(--rs-muted);
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: .4px;
+        margin-bottom: 5px;
     }
 
     .return-amount {
-        font-size: 18px;
-        font-weight: bold;
-        color: #d92e2e;
-        margin-right: 20px;
+        color: var(--rs-primary);
+        font-size: 21px;
+        font-weight: 950;
+        line-height: 1.1;
     }
 
-    .return-actions {
-        text-align: right;
-    }
-
-    .btn-details {
-        padding: 8px 16px;
-        background: #667eea;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
+    .detail-btn {
+        min-height: 44px;
+        padding: 0 16px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--rs-primary), var(--rs-primary-dark));
+        color: #fff;
         text-decoration: none;
-        font-size: 14px;
-        transition: all 0.3s ease;
-        display: inline-block;
+        font-size: 13px;
+        font-weight: 950;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 12px 24px rgba(217,46,46,.18);
+        transition: all .2s ease;
+        width: 100%;
     }
 
-    .btn-details:hover {
-        background: #764ba2;
-        text-decoration: none;
+    .detail-btn:hover {
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 18px 32px rgba(217,46,46,.26);
     }
 
     .empty-state {
+        background: #fff;
+        border: 1px solid rgba(255,255,255,.72);
+        border-radius: 28px;
+        padding: 64px 24px;
         text-align: center;
-        padding: 60px 20px;
-        color: #999;
+        box-shadow: var(--rs-shadow);
     }
 
-    .empty-state-icon {
-        font-size: 48px;
-        margin-bottom: 15px;
+    .empty-icon {
+        width: 92px;
+        height: 92px;
+        border-radius: 28px;
+        margin: 0 auto 18px;
+        background: #fff1f2;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 42px;
     }
 
-    .empty-state-text {
-        font-size: 16px;
+    .empty-title {
+        font-size: 22px;
+        font-weight: 950;
+        color: var(--rs-dark);
+        margin-bottom: 8px;
+    }
+
+    .empty-desc {
+        color: var(--rs-muted);
+        font-weight: 700;
         margin-bottom: 20px;
     }
 
-    .btn-back-shopping {
-        padding: 10px 20px;
-        background: #d92e2e;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        text-decoration: none;
-        font-size: 14px;
-        display: inline-block;
-    }
-
-    .btn-back-shopping:hover {
-        background: #b82222;
-        text-decoration: none;
-    }
-
-    .timeline {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 10px;
-        font-size: 12px;
-    }
-
-    .timeline-item {
-        display: flex;
+    .empty-btn {
+        min-height: 44px;
+        padding: 0 18px;
+        border-radius: 999px;
+        display: inline-flex;
         align-items: center;
-        color: #999;
+        justify-content: center;
+        gap: 8px;
+        background: linear-gradient(135deg, var(--rs-primary), var(--rs-primary-dark));
+        color: #fff;
+        text-decoration: none;
+        font-weight: 950;
     }
 
-    .timeline-dot {
-        width: 8px;
-        height: 8px;
-        background: #999;
-        border-radius: 50%;
-        margin-right: 5px;
+    .empty-btn:hover {
+        color: #fff;
+    }
+
+    @@media(max-width: 992px) {
+        .return-hero-inner {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .return-card {
+            grid-template-columns: 1fr;
+            align-items: stretch;
+        }
+
+        .amount-box {
+            text-align: left;
+        }
+    }
+
+    @@media(max-width: 576px) {
+        .return-history-page {
+            padding: 16px 12px 40px;
+        }
+
+        .return-hero {
+            padding: 22px;
+            border-radius: 22px;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .return-toolbar {
+            align-items: stretch;
+        }
+
+        .toolbar-actions {
+            width: 100%;
+        }
+
+        .action-btn {
+            flex: 1;
+        }
+
+        .return-card {
+            border-radius: 18px;
+            padding: 15px;
+        }
+
+        .return-id {
+            font-size: 15px;
+        }
     }
 </style>
 
-<div class="return-container">
-    <div class="return-header">
-        <h1>🔄 Lịch Sử Trả Hàng</h1>
-        <p>Quản lý các yêu cầu trả hàng và hoàn tiền của bạn</p>
+<div class="return-history-page">
+    <div class="return-hero">
+        <div class="return-hero-inner">
+            <div>
+                <div class="hero-kicker">🔄 Return Center</div>
+                <h1>Lịch Sử Trả Hàng</h1>
+                <p>Theo dõi toàn bộ yêu cầu trả hàng, trạng thái xử lý và số tiền hoàn lại cho các đơn hàng của bạn.</p>
+            </div>
+
+            <div class="hero-panel">
+                <div class="hero-panel-row">
+                    <span class="panel-label">Tổng yêu cầu</span>
+                    <span class="panel-value">@totalRequests yêu cầu</span>
+                </div>
+                <div class="hero-panel-row">
+                    <span class="panel-label">Đang chờ</span>
+                    <span class="panel-value">@pendingCount yêu cầu</span>
+                </div>
+                <div class="hero-panel-row">
+                    <span class="panel-label">Tổng hoàn tiền</span>
+                    <span class="panel-value">@totalAmount.ToString("N0") ₫</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     @if (TempData["Success"] != null)
     {
-        <div style="background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 12px; border-radius: 4px; margin-bottom: 20px;">
+        <div class="success-alert">
             @TempData["Success"]
         </div>
     }
 
-    @if (Model.Count == 0)
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Tổng yêu cầu</div>
+            <div class="stat-value">@totalRequests</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Chờ xem xét</div>
+            <div class="stat-value">@pendingCount</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Đã phê duyệt</div>
+            <div class="stat-value">@approvedCount</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Hoàn tất / Từ chối</div>
+            <div class="stat-value">@completedCount / @rejectedCount</div>
+        </div>
+    </div>
+
+    <div class="return-toolbar">
+        <div>
+            <div class="toolbar-title">Danh sách yêu cầu trả hàng</div>
+            <div class="toolbar-subtitle">Hiển thị mới nhất theo dữ liệu đang có trong hệ thống.</div>
+        </div>
+
+        <div class="toolbar-actions">
+            <a href="@Url.Action("Index", "OrderHistory")" class="action-btn">📦 Xem đơn hàng</a>
+            <a href="@Url.Action("Index", "Home")" class="action-btn">🏪 Tiếp tục mua</a>
+        </div>
+    </div>
+
+    @if (Model == null || Model.Count == 0)
     {
         <div class="empty-state">
-            <div class="empty-state-icon">📦</div>
-            <div class="empty-state-text">Bạn chưa có yêu cầu trả hàng nào</div>
-            <a href="@Url.Action("Index", "OrderHistory")" class="btn-back-shopping">Xem Đơn Hàng</a>
+            <div class="empty-icon">📦</div>
+            <div class="empty-title">Bạn chưa có yêu cầu trả hàng nào</div>
+            <div class="empty-desc">Khi tạo yêu cầu trả hàng từ đơn hàng, lịch sử sẽ xuất hiện tại đây.</div>
+            <a href="@Url.Action("Index", "OrderHistory")" class="empty-btn">Xem đơn hàng</a>
         </div>
     }
     else
@@ -220,36 +605,38 @@
 
                 var statusText = returnReq.Status switch
                 {
-                    "Pending" => "⏳ Chờ Xem Xét",
-                    "Approved" => "✅ Phê Duyệt",
-                    "Rejected" => "❌ Từ Chối",
-                    "Completed" => "✔️ Hoàn Tất",
+                    "Pending" => "⏳ Chờ xem xét",
+                    "Approved" => "✅ Đã phê duyệt",
+                    "Rejected" => "❌ Từ chối",
+                    "Completed" => "✔️ Hoàn tất",
                     _ => returnReq.Status
                 };
 
                 <div class="return-card">
-                    <div class="return-info">
-                        <div class="return-id">Yêu Cầu #@returnReq.Id - Đơn #@returnReq.OrderId</div>
-                        <div class="return-date">
-                            📅 Gửi: @returnReq.RequestDate.ToString("dd/MM/yyyy HH:mm")
+                    <div class="return-main">
+                        <div class="return-id-row">
+                            <div class="return-id">Yêu cầu #@returnReq.Id · Đơn #@returnReq.OrderId</div>
+                            <span class="status-badge @statusClass">@statusText</span>
                         </div>
-                        <div class="timeline">
-                            <div class="timeline-item">
-                                <span class="timeline-dot"></span>
-                                Lý do: @(returnReq.Reason ?? "Không có")
-                            </div>
+
+                        <div class="return-meta">
+                            <span class="meta-pill">📅 @returnReq.RequestDate.ToString("dd/MM/yyyy HH:mm")</span>
+                            <span class="meta-pill">🧾 Mã đơn #@returnReq.OrderId</span>
                         </div>
-                        <div style="margin-top: 10px;">
-                            <span class="return-status @statusClass">@statusText</span>
+
+                        <div class="reason-box">
+                            <strong>Lý do:</strong> @(returnReq.Reason ?? "Không có")
                         </div>
                     </div>
-                    <div style="text-align: center; padding: 0 20px;">
-                        <div class="return-amount">₫@returnReq.ReturnAmount.ToString("N0")</div>
-                        <div style="font-size: 12px; color: #999;">Hoàn Tiền</div>
+
+                    <div class="amount-box">
+                        <div class="amount-label">Hoàn tiền</div>
+                        <div class="return-amount">@returnReq.ReturnAmount.ToString("N0") ₫</div>
                     </div>
+
                     <div class="return-actions">
-                        <a href="@Url.Action("Details", new { id = returnReq.Id })" class="btn-details">
-                            Xem Chi Tiết
+                        <a href="@Url.Action("Details", new { id = returnReq.Id })" class="detail-btn">
+                            Xem chi tiết →
                         </a>
                     </div>
                 </div>

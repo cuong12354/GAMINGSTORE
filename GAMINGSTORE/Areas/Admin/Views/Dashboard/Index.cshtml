@@ -468,13 +468,7 @@
                     <div class="module-desc">Theo dõi tồn kho thấp, hết hàng và sản phẩm cần nhập thêm.</div>
                     <div class="module-footer"><span>Kiểm tra kho</span><span class="module-arrow">→</span></div>
                 </a>
-                <a class="module-card" style="--accent:#0891b2" href="@Url.Action("CustomerReport", "Dashboard", new { area = "Admin" })">
-                    <div class="module-top"><span class="module-icon">👥</span><span class="module-count">@Model.TotalUsers</span></div>
-                    <div class="module-title">Khách hàng</div>
-                    <div class="module-desc">Báo cáo khách hàng mua nhiều, tổng chi tiêu và số đơn.</div>
-                    <div class="module-footer"><span>Xem khách hàng</span><span class="module-arrow">→</span></div>
-                </a>
-                <a class="module-card" style="--accent:#ca8a04" href="/Loyalty/Tiers">
+                <a class="module-card" style="--accent:#ca8a04" href="@Url.Action("Tiers", "Loyalty", new { area = "Admin" })">
                     <div class="module-top"><span class="module-icon">🏅</span><span class="module-count">@Model.TotalMemberTiers</span></div>
                     <div class="module-title">Hội viên / điểm thưởng</div>
                     <div class="module-desc">Xem hạng thành viên, điểm thưởng và giao dịch loyalty.</div>
@@ -491,11 +485,50 @@
                 }
                 @if (User.HasPermission(PermissionConstants.RoleManage))
                 {
-                    <a class="module-card" style="--accent:#111827" href="@Url.Action("Index", "RolePermission", new { area = "Admin" })">
-                        <div class="module-top"><span class="module-icon">🔐</span><span class="module-count">!</span></div>
-                        <div class="module-title">Phân quyền</div>
-                        <div class="module-desc">Cấu hình quyền truy cập Dashboard, Product, Order, Coupon, Audit.</div>
-                        <div class="module-footer"><span>Sửa quyền</span><span class="module-arrow">→</span></div>
+                    <a class="module-card"
+                       style="--accent:#111827"
+                       href="@Url.Action("Index", "RolePermission", new { area = "Admin" })">
+
+                        <div class="module-top">
+                            <span class="module-icon">🛡️</span>
+                            <span class="module-count">RBAC</span>
+                        </div>
+
+                        <div class="module-title">
+                            Role Permission
+                        </div>
+
+                        <div class="module-desc">
+                            Quản lý quyền theo nhóm vai trò như Admin, Staff, Customer.
+                        </div>
+
+                        <div class="module-footer">
+                            <span>Quản lý Role</span>
+                            <span class="module-arrow">→</span>
+                        </div>
+                    </a>
+
+                    <a class="module-card"
+                       style="--accent:#dc2626"
+                       href="@Url.Action("Index", "UserPermission", new { area = "Admin" })">
+
+                        <div class="module-top">
+                            <span class="module-icon">🔐</span>
+                            <span class="module-count">@Model.TotalUsers</span>
+                        </div>
+
+                        <div class="module-title">
+                            User Permission
+                        </div>
+
+                        <div class="module-desc">
+                            Phân quyền riêng cho từng tài khoản, override quyền từ role.
+                        </div>
+
+                        <div class="module-footer">
+                            <span>Phân quyền User</span>
+                            <span class="module-arrow">→</span>
+                        </div>
                     </a>
                 }
                 <a class="module-card" style="--accent:#16a34a" href="@Url.Action("SalesReport", "Dashboard", new { area = "Admin" })">

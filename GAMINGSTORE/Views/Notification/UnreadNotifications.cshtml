@@ -1,0 +1,145 @@
+@model List<GAMINGSTORE.Models.CustomerNotification>
+
+@{
+    ViewData["Title"] = "Danh Sách Thông Báo";
+}
+
+<style>
+    :root {
+        --nt-primary: #d92e2e;
+        --nt-primary-dark: #b82222;
+        --nt-dark: #111827;
+        --nt-muted: #6b7280;
+        --nt-border: rgba(15,23,42,.08);
+        --nt-shadow: 0 18px 42px rgba(15,23,42,.08);
+    }
+
+    body { background: #f3f5f9 !important; }
+
+    .nt-page { max-width: 1000px; margin: 0 auto; padding: 28px 18px 56px; color: var(--nt-dark); }
+    
+    .nt-hero {
+        position: relative; overflow: hidden; border-radius: 28px; padding: 30px; color: white; margin-bottom: 20px;
+        background: radial-gradient(circle at 90% 8%, rgba(255,255,255,.32), transparent 26%), linear-gradient(135deg, #111827 0%, #d92e2e 58%, #ff6b4a 100%);
+        box-shadow: 0 24px 58px rgba(217,46,46,.2);
+    }
+    
+    .nt-hero h1 { margin: 0 0 10px; font-size: clamp(28px,4vw,42px); line-height: 1.06; font-weight: 950; }
+    .nt-hero p { margin: 0; color: rgba(255,255,255,.86); line-height: 1.75; font-weight: 600; }
+
+    .toolbar { background: #fff; border: 1px solid rgba(255,255,255,.72); border-radius: 20px; box-shadow: var(--nt-shadow); padding: 16px; margin-bottom: 16px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .toolbar-title { font-size: 18px; font-weight: 950; }
+    .toolbar-subtitle { color: var(--nt-muted); font-size: 13px; font-weight: 700; margin-top: 3px; }
+    .toolbar-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .action-btn { min-height: 42px; padding: 0 15px; border-radius: 999px; background: #f8fafc; color: var(--nt-dark); border: 1px solid #e5e7eb; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 900; transition: .2s ease; cursor: pointer; }
+    .action-btn:hover { background: var(--nt-primary); border-color: var(--nt-primary); color: #fff; transform: translateY(-2px); }
+
+    .notifications-list { display: grid; gap: 12px; }
+    .notification-item { background: white; border: 1px solid rgba(255,255,255,.72); border-radius: 16px; padding: 16px; box-shadow: var(--nt-shadow); transition: all 0.2s; cursor: pointer; }
+    .notification-item:hover { transform: translateY(-2px); box-shadow: 0 22px 46px rgba(15,23,42,.12); border-color: rgba(217,46,46,.24); }
+    .notification-item.unread { background: linear-gradient(135deg, #fff4f1 0%, #ffe8e0 100%); border-left: 4px solid var(--nt-primary); }
+
+    .notification-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .notification-title { font-size: 16px; font-weight: 950; color: var(--nt-dark); }
+    .notification-time { color: var(--nt-muted); font-size: 12px; font-weight: 700; }
+    .notification-message { color: var(--nt-muted); font-size: 14px; line-height: 1.6; margin-bottom: 10px; }
+    .notification-badge { display: inline-block; background: var(--nt-primary); color: white; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 900; text-transform: uppercase; }
+
+    .empty-state { background: #fff; border-radius: 28px; padding: 64px 24px; text-align: center; box-shadow: var(--nt-shadow); }
+    .empty-icon { width: 92px; height: 92px; border-radius: 28px; background: #fff1f2; display: inline-flex; align-items: center; justify-content: center; font-size: 42px; margin-bottom: 18px; }
+    .empty-title { font-size: 22px; font-weight: 950; margin-bottom: 8px; }
+    .empty-desc { color: var(--nt-muted); font-weight: 700; margin-bottom: 20px; }
+    .empty-btn { min-height: 44px; padding: 0 18px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--nt-primary), var(--nt-primary-dark)); color: #fff; text-decoration: none; font-weight: 950; }
+    .empty-btn:hover { color: #fff; }
+
+    @@media(max-width: 576px) { .nt-page { padding: 16px 12px 40px; } .toolbar { flex-direction: column; align-items: stretch; } }
+</style>
+
+<div class="nt-page">
+    <!-- Header -->
+    <div class="nt-hero">
+        <h1>🔔 Danh Sách Thông Báo</h1>
+        <p>Xem tất cả thông báo chưa đọc từ hệ thống</p>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div>
+            <div class="toolbar-title">Thông báo chưa đọc</div>
+            <div class="toolbar-subtitle">Tổng cộng: @(Model?.Count ?? 0) thông báo</div>
+        </div>
+        <div class="toolbar-actions">
+            @if (Model != null && Model.Any())
+            {
+                <button class="action-btn" onclick="markAllAsRead()">✓ Đánh dấu tất cả là đã đọc</button>
+            }
+            <a href="/" class="action-btn">🏠 Quay lại trang chủ</a>
+        </div>
+    </div>
+
+    <!-- Notifications List -->
+    @if (Model == null || Model.Count == 0)
+    {
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <div class="empty-title">Không có thông báo nào</div>
+            <div class="empty-desc">Bạn đã đọc hết tất cả thông báo. Quay lại sau để xem thông báo mới!</div>
+            <a href="/" class="empty-btn">Quay lại trang chủ</a>
+        </div>
+    }
+    else
+    {
+        <div class="notifications-list">
+            @foreach (var notification in Model.OrderByDescending(n => n.CreatedDate))
+            {
+                <div class="notification-item @(notification.IsRead ? "" : "unread")" onclick="markAsRead(@notification.Id)">
+                    <div class="notification-header">
+                        <div>
+                            <div class="notification-title">@notification.Title</div>
+                            <div class="notification-time">📅 @notification.CreatedDate.ToString("dd/MM/yyyy HH:mm")</div>
+                        </div>
+                        @if (!notification.IsRead)
+                        {
+                            <span class="notification-badge">Chưa đọc</span>
+                        }
+                    </div>
+                    <div class="notification-message">@notification.Message</div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<script>
+    async function markAsRead(notificationId) {
+        try {
+            const response = await fetch(`/api/notification/mark-as-read/${notificationId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (response.ok) {
+                // Reload page to update UI
+                location.reload();
+            }
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+        }
+    }
+
+    async function markAllAsRead() {
+        try {
+            const response = await fetch('/api/notification/mark-all-as-read', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (response.ok) {
+                alert('✅ Tất cả thông báo đã được đánh dấu là đã đọc!');
+                location.reload();
+            }
+        } catch (error) {
+            console.error('Error marking all as read:', error);
+        }
+    }
+</script>

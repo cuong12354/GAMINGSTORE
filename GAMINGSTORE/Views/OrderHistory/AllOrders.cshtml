@@ -4,58 +4,125 @@
     ViewData["Title"] = "Lịch Sử Mua Hàng Tất Cả Khách Hàng";
 }
 
-<div class="container mt-5">
+<style>
+    :root {
+        --oh-primary: #d92e2e;
+        --oh-primary-dark: #b82222;
+        --oh-dark: #111827;
+        --oh-muted: #6b7280;
+        --oh-border: rgba(15,23,42,.08);
+        --oh-shadow: 0 18px 42px rgba(15,23,42,.08);
+    }
+
+    body { background: #f3f5f9 !important; }
+
+    .oh-page { max-width: 1400px; margin: 0 auto; padding: 28px 18px 56px; color: var(--oh-dark); }
+    
+    .oh-hero {
+        position: relative; overflow: hidden; border-radius: 28px; padding: 30px; color: white; margin-bottom: 20px;
+        background: radial-gradient(circle at 90% 8%, rgba(255,255,255,.32), transparent 26%), linear-gradient(135deg, #111827 0%, #d92e2e 58%, #ff6b4a 100%);
+        box-shadow: 0 24px 58px rgba(217,46,46,.2);
+    }
+    
+    .oh-hero h1 { margin: 0 0 10px; font-size: clamp(28px,4vw,42px); line-height: 1.06; font-weight: 950; }
+    .oh-hero p { margin: 0; color: rgba(255,255,255,.86); line-height: 1.75; font-weight: 600; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 14px; margin-bottom: 18px; }
+    .stat-card { background: white; border: 1px solid rgba(255,255,255,.72); border-radius: 20px; padding: 17px; box-shadow: var(--oh-shadow); }
+    .stat-label { color: var(--oh-muted); font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 8px; }
+    .stat-value { font-size: 25px; font-weight: 950; color: var(--oh-dark); }
+
+    .toolbar { background: #fff; border: 1px solid rgba(255,255,255,.72); border-radius: 20px; box-shadow: var(--oh-shadow); padding: 16px; margin-bottom: 16px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .toolbar-title { font-size: 18px; font-weight: 950; }
+    .toolbar-subtitle { color: var(--oh-muted); font-size: 13px; font-weight: 700; margin-top: 3px; }
+    .toolbar-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .action-btn { min-height: 42px; padding: 0 15px; border-radius: 999px; background: #f8fafc; color: var(--oh-dark); border: 1px solid #e5e7eb; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 900; transition: .2s ease; }
+    .action-btn:hover { background: var(--oh-primary); border-color: var(--oh-primary); color: #fff; transform: translateY(-2px); }
+
+    /* Search Bar */
+    .search-bar { width: 100%; max-width: 400px; }
+    .search-input { width: 100%; min-height: 42px; padding: 0 14px; border: 1px solid #e5e7eb; border-radius: 999px; font-size: 14px; background: #f8fafc; color: var(--oh-dark); transition: all 0.2s; }
+    .search-input:focus { outline: none; border-color: var(--oh-primary); background: #fff; box-shadow: 0 0 0 3px rgba(217, 46, 46, 0.1); }
+    .search-input::placeholder { color: var(--oh-muted); }
+
+    /* Table Styling */
+    .orders-table-container { background: white; border-radius: 20px; overflow: hidden; box-shadow: var(--oh-shadow); }
+    .table { margin-bottom: 0; }
+    .table thead th { background: linear-gradient(135deg, #111827 0%, #d92e2e 58%); color: white; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; font-size: 12px; padding: 16px; }
+    .table tbody tr { border-bottom: 1px solid #e5e7eb; transition: all 0.2s; }
+    .table tbody tr:hover { background-color: #f8fafc; }
+    .table tbody td { padding: 14px 16px; vertical-align: middle; }
+
+    .order-id { font-weight: 700; color: var(--oh-primary); font-family: 'Monaco', monospace; }
+    .customer-name { font-weight: 700; color: var(--oh-dark); }
+    .customer-email { color: var(--oh-muted); font-size: 13px; }
+
+    .price-badge { background: linear-gradient(135deg, var(--oh-primary), var(--oh-primary-dark)); color: white; padding: 6px 12px; border-radius: 20px; font-weight: 700; font-size: 13px; display: inline-block; }
+
+    .status-badge { padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 12px; display: inline-block; text-transform: uppercase; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-confirmed { background: #dbeafe; color: #1d4ed8; }
+    .status-shipped { background: #ede9fe; color: #6d28d9; }
+    .status-delivered { background: #dcfce7; color: #166534; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
+
+    .action-buttons { display: flex; gap: 8px; }
+    .btn-view { background: #f8fafc; color: var(--oh-dark); border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; text-decoration: none; transition: all 0.2s; }
+    .btn-view:hover { background: var(--oh-primary); color: white; border-color: var(--oh-primary); }
+
+    .empty-state { background: #fff; border-radius: 28px; padding: 64px 24px; text-align: center; box-shadow: var(--oh-shadow); }
+    .empty-icon { width: 92px; height: 92px; border-radius: 28px; background: #fff1f2; display: inline-flex; align-items: center; justify-content: center; font-size: 42px; margin-bottom: 18px; }
+    .empty-title { font-size: 22px; font-weight: 950; margin-bottom: 8px; }
+    .empty-desc { color: var(--oh-muted); font-weight: 700; margin-bottom: 20px; }
+    .empty-btn { min-height: 44px; padding: 0 18px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--oh-primary), var(--oh-primary-dark)); color: #fff; text-decoration: none; font-weight: 950; }
+    .empty-btn:hover { color: #fff; }
+
+    @@media(max-width: 992px) { .stats-grid { grid-template-columns: repeat(2,1fr); } }
+    @@media(max-width: 576px) { .oh-page { padding: 16px 12px 40px; } .stats-grid { grid-template-columns: 1fr; } .toolbar { flex-direction: column; align-items: stretch; } .search-bar { max-width: none; } .action-buttons { flex-direction: column; } .btn-view { width: 100%; text-align: center; } }
+</style>
+
+<div class="oh-page">
     <!-- Header -->
-    <div class="admin-header mb-4">
-        <h1 class="page-title">📊 Lịch Sử Mua Hàng Tất Cả Khách Hàng</h1>
-        <p class="text-muted">Quản lý tất cả đơn hàng từ khách hàng</p>
+    <div class="oh-hero">
+        <h1>📊 Lịch Sử Mua Hàng Tất Cả Khách Hàng</h1>
+        <p>Quản lý tất cả đơn hàng từ khách hàng trên hệ thống</p>
     </div>
 
     @if (Model == null || Model.Count == 0)
     {
         <div class="empty-state">
-            <i class="fas fa-inbox"></i>
-            <h3>Chưa có đơn hàng nào</h3>
-            <p>Hiện tại chưa có khách hàng nào thực hiện đơn hàng</p>
-            <a href="@Url.Action("Index", "Home")" class="btn btn-primary">
-                <i class="fas fa-arrow-left"></i> Quay Lại Trang Chủ
-            </a>
+            <div class="empty-icon">🛒</div>
+            <div class="empty-title">Chưa có đơn hàng nào</div>
+            <div class="empty-desc">Hiện tại chưa có khách hàng nào thực hiện đơn hàng</div>
+            <a href="/" class="empty-btn">Quay Lại Trang Chủ</a>
         </div>
     }
     else
     {
-        <!-- Filter & Sort -->
-        <div class="filter-section mb-4">
-            <div class="row">
-                <div class="col-md-4">
-                    <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm theo tên khách hàng, email...">
-                </div>
-                <div class="col-md-3">
-                    <select id="statusFilter" class="form-select">
-                        <option value="">Tất cả trạng thái</option>
-                        <option value="Pending">Chờ xử lý</option>
-                        <option value="Confirmed">Đã xác nhận</option>
-                        <option value="Shipped">Đang giao</option>
-                        <option value="Delivered">Đã giao</option>
-                        <option value="Cancelled">Đã hủy</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <select id="sortBy" class="form-select">
-                        <option value="latest">Mới nhất</option>
-                        <option value="oldest">Cũ nhất</option>
-                        <option value="price_high">Giá cao nhất</option>
-                        <option value="price_low">Giá thấp nhất</option>
-                    </select>
-                </div>
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-label">Tổng đơn hàng</div><div class="stat-value">@Model.Count</div></div>
+            <div class="stat-card"><div class="stat-label">Chờ xử lý</div><div class="stat-value">@Model.Where(o => o.Status == "Pending").Count()</div></div>
+            <div class="stat-card"><div class="stat-label">Đã giao</div><div class="stat-value">@Model.Where(o => o.Status == "Delivered").Count()</div></div>
+            <div class="stat-card"><div class="stat-label">Tổng doanh thu</div><div class="stat-value">@Model.Sum(o => o.TotalPrice).ToString("N0", System.Globalization.CultureInfo.CreateSpecificCulture("vi-VN"))₫</div></div>
+        </div>
+
+        <!-- Toolbar with Search -->
+        <div class="toolbar">
+            <div>
+                <div class="toolbar-title">Danh sách tất cả đơn hàng</div>
+                <div class="toolbar-subtitle">Sắp xếp theo đơn mới nhất.</div>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="searchInput" class="search-input" placeholder="🔍 Tìm kiếm theo tên, email, ID đơn..." />
             </div>
         </div>
 
         <!-- Orders Table -->
         <div class="orders-table-container">
-            <table class="table table-hover">
+            <table class="table">
                 <thead>
-                    <tr class="header-row">
+                    <tr>
                         <th>ID Đơn</th>
                         <th>Khách Hàng</th>
                         <th>Email</th>
@@ -69,74 +136,24 @@
                 <tbody id="ordersTableBody">
                     @foreach (var order in Model.OrderByDescending(o => o.OrderDate))
                     {
-                        <tr class="order-row" data-status="@order.Status" data-customer="@order.CustomerName" data-price="@order.TotalPrice">
+                        <tr class="order-row" data-customer="@order.CustomerName" data-email="@(order.ApplicationUser?.Email ?? "")" data-status="@order.Status">
+                            <td><span class="order-id">#@order.Id.ToString("D6")</span></td>
+                            <td><span class="customer-name">@(order.CustomerName ?? "N/A")</span></td>
+                            <td><span class="customer-email">@(order.ApplicationUser?.Email ?? "N/A")</span></td>
+                            <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td><span class="price-badge">@(order.TotalPrice.ToString("N0", System.Globalization.CultureInfo.CreateSpecificCulture("vi-VN")))₫</span></td>
+                            <td><span class="status-badge status-@order.Status?.ToLower()">@GetStatusDisplay(order.Status ?? "Pending")</span></td>
+                            <td>@(order.PaymentMethod ?? "N/A")</td>
                             <td>
-                                <span class="order-id">#@order.Id.ToString("D6")</span>
-                            </td>
-                            <td>
-                                <strong>@(order.CustomerName ?? "N/A")</strong>
-                            </td>
-                            <td>
-                                <small class="text-muted">@(order.ApplicationUser?.Email ?? "N/A")</small>
-                            </td>
-                            <td>
-                                @order.OrderDate.ToString("dd/MM/yyyy HH:mm")
-                            </td>
-                            <td>
-                                <span class="price-badge">
-                                    @(order.TotalPrice.ToString("N0", System.Globalization.CultureInfo.CreateSpecificCulture("vi-VN")))₫
-                                </span>
-                            </td>
-                            <td>
-                                <span class="status-badge status-@order.Status?.ToLower()">
-                                    @GetStatusDisplay(order.Status ?? "Pending")
-                                </span>
-                            </td>
-                            <td>
-                                <small>@(order.PaymentMethod ?? "N/A")</small>
-                            </td>
-                            <td>
-                                <a href="@Url.Action("Details", "OrderHistory", new { id = order.Id })" class="btn btn-sm btn-info">
-                                    <i class="fas fa-eye"></i> Xem Chi Tiết
-                                </a>
-                                <button class="btn btn-sm btn-secondary" onclick="updateStatusModal(@order.Id)">
-                                    <i class="fas fa-edit"></i> Cập Nhật
-                                </button>
+                                <div class="action-buttons">
+                                    <a href="@Url.Action("Details", "OrderHistory", new { id = order.Id })" class="btn-view">👁️ Xem</a>
+                                    <button class="btn-view" onclick="updateStatusModal(@order.Id)" style="background: #e0f2fe; color: #0c4a6e;">✏️ Cập Nhật</button>
+                                </div>
                             </td>
                         </tr>
                     }
                 </tbody>
             </table>
-        </div>
-
-        <!-- Stats -->
-        <div class="stats-section mt-5">
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="stat-card">
-                        <h3>@Model.Count</h3>
-                        <p>Tổng Đơn Hàng</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card">
-                        <h3>@Model.Where(o => o.Status == "Pending").Count()</h3>
-                        <p>Chờ Xử Lý</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card">
-                        <h3>@Model.Where(o => o.Status == "Delivered").Count()</h3>
-                        <p>Đã Giao</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card">
-                        <h3>@Model.Sum(o => o.TotalPrice).ToString("N0", System.Globalization.CultureInfo.CreateSpecificCulture("vi-VN"))₫</h3>
-                        <p>Doanh Thu</p>
-                    </div>
-                </div>
-            </div>
         </div>
     }
 </div>
@@ -168,176 +185,6 @@
         </div>
     </div>
 </div>
-
-<style>
-    .admin-header {
-        border-bottom: 2px solid #8fa3c0;
-        padding-bottom: 20px;
-    }
-
-    .page-title {
-        color: #5a7ba8;
-        font-weight: 600;
-        font-size: 2rem;
-    }
-
-    .filter-section {
-        background: #f8fafb;
-        padding: 20px;
-        border-radius: 8px;
-        border-left: 4px solid #8fa3c0;
-        box-shadow: 0 1px 2px rgba(91, 122, 168, 0.05);
-    }
-
-    .orders-table-container {
-        background: #f8fafb;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 1px 2px rgba(91, 122, 168, 0.05);
-    }
-
-    .table {
-        margin-bottom: 0;
-    }
-
-    .header-row {
-        background-color: #eff2f7;
-        color: var(--text-primary);
-        font-weight: 600;
-        border-bottom: 1px solid #e0e3e8;
-    }
-
-    .header-row th {
-        padding: 16px;
-        font-size: 14px;
-    }
-
-    .order-row {
-        border-bottom: 1px solid #e0e3e8;
-        transition: all 0.2s ease;
-    }
-
-    .order-row:hover {
-        background-color: #f1f3f7;
-    }
-
-    .order-id {
-        color: #5a7ba8;
-        font-weight: 600;
-        font-family: 'Monaco', 'Courier New', monospace;
-    }
-
-    .price-badge {
-        background-color: #6b8fb8;
-        color: white;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
-
-    .status-badge {
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 0.85rem;
-        display: inline-block;
-        min-width: 100px;
-        text-align: center;
-    }
-
-    .status-pending {
-        background-color: #fef3c7;
-        color: #92400e;
-    }
-
-    .status-confirmed {
-        background-color: #dbeafe;
-        color: #0c4a6e;
-    }
-
-    .status-shipped {
-        background-color: #e9d5ff;
-        color: #581c87;
-    }
-
-    .status-delivered {
-        background-color: #dcfce7;
-        color: #166534;
-    }
-
-    .status-cancelled {
-        background-color: #fee2e2;
-        color: #991b1b;
-    }
-
-    .stat-card {
-        background: linear-gradient(135deg, #6b8fb8 0%, #5a7ba8 100%);
-        color: white;
-        padding: 25px;
-        border-radius: 8px;
-        text-align: center;
-        box-shadow: 0 2px 8px rgba(91, 122, 168, 0.1);
-    }
-
-    .stat-card h3 {
-        font-size: 2rem;
-        margin-bottom: 10px;
-        font-weight: 700;
-    }
-
-    .stat-card p {
-        margin: 0;
-        font-size: 0.95rem;
-        opacity: 0.95;
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 80px 20px;
-        background: #f1f3f7;
-        border-radius: 8px;
-        color: var(--text-secondary);
-    }
-
-    .empty-state i {
-        font-size: 3rem;
-        color: #8fa3c0;
-        margin-bottom: 20px;
-        opacity: 0.4;
-    }
-
-    .btn-info {
-        background-color: #6b8fb8;
-        border: none;
-        color: white;
-    }
-
-    .btn-info:hover {
-        background-color: #5a7ba8;
-        color: white;
-    }
-
-    .form-select, .form-control {
-        background-color: white;
-        color: var(--text-primary);
-        border: 1px solid #e0e3e8;
-    }
-
-    .form-select:focus, .form-control:focus {
-        border-color: #8fa3c0;
-        box-shadow: 0 0 0 3px rgba(107, 143, 184, 0.05);
-    }
-
-    .form-select option {
-        background-color: white;
-        color: var(--text-primary);
-    }
-
-    .form-control::placeholder {
-        color: var(--text-muted);
-    }
-</style>
 
 <script>
     let currentOrderId = null;
@@ -375,28 +222,17 @@
         }
     }
 
-    // Search & Filter
-    document.getElementById('searchInput')?.addEventListener('keyup', function () {
-        const searchTerm = this.value.toLowerCase();
-        const statusFilter = document.getElementById('statusFilter').value;
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        const searchValue = this.value.toLowerCase().trim();
+        const orderRows = document.querySelectorAll('.order-row');
 
-        document.querySelectorAll('.order-row').forEach(row => {
+        orderRows.forEach(row => {
             const customerName = row.dataset.customer.toLowerCase();
-            const status = row.dataset.status;
-            const isVisible = customerName.includes(searchTerm) && (!statusFilter || status === statusFilter);
-            row.style.display = isVisible ? '' : 'none';
-        });
-    });
-
-    document.getElementById('statusFilter')?.addEventListener('change', function () {
-        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-        const statusFilter = this.value;
-
-        document.querySelectorAll('.order-row').forEach(row => {
-            const customerName = row.dataset.customer.toLowerCase();
-            const status = row.dataset.status;
-            const isVisible = customerName.includes(searchTerm) && (!statusFilter || status === statusFilter);
-            row.style.display = isVisible ? '' : 'none';
+            const email = row.dataset.email.toLowerCase();
+            
+            const matches = customerName.includes(searchValue) || email.includes(searchValue);
+            row.style.display = (searchValue === '' || matches) ? '' : 'none';
         });
     });
 </script>

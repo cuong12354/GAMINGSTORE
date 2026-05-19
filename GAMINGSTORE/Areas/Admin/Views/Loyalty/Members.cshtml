@@ -1,0 +1,383 @@
+@model List<dynamic>
+
+@{
+    ViewData["Title"] = "Danh Sách Hội Viên";
+}
+
+<style>
+    .members-container {
+        padding: 30px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .members-header {
+        margin-bottom: 30px;
+    }
+
+    .members-header h1 {
+        font-size: 28px;
+        font-weight: 900;
+        color: #1f2937;
+        margin: 0;
+    }
+
+    .search-bar {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .search-input {
+        flex: 1;
+        min-width: 200px;
+        padding: 10px 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #d92e2e;
+        box-shadow: 0 0 0 3px rgba(217, 46, 46, 0.1);
+    }
+
+    .filter-btn {
+        padding: 10px 16px;
+        border-radius: 8px;
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        color: #1f2937;
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .filter-btn.active {
+        background: #d92e2e;
+        color: white;
+        border-color: #d92e2e;
+    }
+
+    .filter-btn:hover {
+        border-color: #d92e2e;
+    }
+
+    .members-section {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 24px;
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 900;
+        color: #1f2937;
+        margin: 0 0 20px 0;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    table thead {
+        background: #f3f4f6;
+    }
+
+    table th {
+        padding: 12px;
+        text-align: left;
+        font-weight: 700;
+        color: #1f2937;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    table td {
+        padding: 12px;
+        border-bottom: 1px solid #e5e7eb;
+        color: #4b5563;
+    }
+
+    table tbody tr:hover {
+        background: #f9fafb;
+    }
+
+    .member-name {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .member-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 12px;
+    }
+
+    .tier-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .tier-bronze { background: #cd7f32; color: white; }
+    .tier-silver { background: #c0c0c0; color: #333; }
+    .tier-gold { background: #ffd700; color: #333; }
+    .tier-platinum { background: #e5e4e2; color: #333; }
+
+    .points-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .points-progress {
+        flex: 1;
+        height: 6px;
+        background: #e5e7eb;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .points-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #d92e2e, #ff6b4a);
+        border-radius: 3px;
+    }
+
+    .points-text {
+        font-weight: 700;
+        color: #1f2937;
+        min-width: 60px;
+        text-align: right;
+    }
+
+    .action-btn {
+        padding: 6px 12px;
+        border-radius: 6px;
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        color: #1f2937;
+        font-weight: 700;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .action-btn:hover {
+        background: #d92e2e;
+        color: white;
+        border-color: #d92e2e;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #9ca3af;
+    }
+
+    .empty-icon {
+        font-size: 48px;
+        margin-bottom: 12px;
+    }
+
+    @@media (max-width: 768px) {
+        .members-container {
+            padding: 16px;
+        }
+
+        .search-bar {
+            flex-direction: column;
+        }
+
+        .search-input {
+            width: 100%;
+        }
+
+        table {
+            font-size: 12px;
+        }
+
+        table th, table td {
+            padding: 8px;
+        }
+    }
+</style>
+
+<div class="members-container">
+    <div class="members-header">
+        <h1>👥 Danh Sách Hội Viên</h1>
+    </div>
+
+    <!-- Search & Filter -->
+    <div class="search-bar">
+        <input type="text" class="search-input" id="searchInput" placeholder="Tìm kiếm theo tên, email hoặc số điện thoại...">
+        <button class="filter-btn active" onclick="filterByTier('all')">Tất Cả</button>
+        <button class="filter-btn" onclick="filterByTier('platinum')">💎 Bạch Kim</button>
+        <button class="filter-btn" onclick="filterByTier('gold')">🥇 Vàng</button>
+        <button class="filter-btn" onclick="filterByTier('silver')">🥈 Bạc</button>
+        <button class="filter-btn" onclick="filterByTier('bronze')">🥉 Đồng</button>
+    </div>
+
+    <!-- Members Table -->
+    <div class="members-section">
+        <h3 class="section-title">📋 Danh Sách Hội Viên (@(Model?.Count ?? 0) người)</h3>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tên Khách Hàng</th>
+                        <th>Email</th>
+                        <th>Điện Thoại</th>
+                        <th>Hạng Thành Viên</th>
+                        <th>Điểm Thưởng</th>
+                        <th>Đơn Hàng</th>
+                        <th>Tổng Chi Tiêu</th>
+                        <th>Ngày Tham Gia</th>
+                        <th>Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Count > 0)
+                    {
+                        @foreach (var member in Model)
+                        {
+                            var tierName = member.LoyaltyPoints >= 15000 ? "Bạch Kim" 
+                                : member.LoyaltyPoints >= 10000 ? "Vàng" 
+                                : member.LoyaltyPoints >= 5000 ? "Bạc" 
+                                : "Đồng";
+                            var tierClass = member.LoyaltyPoints >= 15000 ? "platinum" 
+                                : member.LoyaltyPoints >= 10000 ? "gold" 
+                                : member.LoyaltyPoints >= 5000 ? "silver" 
+                                : "bronze";
+                            var tierIcon = tierClass switch
+                            {
+                                "platinum" => "💎",
+                                "gold" => "🥇",
+                                "silver" => "🥈",
+                                _ => "🥉"
+                            };
+
+                            <tr class="member-row" data-tier="@tierClass" data-name="@member.FullName" data-email="@member.Email" data-phone="@member.PhoneNumber">
+                                <td>
+                                    <div class="member-name">
+                                        <div class="member-avatar">@member.FullName?.First()</div>
+                                        <strong>@member.FullName</strong>
+                                    </div>
+                                </td>
+                                <td style="font-size: 12px;">@member.Email</td>
+                                <td>@member.PhoneNumber</td>
+                                <td>
+                                    <span class="tier-badge tier-@tierClass">@tierIcon @tierName</span>
+                                </td>
+                                <td>
+                                    <div class="points-bar">
+                                        <div class="points-progress">
+                                            <div class="points-fill" style="width: @(Math.Min(member.LoyaltyPoints / 150, 100))%"></div>
+                                        </div>
+                                        <div class="points-text">@member.LoyaltyPoints</div>
+                                    </div>
+                                </td>
+                                <td>@member.TotalOrders</td>
+                                <td><strong>@member.TotalSpent.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</strong></td>
+                                <td style="font-size: 12px;">@member.CreatedDate.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    <a href="@Url.Action("MemberDetails", "Loyalty", new { area = "Admin", id = member.Id })" class="action-btn">
+                                        Xem Chi Tiết
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="9" class="empty-state">
+                                <div class="empty-icon">📭</div>
+                                <div>Chưa có hội viên nào</div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display: flex; gap: 12px; margin-top: 30px;">
+        <a href="@Url.Action("Tiers", "Loyalty", new { area = "Admin" })" class="action-btn" style="padding: 10px 16px; background: #f3f4f6;">
+            ← Quay Lại Hạng Thành Viên
+        </a>
+        <a href="@Url.Action("Index", "Dashboard", new { area = "Admin" })" class="action-btn" style="padding: 10px 16px; background: #f3f4f6;">
+            ← Quay Lại Dashboard
+        </a>
+    </div>
+</div>
+
+<script>
+    function filterByTier(tier) {
+        const rows = document.querySelectorAll('.member-row');
+        const buttons = document.querySelectorAll('.filter-btn');
+
+        // Update active button
+        buttons.forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+
+        // Filter rows
+        rows.forEach(row => {
+            if (tier === 'all' || row.dataset.tier === tier) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    document.getElementById('searchInput').addEventListener('keyup', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('.member-row');
+
+        rows.forEach(row => {
+            const name = row.dataset.name.toLowerCase();
+            const email = row.dataset.email.toLowerCase();
+            const phone = row.dataset.phone.toLowerCase();
+
+            if (name.includes(searchTerm) || email.includes(searchTerm) || phone.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+</script>
+

@@ -1,0 +1,376 @@
+@{
+    ViewData["Title"] = "Báo Cáo Hạng Thành Viên";
+}
+
+<style>
+    .report-container {
+        padding: 30px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .report-header {
+        margin-bottom: 30px;
+    }
+
+    .report-header h1 {
+        font-size: 28px;
+        font-weight: 900;
+        color: #1f2937;
+        margin: 0;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 30px;
+    }
+
+    .summary-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .summary-card.highlight {
+        background: linear-gradient(135deg, #d92e2e 0%, #b82222 100%);
+        color: white;
+        border-color: #d92e2e;
+    }
+
+    .summary-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #6b7280;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .summary-card.highlight .summary-label {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .summary-value {
+        font-size: 28px;
+        font-weight: 950;
+        color: #1f2937;
+    }
+
+    .summary-card.highlight .summary-value {
+        color: white;
+    }
+
+    .report-section {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 900;
+        color: #1f2937;
+        margin: 0 0 20px 0;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .tier-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 16px;
+    }
+
+    .tier-stat-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 16px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .tier-stat-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--tier-color);
+    }
+
+    .tier-stat-card.bronze { --tier-color: #cd7f32; }
+    .tier-stat-card.silver { --tier-color: #c0c0c0; }
+    .tier-stat-card.gold { --tier-color: #ffd700; }
+    .tier-stat-card.platinum { --tier-color: #e5e4e2; }
+
+    .tier-stat-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .tier-stat-icon {
+        font-size: 32px;
+    }
+
+    .tier-stat-name {
+        font-size: 16px;
+        font-weight: 950;
+        color: #1f2937;
+    }
+
+    .tier-stat-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #e5e7eb;
+        font-size: 13px;
+    }
+
+    .tier-stat-row:last-child {
+        border-bottom: none;
+    }
+
+    .tier-stat-label {
+        color: #6b7280;
+        font-weight: 700;
+    }
+
+    .tier-stat-value {
+        color: #1f2937;
+        font-weight: 950;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    table thead {
+        background: #f3f4f6;
+    }
+
+    table th {
+        padding: 12px;
+        text-align: left;
+        font-weight: 700;
+        color: #1f2937;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    table td {
+        padding: 12px;
+        border-bottom: 1px solid #e5e7eb;
+        color: #4b5563;
+    }
+
+    table tbody tr:hover {
+        background: #f9fafb;
+    }
+
+    .tier-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .tier-bronze { background: #cd7f32; color: white; }
+    .tier-silver { background: #c0c0c0; color: #333; }
+    .tier-gold { background: #ffd700; color: #333; }
+    .tier-platinum { background: #e5e4e2; color: #333; }
+
+    .action-btn {
+        padding: 10px 16px;
+        border-radius: 8px;
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        color: #1f2937;
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .action-btn:hover {
+        background: #d92e2e;
+        color: white;
+        border-color: #d92e2e;
+    }
+
+    @@media (max-width: 768px) {
+        .report-container {
+            padding: 16px;
+        }
+
+        .summary-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .report-header h1 {
+            font-size: 22px;
+        }
+    }
+</style>
+
+<div class="report-container">
+    <div class="report-header">
+        <h1>📊 Báo Cáo Hạng Thành Viên</h1>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+        <div class="summary-card highlight">
+            <div class="summary-label">Tổng Hội Viên</div>
+            <div class="summary-value">@(ViewBag.TotalMembers ?? 0)</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Tổng Điểm Thưởng</div>
+            <div class="summary-value">@(ViewBag.TotalPoints ?? 0)</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Trung Bình Điểm/Người</div>
+            <div class="summary-value">
+                @{
+                    var avgPoints = (ViewBag.TotalMembers ?? 0) > 0 ? (ViewBag.TotalPoints ?? 0) / (ViewBag.TotalMembers ?? 1) : 0;
+                }
+                @avgPoints.ToString("F0")
+            </div>
+        </div>
+    </div>
+
+    <!-- Tier Statistics -->
+    <div class="report-section">
+        <h3 class="section-title">🏅 Thống Kê Theo Hạng Thành Viên</h3>
+        <div class="tier-stats-grid">
+            @if (ViewBag.TierStats != null)
+            {
+                @foreach (var stat in ViewBag.TierStats)
+                {
+                    var tierClass = stat.TierName.ToLower() switch
+                    {
+                        "bạch kim" => "platinum",
+                        "vàng" => "gold",
+                        "bạc" => "silver",
+                        _ => "bronze"
+                    };
+                    var tierIcon = tierClass switch
+                    {
+                        "platinum" => "💎",
+                        "gold" => "🥇",
+                        "silver" => "🥈",
+                        _ => "🥉"
+                    };
+
+                    <div class="tier-stat-card @tierClass">
+                        <div class="tier-stat-header">
+                            <div class="tier-stat-icon">@tierIcon</div>
+                            <div class="tier-stat-name">@stat.TierName</div>
+                        </div>
+
+                        <div class="tier-stat-row">
+                            <span class="tier-stat-label">Số Khách Hàng</span>
+                            <span class="tier-stat-value">@stat.CustomerCount</span>
+                        </div>
+
+                        <div class="tier-stat-row">
+                            <span class="tier-stat-label">Tổng Doanh Thu</span>
+                            <span class="tier-stat-value">@stat.TotalRevenue.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</span>
+                        </div>
+
+                        <div class="tier-stat-row">
+                            <span class="tier-stat-label">Trung Bình Chi Tiêu</span>
+                            <span class="tier-stat-value">@stat.AverageSpent.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</span>
+                        </div>
+
+                        <div class="tier-stat-row">
+                            <span class="tier-stat-label">Ưu Đãi Giảm Giá</span>
+                            <span class="tier-stat-value">@stat.DiscountPercentage%</span>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <!-- Detailed Table -->
+    <div class="report-section">
+        <h3 class="section-title">📋 Chi Tiết Hạng Thành Viên</h3>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Hạng Thành Viên</th>
+                        <th>Số Khách Hàng</th>
+                        <th>Tổng Doanh Thu</th>
+                        <th>Trung Bình Chi Tiêu</th>
+                        <th>Ưu Đãi Giảm Giá</th>
+                        <th>Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.TierStats != null)
+                    {
+                        @foreach (var stat in ViewBag.TierStats)
+                        {
+                            var tierClass = stat.TierName.ToLower() switch
+                            {
+                                "bạch kim" => "platinum",
+                                "vàng" => "gold",
+                                "bạc" => "silver",
+                                _ => "bronze"
+                            };
+
+                            <tr>
+                                <td>
+                                    <span class="tier-badge tier-@tierClass">@stat.TierName</span>
+                                </td>
+                                <td><strong>@stat.CustomerCount</strong></td>
+                                <td>@stat.TotalRevenue.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</td>
+                                <td>@stat.AverageSpent.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</td>
+                                <td>@stat.DiscountPercentage%</td>
+                                <td>
+                                    <a href="@Url.Action("TierDetails", "Loyalty", new { area = "Admin", id = stat.TierId })" class="action-btn">
+                                        Xem Chi Tiết
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="@Url.Action("Tiers", "Loyalty", new { area = "Admin" })" class="action-btn">
+            ← Quay Lại Hạng Thành Viên
+        </a>
+        <a href="@Url.Action("Members", "Loyalty", new { area = "Admin" })" class="action-btn">
+            ← Xem Danh Sách Hội Viên
+        </a>
+        <a href="@Url.Action("Index", "Dashboard", new { area = "Admin" })" class="action-btn">
+            ← Quay Lại Dashboard
+        </a>
+        <button onclick="window.print()" class="action-btn">
+            🖨️ In Báo Cáo
+        </button>
+    </div>
+</div>
+
