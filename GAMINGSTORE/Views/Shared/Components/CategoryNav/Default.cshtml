@@ -3,52 +3,59 @@
 <div class="megamenu-wrapper d-none d-lg-block">
     <div class="container">
         <ul class="megamenu-container">
+
             <!-- LAPTOP -->
             <li class="menu-item has-child">
-                <a href="/Home/Index?searchString=laptop" class="menu-link">
+                <a href="@Url.Action("Index", "Home", new { area = "", productType = "laptop" })" class="menu-link">
                     <i class="bi bi-laptop me-2"></i> LAPTOP <i class="bi bi-chevron-down ms-1 small"></i>
                 </a>
+
                 <div class="mega-dropdown">
                     <div class="container">
                         <div class="mega-grid">
+
                             <div>
                                 <h6 class="mega-title">Thương hiệu</h6>
                                 <ul class="mega-list">
-                                    <li><a href="/Home/Index?searchString=MSI">MSI Gaming</a></li>
-                                    <li><a href="/Home/Index?searchString=ASUS">ASUS | ROG</a></li>
-                                    <li><a href="/Home/Index?searchString=Lenovo">Lenovo Legion</a></li>
-                                    <li><a href="/Home/Index?searchString=Acer">Acer Predator</a></li>
-                                    <li><a href="/Home/Index?searchString=Gigabyte">Gigabyte / Aorus</a></li>
-                                    <li><a href="/Home/Index?searchString=Apple">Apple MacBook</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "laptop", searchString = "MSI" })">MSI Gaming</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "laptop", searchString = "ASUS ROG" })">ASUS | ROG</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "laptop", searchString = "Lenovo Legion" })">Lenovo Legion</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "laptop", searchString = "Acer Predator" })">Acer Predator</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "laptop", searchString = "Gigabyte Aorus" })">Gigabyte / Aorus</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "laptop", searchString = "Apple MacBook" })">Apple MacBook</a></li>
                                 </ul>
                             </div>
+
                             <div>
                                 <h6 class="mega-title">Giá bán</h6>
                                 <ul class="mega-list">
-                                    <li><a href="#">Dưới 20 triệu</a></li>
-                                    <li><a href="#">Từ 20 - 30 triệu</a></li>
-                                    <li><a href="#">Từ 30 - 40 triệu</a></li>
-                                    <li><a href="#">Trên 50 triệu</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "laptop", maxPrice = 20000000 })">Dưới 20 triệu</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "laptop", minPrice = 20000000, maxPrice = 30000000 })">Từ 20 - 30 triệu</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "laptop", minPrice = 30000000, maxPrice = 40000000 })">Từ 30 - 40 triệu</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "laptop", minPrice = 50000000 })">Trên 50 triệu</a></li>
                                 </ul>
                             </div>
+
                             <div>
                                 <h6 class="mega-title">Cấu hình</h6>
                                 <ul class="mega-list">
-                                    <li><a href="#">RTX 4000 Series</a></li>
-                                    <li><a href="#">RTX 5000 Series</a></li>
-                                    <li><a href="#">Intel Core Ultra</a></li>
-                                    <li><a href="#">AMD Ryzen AI</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "laptop", searchString = "RTX 4000" })">RTX 4000 Series</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "laptop", searchString = "RTX 5000" })">RTX 5000 Series</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "laptop", searchString = "Intel Core Ultra" })">Intel Core Ultra</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "laptop", searchString = "AMD Ryzen AI" })">AMD Ryzen AI</a></li>
                                 </ul>
                             </div>
+
                             <div>
                                 <h6 class="mega-title">Nhu cầu</h6>
                                 <ul class="mega-list">
-                                    <li><a href="#">Laptop Gaming AI</a></li>
-                                    <li><a href="#">Laptop Hi-End</a></li>
-                                    <li><a href="#">Văn phòng cao cấp</a></li>
-                                    <li><a href="#">Đồ họa chuyên nghiệp</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "laptop", searchString = "Gaming AI" })">Laptop Gaming AI</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "laptop", searchString = "Hi-End" })">Laptop Hi-End</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "laptop", searchString = "Văn phòng" })">Văn phòng cao cấp</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "laptop", searchString = "Đồ họa" })">Đồ họa chuyên nghiệp</a></li>
                                 </ul>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -56,46 +63,53 @@
 
             <!-- PC GAMING -->
             <li class="menu-item has-child">
-                <a href="/Home/Index?searchString=pc" class="menu-link">
-                    <i class="bi bi-pc-display me-2"></i> PC GAMING <i class="bi bi-chevron-down ms-1 small"></i>
+                <a href="@Url.Action("Index", "Home", new { area = "", productType = "pc" })" class="menu-link">
+                    <i class="bi bi-pc-display me-2"></i> PC <i class="bi bi-chevron-down ms-1 small"></i>
                 </a>
+
                 <div class="mega-dropdown">
                     <div class="container">
                         <div class="mega-grid">
+
                             <div>
                                 <h6 class="mega-title">PC Theo nhu cầu</h6>
                                 <ul class="mega-list">
-                                    <li><a href="#">PC Gaming</a></li>
-                                    <li><a href="#">PC Văn phòng</a></li>
-                                    <li><a href="#">PC Đồ họa</a></li>
-                                    <li><a href="#">PC Gaming AI</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "pc", searchString = "Gaming" })">PC Gaming</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "pc", searchString = "Văn phòng" })">PC Văn phòng</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "pc", searchString = "Đồ họa" })">PC Đồ họa</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "pc", searchString = "Gaming AI" })">PC Gaming AI</a></li>
                                 </ul>
                             </div>
+
                             <div>
                                 <h6 class="mega-title">PC Theo giá</h6>
                                 <ul class="mega-list">
-                                    <li><a href="#">Dưới 10 triệu</a></li>
-                                    <li><a href="#">10 - 25 triệu</a></li>
-                                    <li><a href="#">25 - 50 triệu</a></li>
-                                    <li><a href="#">Trên 50 triệu</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "pc", maxPrice = 10000000 })">Dưới 10 triệu</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "pc", minPrice = 10000000, maxPrice = 25000000 })">10 - 25 triệu</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "pc", minPrice = 25000000, maxPrice = 50000000 })">25 - 50 triệu</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "pc", minPrice = 50000000 })">Trên 50 triệu</a></li>
                                 </ul>
                             </div>
+
                             <div>
                                 <h6 class="mega-title">PC Theo cấu hình</h6>
                                 <ul class="mega-list">
-                                    <li><a href="#">Core i5 / RTX 4060</a></li>
-                                    <li><a href="#">Core i7 / RTX 4070</a></li>
-                                    <li><a href="#">Core i9 / RTX 4090</a></li>
-                                    <li><a href="#">Ryzen 7 / RX 7000</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "pc", searchString = "Core i5 RTX 4060" })">Core i5 / RTX 4060</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "pc", searchString = "Core i7 RTX 4070" })">Core i7 / RTX 4070</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "pc", searchString = "Core i9 RTX 4090" })">Core i9 / RTX 4090</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", productType = "pc", searchString = "Ryzen 7 RX 7000" })">Ryzen 7 / RX 7000</a></li>
                                 </ul>
                             </div>
+
                             <div class="mega-promo">
-                                <a href="/pages/build-pc" class="d-block p-3 bg-light border rounded text-center text-danger text-decoration-none">
+                                <a href="@Url.Action("Index", "Home", new { area = "", productType = "pc", searchString = "Build PC" })"
+                                   class="d-block p-3 bg-light border rounded text-center text-danger text-decoration-none">
                                     <i class="bi bi-tools fs-4 d-block mb-2"></i>
                                     <strong>TỰ CHỌN CẤU HÌNH</strong>
                                     <p class="small text-muted mb-0">Xây dựng PC theo ý muốn</p>
                                 </a>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -103,46 +117,52 @@
 
             <!-- MÀN HÌNH -->
             <li class="menu-item has-child">
-                <a href="/Home/Index?searchString=màn hình" class="menu-link">
+                <a href="@Url.Action("Index", "Home", new { area = "", searchString = "màn hình" })" class="menu-link">
                     <i class="bi bi-display me-2"></i> MÀN HÌNH <i class="bi bi-chevron-down ms-1 small"></i>
                 </a>
+
                 <div class="mega-dropdown">
                     <div class="container">
                         <div class="mega-grid">
+
                             <div>
                                 <h6 class="mega-title">Thương hiệu</h6>
                                 <ul class="mega-list">
-                                    <li><a href="#">Màn hình ASUS</a></li>
-                                    <li><a href="#">Màn hình Samsung</a></li>
-                                    <li><a href="#">Màn hình Dell</a></li>
-                                    <li><a href="#">Màn hình MSI</a></li>
-                                    <li><a href="#">Màn hình LG</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "Màn hình ASUS" })">Màn hình ASUS</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "Màn hình Samsung" })">Màn hình Samsung</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "Màn hình Dell" })">Màn hình Dell</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "Màn hình MSI" })">Màn hình MSI</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "Màn hình LG" })">Màn hình LG</a></li>
                                 </ul>
                             </div>
+
                             <div>
                                 <h6 class="mega-title">Kích thước</h6>
-                            <ul class="mega-list">
-                                    <li><a href="#">24 Inch</a></li>
-                                    <li><a href="#">27 Inch</a></li>
-                                    <li><a href="#">32 Inch</a></li>
-                                    <li><a href="#">Màn hình Siêu rộng</a></li>
+                                <ul class="mega-list">
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "24 inch" })">24 Inch</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "27 inch" })">27 Inch</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "32 inch" })">32 Inch</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "Màn hình siêu rộng" })">Màn hình Siêu rộng</a></li>
                                 </ul>
                             </div>
+
                             <div>
                                 <h6 class="mega-title">Tần số quét</h6>
                                 <ul class="mega-list">
-                                    <li><a href="#">144Hz / 165Hz</a></li>
-                                    <li><a href="#">240Hz / 360Hz</a></li>
-                                    <li><a href="#">OLED Gaming</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "144Hz 165Hz" })">144Hz / 165Hz</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "240Hz 360Hz" })">240Hz / 360Hz</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "OLED Gaming" })">OLED Gaming</a></li>
                                 </ul>
                             </div>
+
                             <div>
                                 <h6 class="mega-title">Phụ kiện</h6>
                                 <ul class="mega-list">
-                                    <li><a href="#">Giá treo màn hình (Arm)</a></li>
-                                    <li><a href="#">Dây cáp tín hiệu</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "Giá treo màn hình" })">Giá treo màn hình (Arm)</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "Dây cáp tín hiệu" })">Dây cáp tín hiệu</a></li>
                                 </ul>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -150,31 +170,35 @@
 
             <!-- LINH KIỆN -->
             <li class="menu-item has-child">
-                <a href="/Home/Index?searchString=linh kiện" class="menu-link">
+                <a href="@Url.Action("Index", "Home", new { area = "", searchString = "linh kiện" })" class="menu-link">
                     <i class="bi bi-cpu me-2"></i> LINH KIỆN <i class="bi bi-chevron-down ms-1 small"></i>
                 </a>
+
                 <div class="mega-dropdown">
                     <div class="container">
                         <div class="mega-grid">
+
                             <div>
                                 <h6 class="mega-title">Xử lý & Lưu trữ</h6>
                                 <ul class="mega-list">
-                                    <li><a href="/Home/Index?searchString=CPU">CPU (Bộ vi xử lý)</a></li>
-                                    <li><a href="/Home/Index?searchString=VGA">VGA (Card đồ họa)</a></li>
-                                    <li><a href="/Home/Index?searchString=Mainboard">Mainboard (Bo mạch chủ)</a></li>
-                                    <li><a href="/Home/Index?searchString=RAM">RAM (Bộ nhớ trong)</a></li>
-                                    <li><a href="/Home/Index?searchString=SSD">SSD / HDD</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "CPU" })">CPU (Bộ vi xử lý)</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "VGA" })">VGA (Card đồ họa)</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "Mainboard" })">Mainboard (Bo mạch chủ)</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "RAM" })">RAM (Bộ nhớ trong)</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "SSD HDD" })">SSD / HDD</a></li>
                                 </ul>
                             </div>
+
                             <div>
                                 <h6 class="mega-title">Năng lượng & Tản nhiệt</h6>
                                 <ul class="mega-list">
-                                    <li><a href="/Home/Index?searchString=PSU">Nguồn máy tính (PSU)</a></li>
-                                    <li><a href="/Home/Index?searchString=Tản nhiệt">Tản nhiệt khí / Nước</a></li>
-                                    <li><a href="/Home/Index?searchString=Case">Vỏ Case máy tính</a></li>
-                                    <li><a href="#">Quạt Case (Fan)</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "PSU" })">Nguồn máy tính (PSU)</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "Tản nhiệt" })">Tản nhiệt khí / Nước</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "Case" })">Vỏ Case máy tính</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "Quạt Case" })">Quạt Case (Fan)</a></li>
                                 </ul>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -182,37 +206,42 @@
 
             <!-- GAMING GEAR -->
             <li class="menu-item has-child">
-                <a href="/Home/Index?searchString=gear" class="menu-link">
+                <a href="@Url.Action("Index", "Home", new { area = "", searchString = "gear" })" class="menu-link">
                     <i class="bi bi-keyboard me-2"></i> GAMING GEAR <i class="bi bi-chevron-down ms-1 small"></i>
                 </a>
+
                 <div class="mega-dropdown">
                     <div class="container">
                         <div class="mega-grid">
+
                             <div>
                                 <h6 class="mega-title">Thiết bị điều khiển</h6>
                                 <ul class="mega-list">
-                                    <li><a href="/Home/Index?searchString=Chuột">Chuột Gaming</a></li>
-                                    <li><a href="/Home/Index?searchString=Bàn phím">Bàn phím cơ</a></li>
-                                    <li><a href="/Home/Index?searchString=Lót chuột">Lót chuột (Pad)</a></li>
-                                    <li><a href="/Home/Index?searchString=Tay cầm">Tay cầm chơi game</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "Chuột Gaming" })">Chuột Gaming</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "Bàn phím cơ" })">Bàn phím cơ</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "Lót chuột" })">Lót chuột (Pad)</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "Tay cầm" })">Tay cầm chơi game</a></li>
                                 </ul>
                             </div>
+
                             <div>
                                 <h6 class="mega-title">Âm thanh & Stream</h6>
                                 <ul class="mega-list">
-                                    <li><a href="/Home/Index?searchString=Tai nghe">Tai nghe Gaming</a></li>
-                                    <li><a href="/Home/Index?searchString=Loa">Loa máy tính</a></li>
-                                    <li><a href="/Home/Index?searchString=Micro">Microphone</a></li>
-                                    <li><a href="/Home/Index?searchString=Webcam">Webcam</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "Tai nghe Gaming" })">Tai nghe Gaming</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "Loa máy tính" })">Loa máy tính</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "Microphone" })">Microphone</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "Webcam" })">Webcam</a></li>
                                 </ul>
                             </div>
+
                             <div>
                                 <h6 class="mega-title">Ghế & Bàn Gaming</h6>
                                 <ul class="mega-list">
-                                    <li><a href="#">Ghế Gaming / Công thái học</a></li>
-                                    <li><a href="#">Bàn Gaming</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "Ghế Gaming" })">Ghế Gaming / Công thái học</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { area = "", searchString = "Bàn Gaming" })">Bàn Gaming</a></li>
                                 </ul>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -220,16 +249,13 @@
 
             <!-- SERVICE & OTHERS -->
             <li class="menu-item">
-                <a href="#" class="menu-link">
+                <a href="@Url.Action("Services", "Home", new { area = "" })" class="menu-link">
                     <i class="bi bi-wrench-adjustable me-2"></i> DỊCH VỤ
                 </a>
             </li>
 
-            <li class="ms-auto">
-                <a href="/Home/Index?sortBy=newest" class="menu-link text-warning fw-bold">
-                    <i class="bi bi-fire me-1"></i> XẢ KHO GIÁ SỐC
-                </a>
-            </li>
+            
+
         </ul>
     </div>
 </div>

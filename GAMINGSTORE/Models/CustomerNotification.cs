@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace GAMINGSTORE.Models
 {
@@ -32,6 +33,8 @@ namespace GAMINGSTORE.Models
 
         // Foreign Keys
         [ForeignKey("UserId")]
+        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
         public ApplicationUser User { get; set; }
     }
 }

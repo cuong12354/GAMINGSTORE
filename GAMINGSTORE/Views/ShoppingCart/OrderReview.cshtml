@@ -245,7 +245,7 @@
             <div class="section-title">💳 Phương Thức Thanh Toán</div>
             <div style="display: flex; flex-direction: column; gap: 12px;">
                 <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; transition: all 0.3s;">
-                    <input type="radio" name="PaymentMethod" value="COD" @(Model.PaymentMethod == "COD" ? "checked" : "") onchange="toggleBankInfo()" />
+                    <input type="radio" name="PaymentMethod" value="COD" @(Model.PaymentMethod == "COD" ? "checked" : "") onchange="togglePaymentInfo()" />
                     <div style="flex: 1;">
                         <div style="font-weight: 600; color: #1f2937;">💵 Thanh toán khi nhận hàng (COD)</div>
                         <div style="font-size: 12px; color: #6b7280;">Bạn sẽ thanh toán tiền mặt cho shipper</div>
@@ -253,10 +253,18 @@
                 </label>
 
                 <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; transition: all 0.3s;">
-                    <input type="radio" name="PaymentMethod" value="BankTransfer" @(Model.PaymentMethod == "BankTransfer" ? "checked" : "") onchange="toggleBankInfo()" />
+                    <input type="radio" name="PaymentMethod" value="BankTransfer" @(Model.PaymentMethod == "BankTransfer" ? "checked" : "") onchange="togglePaymentInfo()" />
                     <div style="flex: 1;">
                         <div style="font-weight: 600; color: #1f2937;">🏦 Chuyển khoản ngân hàng</div>
                         <div style="font-size: 12px; color: #6b7280;">Chuyển khoản vào TK của GAMINGSTORE</div>
+                    </div>
+                </label>
+
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; transition: all 0.3s;">
+                    <input type="radio" name="PaymentMethod" value="VNPay" @(Model.PaymentMethod == "VNPay" ? "checked" : "") onchange="togglePaymentInfo()" />
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #1f2937;">💳 Thanh toán qua VNPay</div>
+                        <div style="font-size: 12px; color: #6b7280;">Thanh toán trực tuyến qua VNPay (thẻ, ví điện tử, ngân hàng)</div>
                     </div>
                 </label>
             </div>
@@ -271,6 +279,19 @@
                     <div><strong>Chi nhánh:</strong> HCM-Trung tâm</div>
                     <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(152, 78, 0, 0.2);">
                         <strong>⚠️ Ghi chú chuyển khoản:</strong> [TênKhách]-[MãĐơnHàng]
+                    </div>
+                </div>
+            </div>
+
+            <!-- VNPAY INFO (Hiển thị nếu chọn VNPay) -->
+            <div id="vnpayInfo" style="display: @(Model.PaymentMethod == "VNPay" ? "block" : "none"); margin-top: 15px; padding: 15px; background: #dbeafe; border-radius: 8px; border-left: 4px solid #0284c7;">
+                <div style="font-weight: 600; color: #0284c7; margin-bottom: 10px;">💳 Thông Tin Thanh Toán VNPay:</div>
+                <div style="font-size: 13px; line-height: 1.8; color: #0c4a6e;">
+                    <div>✓ Hỗ trợ thanh toán bằng thẻ tín dụng/ghi nợ</div>
+                    <div>✓ Hỗ trợ ví điện tử (Momo, ZaloPay, v.v.)</div>
+                    <div>✓ Hỗ trợ chuyển khoản ngân hàng trực tuyến</div>
+                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(2, 132, 199, 0.2);">
+                        <strong>⚠️ Lưu ý:</strong> Bạn sẽ được chuyển hướng đến trang thanh toán VNPay để hoàn tất giao dịch
                     </div>
                 </div>
             </div>
@@ -373,14 +394,77 @@
 </style>
 
 <script>
-    function toggleBankInfo() {
+    function togglePaymentInfo() {
         const bankInfo = document.getElementById('bankInfo');
+        const vnpayInfo = document.getElementById('vnpayInfo');
         const selectedMethod = document.querySelector('input[name="PaymentMethod"]:checked').value;
         
         if (selectedMethod === 'BankTransfer') {
             bankInfo.style.display = 'block';
+            vnpayInfo.style.display = 'none';
+        } else if (selectedMethod === 'VNPay') {
+            bankInfo.style.display = 'none';
+            vnpayInfo.style.display = 'block';
         } else {
             bankInfo.style.display = 'none';
+            vnpayInfo.style.display = 'none';
         }
     }
+
+    // Handle form submission
+    document.querySelector('form').addEventListener('submit', async function(e) {
+        const selectedMethod = document.querySelector('input[name="PaymentMethod"]:checked').value;
+        
+        if (selectedMethod === 'VNPay') {
+            e.preventDefault();
+            
+            const orderId = document.querySelector('input[name="Id"]').value;
+            const form = this;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            
+            try {
+                // Show loading state
+                submitBtn.disabled = true;
+                submitBtn.textContent = '⏳ Đang xử lý...';
+                
+                // First, submit the form to create the order
+                const formData = new FormData(form);
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Lỗi tạo đơn hàng');
+                }
+                
+                // Then create VNPay payment URL
+                const paymentResponse = await fetch('/Vnpay/CreatePaymentUrl', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ orderId: parseInt(orderId) })
+                });
+                
+                if (!paymentResponse.ok) {
+                    throw new Error('Lỗi tạo URL thanh toán');
+                }
+                
+                const paymentData = await paymentResponse.json();
+                
+                if (paymentData.paymentUrl) {
+                    // Redirect to VNPay payment page
+                    window.location.href = paymentData.paymentUrl;
+                } else {
+                    throw new Error('Không nhận được URL thanh toán');
+                }
+            } catch (error) {
+                alert('Lỗi: ' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
+    });
 </script>

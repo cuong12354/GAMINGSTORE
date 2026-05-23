@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace GAMINGSTORE.Models
 {
@@ -23,6 +24,7 @@ namespace GAMINGSTORE.Models
 
         // Foreign Key
         [ForeignKey("OrderId")]
+        [JsonIgnore]
         public Order? Order { get; set; }
     }
 }

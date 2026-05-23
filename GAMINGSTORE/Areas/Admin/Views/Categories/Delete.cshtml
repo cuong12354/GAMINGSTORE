@@ -1,0 +1,78 @@
+@model GAMINGSTORE.Models.Category
+@{
+    ViewData["Title"] = "Xóa Danh mục";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-3 border-danger border-2">
+                <div class="card-header bg-danger bg-opacity-10 py-3 d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="bi bi-exclamation-triangle me-2 text-danger"></i>Xóa Danh mục</h4>
+                    <span class="text-muted small">ID: #@Model.Id</span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        <strong>Cảnh báo!</strong> Hành động này không thể hoàn tác. Vui lòng xác nhận trước khi xóa.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+
+                    <div class="mb-4 p-3 bg-light rounded-2">
+                        <h6 class="fw-bold mb-3">Thông tin danh mục sẽ bị xóa:</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <span class="text-muted">Tên danh mục:</span>
+                                <p class="fw-bold">@Model.Name</p>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <span class="text-muted">Biểu tượng:</span>
+                                <p class="fw-bold">
+                                    @if (!string.IsNullOrEmpty(Model.Icon))
+                                    {
+                                        <i class="@Model.Icon me-2"></i>@Model.Icon
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Không có</span>
+                                    }
+                                </p>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <span class="text-muted">Thứ tự hiển thị:</span>
+                                <p class="fw-bold">@Model.DisplayOrder</p>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <span class="text-muted">Trạng thái Menu:</span>
+                                <p class="fw-bold">
+                                    @if (Model.IsMenuVisible)
+                                    {
+                                        <span class="badge bg-success">Hiện</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Ẩn</span>
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a asp-action="Index" class="btn btn-light px-4">
+                                <i class="bi bi-arrow-left me-2"></i>Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-danger px-4">
+                                <i class="bi bi-trash me-2"></i>Xác nhận xóa
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

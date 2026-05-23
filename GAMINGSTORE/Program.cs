@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -98,7 +99,14 @@ builder.Services.AddAuthorization(options =>
 });
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(options =>
+    {
+        // Configure JSON serializer to ignore circular references
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
 
 builder.Services.AddScoped<IProductRepository, EFProductRepository>();
 builder.Services.AddScoped<ICategoryRepository, EFCategoryRepository>();
@@ -115,6 +123,7 @@ builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IGeminiService, GeminiService>();
 builder.Services.AddHttpClient<IGeminiService, GeminiService>();
+builder.Services.AddScoped<IVnpayService, VnpayService>();
 
 var app = builder.Build();
 
@@ -158,7 +167,7 @@ using (var scope = app.Services.CreateScope())
     await RoleSeeding.SeedRolesAndAdminAsync(dbContext, userManager, roleManager);
     
     // Seed products and categories
-    await DataSeeding.SeedCategoriesAndProducts(dbContext);
+    // await DataSeeding.SeedCategoriesAndProducts(dbContext);
 }
 
 app.Run();

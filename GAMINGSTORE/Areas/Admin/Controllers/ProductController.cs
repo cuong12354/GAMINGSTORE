@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Caching.Memory;
 using System.Text.Json;
 
 namespace GAMINGSTORE.Areas.Admin.Controllers
@@ -18,17 +19,20 @@ namespace GAMINGSTORE.Areas.Admin.Controllers
         private readonly ICategoryRepository _categoryRepository;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IAuditService _auditService;
+        private readonly IMemoryCache _cache;
 
         public ProductController(
             IProductRepository productRepository,
             ICategoryRepository categoryRepository,
             UserManager<ApplicationUser> userManager,
-            IAuditService auditService)
+            IAuditService auditService,
+            IMemoryCache cache)
         {
             _productRepository = productRepository;
             _categoryRepository = categoryRepository;
             _userManager = userManager;
             _auditService = auditService;
+            _cache = cache;
         }
 
         // ================= DANH SÁCH =================
@@ -99,6 +103,9 @@ namespace GAMINGSTORE.Areas.Admin.Controllers
                 }
 
                 await _productRepository.AddAsync(product);
+
+                // 📋 Xóa cache sản phẩm
+                _cache.Remove("AllProducts");
 
                 // 📋 Log audit
                 var userId = _userManager.GetUserId(User);
@@ -189,6 +196,9 @@ namespace GAMINGSTORE.Areas.Admin.Controllers
 
                 await _productRepository.UpdateAsync(oldProduct);
 
+                // 📋 Xóa cache sản phẩm
+                _cache.Remove("AllProducts");
+
                 // 📋 Log audit
                 var userId = _userManager.GetUserId(User);
                 var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
@@ -228,6 +238,9 @@ namespace GAMINGSTORE.Areas.Admin.Controllers
             var product = await _productRepository.GetByIdAsync(id);
 
             await _productRepository.DeleteAsync(id);
+
+            // 📋 Xóa cache sản phẩm
+            _cache.Remove("AllProducts");
 
             // 📋 Log audit
             if (product != null)

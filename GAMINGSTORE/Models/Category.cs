@@ -1,5 +1,6 @@
 using GAMINGSTORE.Models;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace GAMINGSTORE.Models
 {
@@ -12,7 +13,13 @@ namespace GAMINGSTORE.Models
 
         // Hierarchy support
         public int? ParentId { get; set; }
+        
+        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
         public Category? Parent { get; set; }
+        
+        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
         public List<Category> SubCategories { get; set; } = new List<Category>();
 
         // Menu UI support
@@ -20,7 +27,7 @@ namespace GAMINGSTORE.Models
         public int DisplayOrder { get; set; } = 0;
         public bool IsMenuVisible { get; set; } = true;
 
-        [System.Text.Json.Serialization.JsonIgnore]
+        [JsonIgnore]
         [Newtonsoft.Json.JsonIgnore]
         public List<Product> Products { get; set; } = new List<Product>();
     }

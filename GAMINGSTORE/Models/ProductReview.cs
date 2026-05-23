@@ -35,6 +35,8 @@ namespace GAMINGSTORE.Models
         public Product? Product { get; set; }
 
         [ForeignKey("UserId")]
+        [System.Text.Json.Serialization.JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
         public ApplicationUser? User { get; set; }
     }
 }

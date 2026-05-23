@@ -1,4 +1,6 @@
-﻿namespace GAMINGSTORE.Models
+﻿using System.Text.Json.Serialization;
+
+namespace GAMINGSTORE.Models
 {
     public class OrderDetail
     {
@@ -8,7 +10,9 @@
         public int Quantity { get; set; }
         public decimal Price { get; set; }
         public string? ProductName { get; set; }
+        [JsonIgnore]
         public Order? Order { get; set; }
+        [JsonIgnore]
         public Product? Product { get; set; }
     }
 }

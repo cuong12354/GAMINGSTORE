@@ -1,0 +1,155 @@
+@{
+    ViewData["Title"] = "Thanh Toán Thất Bại";
+}
+
+<style>
+    .failed-container {
+        max-width: 600px;
+        margin: 60px auto;
+        padding: 40px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .failed-icon {
+        font-size: 80px;
+        color: #ef4444;
+        margin-bottom: 20px;
+        animation: shake 0.5s ease;
+    }
+
+    .failed-title {
+        font-size: 28px;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 10px;
+    }
+
+    .failed-message {
+        font-size: 16px;
+        color: #6b7280;
+        margin-bottom: 15px;
+    }
+
+    .error-details {
+        background: #fef2f2;
+        border: 2px solid #fecaca;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        color: #991b1b;
+        font-weight: 600;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .btn-primary {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #d92e2e, #b82222);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(217, 46, 46, 0.3);
+    }
+
+    .btn-secondary {
+        padding: 12px 24px;
+        background: white;
+        color: #d92e2e;
+        border: 2px solid #d92e2e;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+        background: #fef2f2;
+    }
+
+    .info-text {
+        font-size: 14px;
+        color: #9ca3af;
+        margin-top: 20px;
+        line-height: 1.6;
+    }
+
+    @@keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
+    }
+
+    @@media (max-width: 576px) {
+        .failed-container {
+            margin: 30px 15px;
+            padding: 25px;
+        }
+
+        .failed-icon {
+            font-size: 60px;
+        }
+
+        .failed-title {
+            font-size: 22px;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-primary, .btn-secondary {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="failed-container">
+    <div class="failed-icon">✕</div>
+    <h1 class="failed-title">Thanh Toán Thất Bại</h1>
+    <p class="failed-message">Rất tiếc, giao dịch của bạn không thành công</p>
+
+    @if (!string.IsNullOrEmpty(ViewBag.Message))
+    {
+        <div class="error-details">
+            @ViewBag.Message
+        </div>
+    }
+
+    <div class="info-text">
+        <p>Vui lòng kiểm tra:</p>
+        <ul style="text-align: left; display: inline-block;">
+            <li>Số tiền trong tài khoản có đủ không</li>
+            <li>Thẻ/Tài khoản có bị khóa không</li>
+            <li>Kết nối internet có ổn định không</li>
+            <li>Thông tin thẻ/tài khoản có chính xác không</li>
+        </ul>
+    </div>
+
+    <div class="action-buttons">
+        <a href="@Url.Action("Checkout", "ShoppingCart", new { orderId = ViewBag.OrderId })" class="btn-primary">
+            Thử Lại
+        </a>
+        <a href="@Url.Action("Index", "OrderHistory")" class="btn-secondary">
+            Xem Đơn Hàng
+        </a>
+    </div>
+</div>

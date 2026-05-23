@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace GAMINGSTORE.Models
 {
@@ -19,6 +20,7 @@ namespace GAMINGSTORE.Models
         [ValidateNever]
         public string PaymentMethod { get; set; }
         [ForeignKey("UserId")]
+        [JsonIgnore]
         public ApplicationUser ApplicationUser { get; set; }
         public List<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
         public string? Status { get; set; }

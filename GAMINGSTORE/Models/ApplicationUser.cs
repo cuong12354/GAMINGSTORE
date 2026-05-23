@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace GAMINGSTORE.Models
 {
@@ -22,12 +23,19 @@ namespace GAMINGSTORE.Models
         public DateTime CreatedDate { get; set; }
 
         // Relationships
+        [JsonIgnore]
         public List<ProductReview>? Reviews { get; set; }
+        [JsonIgnore]
         public List<Wishlist>? WishlistItems { get; set; }
+        [JsonIgnore]
         public List<NewsletterSubscription>? NewsletterSubscriptions { get; set; }
+        [JsonIgnore]
         public List<ReturnRequest>? ReturnRequests { get; set; }
+        [JsonIgnore]
         public List<Order>? Orders { get; set; }
+        [JsonIgnore]
         public List<LoyaltyPoint>? LoyaltyPoints { get; set; }
+        [JsonIgnore]
         public List<AuditLog>? AuditLogs { get; set; }
 
         // Statistics

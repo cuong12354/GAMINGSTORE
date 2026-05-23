@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace GAMINGSTORE.Models
 {
@@ -16,9 +17,11 @@ namespace GAMINGSTORE.Models
 
         public string? ImageUrl { get; set; }
 
+        [JsonIgnore]
         public List<ProductImage>? Images { get; set; }
 
         // CHỈ GIỮ LẠI ĐÚNG 1 DÒNG NÀY (Để thể hiện 1 Sản phẩm có Nhiều Danh mục)
+        [JsonIgnore]
         public List<Category> Categories { get; set; } = new List<Category>();
 
         // New Features
@@ -26,12 +29,16 @@ namespace GAMINGSTORE.Models
 
         public int ReviewCount { get; set; } = 0;
 
+        [JsonIgnore]
         public List<ProductReview>? Reviews { get; set; }
 
+        [JsonIgnore]
         public List<Wishlist>? WishlistItems { get; set; }
 
+        [JsonIgnore]
         public List<ProductVariant>? Variants { get; set; }
 
+        [JsonIgnore]
         public Inventory? Inventory { get; set; }
 
         [StringLength(200)]

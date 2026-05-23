@@ -1055,7 +1055,7 @@
 
     <!-- SECTION 1: LAPTOP GAMING -->
     var laptopGaming = homeProducts?.Where(p => p.Categories != null && p.Categories.Any(c =>
-        c.Name?.Contains("Laptop", StringComparison.OrdinalIgnoreCase) == true &&
+        c.Name?.Contains("Laptop Gaming", StringComparison.OrdinalIgnoreCase) == true &&
         c.Name?.Contains("AI", StringComparison.OrdinalIgnoreCase) != true
     )).Take(4) ?? Enumerable.Empty<GAMINGSTORE.Models.Product>();
 
@@ -1125,7 +1125,7 @@
 
     <!-- SECTION 3: PC GAMING -->
     var pcGaming = homeProducts?.Where(p => p.Categories != null && p.Categories.Any(c =>
-        c.Name?.Contains("PC", StringComparison.OrdinalIgnoreCase) == true ||
+        c.Name?.Contains("PC Gaming", StringComparison.OrdinalIgnoreCase) == true ||
         c.Name?.Contains("Desktop", StringComparison.OrdinalIgnoreCase) == true
     )).Take(4) ?? Enumerable.Empty<GAMINGSTORE.Models.Product>();
 

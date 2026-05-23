@@ -17,6 +17,8 @@ namespace GAMINGSTORE.Models
 
         // Foreign Keys
         [ForeignKey("UserId")]
+        [System.Text.Json.Serialization.JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
         public ApplicationUser? User { get; set; }
 
         [ForeignKey("ProductId")]

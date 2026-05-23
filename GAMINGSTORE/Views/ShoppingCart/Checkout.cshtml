@@ -371,7 +371,7 @@
         <div class="row gap-4">
             <!-- LEFT COLUMN - FORM -->
             <div class="col-lg-8">
-                <form asp-action="Checkout" method="post" id="checkoutForm">
+                <form asp-action="Checkout" method="post" id="checkoutForm" onsubmit="handleCheckoutSubmit(event)">
                     <!-- CUSTOMER INFO -->
                     <div class="checkout-container">
                         <div class="section-header">
@@ -450,6 +450,14 @@
                                 <div class="payment-label">
                                     <span class="payment-name">🏦 Chuyển khoản ngân hàng</span>
                                     <span class="payment-desc">Chuyển khoản vào TK của GAMINGSTORE trước khi giao</span>
+                                </div>
+                            </label>
+
+                            <label class="payment-item">
+                                <input type="radio" name="PaymentMethod" value="VNPay" onchange="toggleBankInfo()" />
+                                <div class="payment-label">
+                                    <span class="payment-name">💳 VNPay</span>
+                                    <span class="payment-desc">Thanh toán qua VNPay (thẻ, ví điện tử, ngân hàng)</span>
                                 </div>
                             </label>
                         </div>
@@ -550,6 +558,57 @@
                 toggleBankInfo();
             });
         });
+
+        function handleCheckoutSubmit(event) {
+            const paymentMethod = document.querySelector('[name="PaymentMethod"]:checked').value;
+            
+            if (paymentMethod === 'VNPay') {
+                event.preventDefault();
+                
+                // Submit form first to create order
+                const form = document.getElementById('checkoutForm');
+                const formData = new FormData(form);
+                
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(html => {
+                    // Extract order ID from response
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const orderId = doc.querySelector('[data-order-id]')?.getAttribute('data-order-id');
+                    
+                    if (orderId) {
+                        // Create VNPay payment URL
+                        fetch('/Vnpay/CreatePaymentUrl', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ orderId: parseInt(orderId) })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.paymentUrl) {
+                                window.location.href = data.paymentUrl;
+                            } else {
+                                alert('Lỗi tạo URL thanh toán');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Lỗi tạo URL thanh toán');
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Lỗi tạo đơn hàng');
+                });
+            }
+        }
 
         // Form validation
         document.getElementById('checkoutForm').addEventListener('submit', function(e) {

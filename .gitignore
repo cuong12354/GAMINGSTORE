@@ -361,3 +361,15 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Configuration files with sensitive data
+appsettings.json
+appsettings.*.json
+!appsettings.Development.json
+
+appsettings.Development.json
+bin/
+obj/
+.vs/
+*.user
+*.suogit add .

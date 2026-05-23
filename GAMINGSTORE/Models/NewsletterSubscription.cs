@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace GAMINGSTORE.Models
 {
@@ -17,6 +18,7 @@ namespace GAMINGSTORE.Models
         public string? UserId { get; set; }
 
         [ForeignKey("UserId")]
+        [JsonIgnore]
         public ApplicationUser? User { get; set; }
     }
 }

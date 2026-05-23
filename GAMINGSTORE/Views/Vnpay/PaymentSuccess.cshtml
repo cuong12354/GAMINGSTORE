@@ -1,0 +1,216 @@
+@model Order
+
+@{
+    ViewData["Title"] = "Thanh Toán Thành Công";
+}
+
+<style>
+    .success-container {
+        max-width: 600px;
+        margin: 60px auto;
+        padding: 40px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .success-icon {
+        font-size: 80px;
+        color: #10b981;
+        margin-bottom: 20px;
+        animation: scaleIn 0.5s ease;
+    }
+
+    .success-title {
+        font-size: 28px;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 10px;
+    }
+
+    .success-message {
+        font-size: 16px;
+        color: #6b7280;
+        margin-bottom: 30px;
+    }
+
+    .order-details {
+        background: #f9fafb;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        text-align: left;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .detail-label {
+        color: #6b7280;
+        font-weight: 600;
+    }
+
+    .detail-value {
+        color: #111827;
+        font-weight: 700;
+    }
+
+    .total-row {
+        background: white;
+        padding: 15px 0;
+        border-top: 2px solid #d92e2e;
+        margin-top: 10px;
+    }
+
+    .total-row .detail-value {
+        color: #d92e2e;
+        font-size: 20px;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .btn-primary {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #d92e2e, #b82222);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(217, 46, 46, 0.3);
+    }
+
+    .btn-secondary {
+        padding: 12px 24px;
+        background: white;
+        color: #d92e2e;
+        border: 2px solid #d92e2e;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+        background: #fef2f2;
+    }
+
+    .points-badge {
+        display: inline-block;
+        background: #fef3c7;
+        color: #92400e;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 700;
+        margin-top: 15px;
+    }
+
+    @@keyframes scaleIn {
+        from {
+            transform: scale(0);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .success-container {
+            margin: 30px 15px;
+            padding: 25px;
+        }
+
+        .success-icon {
+            font-size: 60px;
+        }
+
+        .success-title {
+            font-size: 22px;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-primary, .btn-secondary {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="success-container">
+    <div class="success-icon">✓</div>
+    <h1 class="success-title">Thanh Toán Thành Công!</h1>
+    <p class="success-message">Cảm ơn bạn đã mua hàng tại GAMINGSTORE</p>
+
+    <div class="order-details">
+        <div class="detail-row">
+            <span class="detail-label">Mã Đơn Hàng:</span>
+            <span class="detail-value">#@Model.Id</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Ngày Đặt Hàng:</span>
+            <span class="detail-value">@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Phương Thức Thanh Toán:</span>
+            <span class="detail-value">VNPay</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Địa Chỉ Giao Hàng:</span>
+            <span class="detail-value">@Model.ShippingAddress</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Số Sản Phẩm:</span>
+            <span class="detail-value">@Model.OrderDetails.Count</span>
+        </div>
+        <div class="detail-row total-row">
+            <span class="detail-label">Tổng Tiền:</span>
+            <span class="detail-value">@Model.TotalPrice.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</span>
+        </div>
+    </div>
+
+    @{
+        var points = (int)(Model.TotalPrice / 1000);
+        if (points > 0)
+        {
+            <div class="points-badge">
+                🎁 Bạn nhận được @points điểm thưởng
+            </div>
+        }
+    }
+
+    <div class="action-buttons">
+        <a href="@Url.Action("Details", "OrderHistory", new { id = Model.Id })" class="btn-primary">
+            Xem Chi Tiết Đơn Hàng
+        </a>
+        <a href="@Url.Action("Index", "Home")" class="btn-secondary">
+            Tiếp Tục Mua Sắm
+        </a>
+    </div>
+</div>
