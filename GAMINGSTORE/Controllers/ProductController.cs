@@ -84,7 +84,7 @@ namespace GAMINGSTORE.Controllers
 
             // Lọc ra sản phẩm thuộc Category khớp với từ khóa hoặc tên sản phẩm chứa từ khóa
             var filteredProducts = allProducts
-                .Where(p => (p.Categories != null && p.Categories.Any(c => c.Name != null && c.Name.ToLower().Contains(keyword.ToLower()))) ||
+                .Where(p => p.Categories.Any(c => c.Name != null && c.Name.ToLower().Contains(keyword.ToLower())) ||
                             (p.Name != null && p.Name.ToLower().Contains(keyword.ToLower())))
                 .ToList();
 

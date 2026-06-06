@@ -18,6 +18,14 @@ namespace GAMINGSTORE.Repositories
             .Include(p => p.Inventory) // ✨ Lấy kèm số lượng tồn kho
             .ToListAsync();
         }
+
+        public IQueryable<Product> GetQueryable()
+        {
+            return _context.Products
+                .Include(p => p.Categories)
+                .Include(p => p.Inventory)
+                .AsQueryable();
+        }
         public async Task<Product> GetByIdAsync(int id)
         {
             // return await _context.Products.FindAsync(id);

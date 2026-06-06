@@ -1,4 +1,4 @@
-﻿document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
 	const chatbot = document.getElementById("salesChatbot");
 	const panel = document.getElementById("salesChatMessages");
 	const form = document.getElementById("salesChatForm");
@@ -21,7 +21,11 @@
 	const addMessage = (content, sender) => {
 		const bubble = document.createElement("div");
 		bubble.className = `sales-chat-message ${sender}`;
-		bubble.textContent = content;
+		if (sender === 'bot') {
+			bubble.innerHTML = content;
+		} else {
+			bubble.textContent = content;
+		}
 		panel.appendChild(bubble);
 		scrollToBottom();
 	};
