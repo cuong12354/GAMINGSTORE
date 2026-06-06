@@ -108,33 +108,37 @@ namespace GAMINGSTORE.Controllers
             ViewBag.PageSize = pageSize;
             ViewBag.TotalProduct = totalProduct;
 
-            ViewBag.AllHomeProducts = productList;
+            ViewBag.AllHomeProducts = allProducts;
 
             return View(productList);
         }
 
+        // Hàm này có công dụng lọc sản phẩm tuyệt đối dựa trên thẻ productType từ Menu truyền xuống.
+        // Thay vì tìm từ khóa trong toàn bộ tên và mô tả sản phẩm (dễ bị dính chéo như Laptop Gaming có chữ "PC" trong mô tả), 
+        // ở đây chúng ta CHỈ tìm kiếm trong Tên của Danh Mục (c.Name).
+        // Ví dụ: productType="pc" thì chỉ lấy các sản phẩm thuộc danh mục có chữ "pc", "máy tính bàn", v.v...
         private IEnumerable<Product> ApplyProductTypeFilter(IEnumerable<Product> products, string productType)
         {
             var type = NormalizeText(productType);
 
             return type switch
             {
-                "laptop" => products.Where(p => ProductContainsAny(p,
-                    "laptop", "notebook", "macbook")),
+                "laptop" => products.Where(p => p.Categories != null && p.Categories.Any(c => 
+                    NormalizeText(c.Name).Contains("laptop") || NormalizeText(c.Name).Contains("macbook"))),
 
-                "pc" => products.Where(p => ProductContainsAny(p,
-                    "pc", "pc gaming", "may tinh ban", "may bo", "desktop")),
+                "pc" => products.Where(p => p.Categories != null && p.Categories.Any(c => 
+                    NormalizeText(c.Name).Contains("pc") || NormalizeText(c.Name).Contains("may tinh ban") || NormalizeText(c.Name).Contains("desktop") || NormalizeText(c.Name).Contains("may bo"))),
 
-                "monitor" => products.Where(p => ProductContainsAny(p,
-                    "man hinh", "monitor", "display")),
+                "monitor" => products.Where(p => p.Categories != null && p.Categories.Any(c => 
+                    NormalizeText(c.Name).Contains("man hinh") || NormalizeText(c.Name).Contains("monitor") || NormalizeText(c.Name).Contains("display"))),
 
-                "component" => products.Where(p => ProductContainsAny(p,
-                    "linh kien", "cpu", "vga", "card do hoa", "mainboard",
-                    "ram", "ssd", "hdd", "psu", "nguon", "tan nhiet", "case")),
+                "component" => products.Where(p => p.Categories != null && p.Categories.Any(c => 
+                    new[] { "linh kien", "cpu", "vga", "card do hoa", "mainboard", "ram", "ssd", "hdd", "psu", "nguon", "tan nhiet", "case" }
+                    .Any(k => NormalizeText(c.Name).Contains(k)))),
 
-                "gear" => products.Where(p => ProductContainsAny(p,
-                    "gaming gear", "chuot", "ban phim", "lot chuot", "tay cam",
-                    "tai nghe", "loa", "micro", "microphone", "webcam", "ghe", "ban gaming")),
+                "gear" => products.Where(p => p.Categories != null && p.Categories.Any(c => 
+                    new[] { "gaming gear", "chuot", "ban phim", "lot chuot", "tay cam", "tai nghe", "loa", "micro", "microphone", "webcam", "ghe", "ban gaming" }
+                    .Any(k => NormalizeText(c.Name).Contains(k)))),
 
                 _ => products
             };
@@ -176,9 +180,18 @@ namespace GAMINGSTORE.Controllers
                 return products.Where(p => ProductContainsAll(p, "ryzen 7", "rx 7000"));
             }
 
-            var terms = BuildSearchTerms(keyword);
+            // Tách các từ trong từ khóa tìm kiếm (bỏ các từ quá ngắn < 2 ký tự)
+            var searchWords = keyword.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                                     .Where(w => w.Length >= 2)
+                                     .ToList();
 
-            return products.Where(p => terms.Any(term => ProductContains(p, term)));
+            if (searchWords.Any())
+            {
+                // Yêu cầu sản phẩm phải chứa tất cả các từ trong từ khóa tìm kiếm (phép AND)
+                return products.Where(p => searchWords.All(word => ProductContains(p, word)));
+            }
+
+            return products;
         }
 
         private List<string> BuildSearchTerms(string keyword)

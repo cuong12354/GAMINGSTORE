@@ -941,7 +941,7 @@
 
     <!-- CATEGORY PRODUCT SECTIONS -->
     @{
-        bool isSearching = !string.IsNullOrEmpty(ViewBag.SearchString) || ViewBag.SelectedCategoryId != null;
+        bool isSearching = !string.IsNullOrEmpty(ViewBag.SearchString) || ViewBag.SelectedCategoryId != null || !string.IsNullOrEmpty(ViewBag.ProductType);
     }
 
     @if (isSearching)
@@ -1098,7 +1098,8 @@
     <!-- SECTION 2: LAPTOP AI -->
     var laptopAI = homeProducts?.Where(p => p.Categories != null && p.Categories.Any(c =>
         c.Name?.Contains("Laptop AI", StringComparison.OrdinalIgnoreCase) == true ||
-        c.Name?.Contains("AI", StringComparison.OrdinalIgnoreCase) == true
+        c.Name?.EndsWith(" AI", StringComparison.OrdinalIgnoreCase) == true ||
+        c.Name?.Equals("AI", StringComparison.OrdinalIgnoreCase) == true
     )).Take(4) ?? Enumerable.Empty<GAMINGSTORE.Models.Product>();
 
     if (laptopAI.Any())
