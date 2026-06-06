@@ -105,31 +105,22 @@ namespace GAMINGSTORE.Controllers
             ViewBag.TotalPage = totalPage;
             ViewBag.PageSize = pageSize;
             ViewBag.TotalProduct = totalProduct;
-
-<<<<<<< Updated upstream
             var allProducts = await _productRepository.GetAllAsync() ?? new List<Product>();
-=======
-            var allProducts = await _productRepository.GetAllAsync();
->>>>>>> Stashed changes
             ViewBag.AllHomeProducts = allProducts;
 
             return View(productList);
         }
 
-<<<<<<< Updated upstream
         // Hàm này có công dụng lọc sản phẩm tuyệt đối dựa trên thẻ productType từ Menu truyền xuống.
         // Thay vì tìm từ khóa trong toàn bộ tên và mô tả sản phẩm (dễ bị dính chéo như Laptop Gaming có chữ "PC" trong mô tả), 
         // ở đây chúng ta CHỈ tìm kiếm trong Tên của Danh Mục (c.Name).
         // Ví dụ: productType="pc" thì chỉ lấy các sản phẩm thuộc danh mục có chữ "pc", "máy tính bàn", v.v...
-=======
->>>>>>> Stashed changes
         private IQueryable<Product> ApplyProductTypeFilter(IQueryable<Product> query, string productType)
         {
             var type = productType.ToLower().Trim();
 
             return type switch
             {
-<<<<<<< Updated upstream
                 "laptop" => query.Where(p => p.Categories.Any(c => 
                     c.Name != null && (c.Name.Contains("laptop") || c.Name.Contains("macbook")))),
 
@@ -144,22 +135,6 @@ namespace GAMINGSTORE.Controllers
 
                 "gear" => query.Where(p => p.Categories.Any(c => 
                     c.Name != null && (c.Name.Contains("gaming gear") || c.Name.Contains("chuột") || c.Name.Contains("bàn phím") || c.Name.Contains("lót chuột") || c.Name.Contains("tay cầm") || c.Name.Contains("tai nghe") || c.Name.Contains("loa") || c.Name.Contains("micro") || c.Name.Contains("microphone") || c.Name.Contains("webcam") || c.Name.Contains("ghế") || c.Name.Contains("bàn gaming")))),
-=======
-                "laptop" => query.Where(p => (p.Name != null && (p.Name.Contains("laptop") || p.Name.Contains("notebook") || p.Name.Contains("macbook"))) || 
-                                             p.Categories.Any(c => c.Name != null && (c.Name.Contains("laptop") || c.Name.Contains("macbook")))),
-
-                "pc" => query.Where(p => (p.Name != null && (p.Name.Contains("pc") || p.Name.Contains("máy tính bàn") || p.Name.Contains("máy bộ") || p.Name.Contains("desktop"))) || 
-                                         p.Categories.Any(c => c.Name != null && (c.Name.Contains("pc") || c.Name.Contains("desktop")))),
-
-                "monitor" => query.Where(p => (p.Name != null && (p.Name.Contains("màn hình") || p.Name.Contains("monitor") || p.Name.Contains("display"))) || 
-                                              p.Categories.Any(c => c.Name != null && (c.Name.Contains("màn hình") || c.Name.Contains("monitor")))),
-
-                "component" => query.Where(p => (p.Name != null && (p.Name.Contains("linh kiện") || p.Name.Contains("cpu") || p.Name.Contains("vga") || p.Name.Contains("mainboard") || p.Name.Contains("ram") || p.Name.Contains("ssd") || p.Name.Contains("hdd") || p.Name.Contains("nguồn") || p.Name.Contains("psu") || p.Name.Contains("tản nhiệt"))) || 
-                                                p.Categories.Any(c => c.Name != null && (c.Name.Contains("linh kiện") || c.Name.Contains("cpu") || c.Name.Contains("vga") || c.Name.Contains("ram")))),
-
-                "gear" => query.Where(p => (p.Name != null && (p.Name.Contains("chuột") || p.Name.Contains("bàn phím") || p.Name.Contains("tai nghe") || p.Name.Contains("gear") || p.Name.Contains("lót chuột") || p.Name.Contains("loa") || p.Name.Contains("micro") || p.Name.Contains("webcam") || p.Name.Contains("ghế"))) || 
-                                           p.Categories.Any(c => c.Name != null && (c.Name.Contains("chuột") || c.Name.Contains("bàn phím") || c.Name.Contains("tai nghe") || c.Name.Contains("gear")))),
->>>>>>> Stashed changes
 
                 _ => query
             };
@@ -208,22 +183,6 @@ namespace GAMINGSTORE.Controllers
                                         p.Categories.Any(c => c.Name != null && (c.Name.Contains("ssd") || c.Name.Contains("hdd"))));
             }
 
-<<<<<<< Updated upstream
-            var terms = BuildSearchTerms(searchString);
-
-            if (terms.Any())
-            {
-                // LOGIC AND: Sản phẩm phải chứa TẤT CẢ các từ khóa
-                foreach (var term in terms)
-                {
-                    var t = term; // Local copy for LINQ expression
-                    query = query.Where(p => 
-                        (p.Name != null && p.Name.Contains(t)) ||
-                        (p.Description != null && p.Description.Contains(t)) ||
-                        p.Categories.Any(c => c.Name != null && c.Name.Contains(t))
-                    );
-                }
-=======
             var terms = BuildSearchTerms(keyword);
 
             // LOGIC AND: Sản phẩm phải chứa TẤT CẢ các từ khóa
@@ -232,9 +191,9 @@ namespace GAMINGSTORE.Controllers
                 var t = term; // Local copy for LINQ expression
                 query = query.Where(p => 
                     (p.Name != null && p.Name.Contains(t)) ||
+                    (p.Description != null && p.Description.Contains(t)) ||
                     p.Categories.Any(c => c.Name != null && c.Name.Contains(t))
                 );
->>>>>>> Stashed changes
             }
 
             return query;
