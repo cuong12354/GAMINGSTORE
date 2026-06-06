@@ -5,6 +5,7 @@ using Microsoft.Extensions.Caching.Memory;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 
 namespace GAMINGSTORE.Controllers
 {
@@ -34,54 +35,50 @@ namespace GAMINGSTORE.Controllers
 
             var categories = await _categoryRepository.GetAllAsync();
 
-            // Không cache sản phẩm ở trang Home để khi Admin thêm/sửa sản phẩm thì search cập nhật ngay.
-            var allProducts = await _productRepository.GetAllAsync() ?? new List<Product>();
+            // Sử dụng IQueryable để lọc dưới SQL Server thay vì kéo toàn bộ về RAM
+            IQueryable<Product> query = _productRepository.GetQueryable();
 
-            IEnumerable<Product> products = allProducts;
-
-            // 1. Lọc theo nhóm menu trước: laptop, pc, monitor, component, gear...
+            // 1. Lọc theo nhóm menu trước
             if (!string.IsNullOrWhiteSpace(productType))
             {
-                products = ApplyProductTypeFilter(products, productType);
+                query = ApplyProductTypeFilter(query, productType);
             }
 
             // 2. Lọc theo khoảng giá
             if (minPrice.HasValue)
             {
-                products = products.Where(p => p.Price >= minPrice.Value);
+                query = query.Where(p => p.Price >= minPrice.Value);
             }
 
             if (maxPrice.HasValue)
             {
-                products = products.Where(p => p.Price <= maxPrice.Value);
+                query = query.Where(p => p.Price <= maxPrice.Value);
             }
 
-            // 3. Lọc theo từ khóa chi tiết
+            // 3. Lọc theo từ khóa chi tiết (AND logic)
             if (!string.IsNullOrWhiteSpace(searchString))
             {
-                products = ApplySearchFilter(products, searchString);
+                query = ApplySearchFilter(query, searchString);
             }
 
             // 4. Lọc theo categoryId nếu có
             if (categoryId.HasValue)
             {
-                products = products.Where(p =>
-                    p.Categories != null &&
-                    p.Categories.Any(c => c.Id == categoryId.Value));
+                query = query.Where(p => p.Categories.Any(c => c.Id == categoryId.Value));
             }
 
             // 5. Sort
-            products = sortBy switch
+            query = sortBy switch
             {
-                "price_asc" => products.OrderBy(p => p.Price),
-                "price_desc" => products.OrderByDescending(p => p.Price),
-                "name_asc" => products.OrderBy(p => p.Name),
-                "name_desc" => products.OrderByDescending(p => p.Name),
-                _ => products.OrderByDescending(p => p.Id)
+                "price_asc" => query.OrderBy(p => p.Price),
+                "price_desc" => query.OrderByDescending(p => p.Price),
+                "name_asc" => query.OrderBy(p => p.Name),
+                "name_desc" => query.OrderByDescending(p => p.Name),
+                _ => query.OrderByDescending(p => p.Id)
             };
 
-            // 6. Pagination
-            var totalProduct = products.Count();
+            // 6. Pagination & Execute Query
+            var totalProduct = await query.CountAsync(); // Chỉ đếm dưới DB
             var totalPage = (int)Math.Ceiling(totalProduct / (double)pageSize);
 
             if (page < 1)
@@ -90,10 +87,11 @@ namespace GAMINGSTORE.Controllers
             if (page > totalPage && totalPage > 0)
                 page = totalPage;
 
-            var productList = products
+            // Truy vấn lấy đúng 12 sản phẩm
+            var productList = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ToList();
+                .ToListAsync();
 
             // 7. ViewBag
             ViewBag.Categories = categories;
@@ -119,7 +117,7 @@ namespace GAMINGSTORE.Controllers
         // Ví dụ: productType="pc" thì chỉ lấy các sản phẩm thuộc danh mục có chữ "pc", "máy tính bàn", v.v...
         private IEnumerable<Product> ApplyProductTypeFilter(IEnumerable<Product> products, string productType)
         {
-            var type = NormalizeText(productType);
+            var type = productType.ToLower().Trim();
 
             return type switch
             {
@@ -140,44 +138,51 @@ namespace GAMINGSTORE.Controllers
                     new[] { "gaming gear", "chuot", "ban phim", "lot chuot", "tay cam", "tai nghe", "loa", "micro", "microphone", "webcam", "ghe", "ban gaming" }
                     .Any(k => NormalizeText(c.Name).Contains(k)))),
 
-                _ => products
+                _ => query
             };
         }
 
-        private IEnumerable<Product> ApplySearchFilter(IEnumerable<Product> products, string searchString)
+        private IQueryable<Product> ApplySearchFilter(IQueryable<Product> query, string searchString)
         {
-            var keyword = NormalizeText(searchString);
+            var keyword = searchString.ToLower().Trim();
 
+            // Hardcoded special cases
             if (keyword.Contains("rtx 4000"))
             {
-                return products.Where(p => ProductContainsAny(p,
-                    "rtx 4050", "rtx 4060", "rtx 4070", "rtx 4080", "rtx 4090"));
+                return query.Where(p => p.Name != null && (p.Name.Contains("rtx 4050") || p.Name.Contains("rtx 4060") || p.Name.Contains("rtx 4070") || p.Name.Contains("rtx 4080") || p.Name.Contains("rtx 4090")));
             }
-
             if (keyword.Contains("rtx 5000"))
             {
-                return products.Where(p => ProductContainsAny(p,
-                    "rtx 5050", "rtx 5060", "rtx 5070", "rtx 5080", "rtx 5090"));
+                return query.Where(p => p.Name != null && (p.Name.Contains("rtx 5050") || p.Name.Contains("rtx 5060") || p.Name.Contains("rtx 5070") || p.Name.Contains("rtx 5080") || p.Name.Contains("rtx 5090")));
             }
-
             if (keyword.Contains("core i5") && keyword.Contains("rtx 4060"))
             {
-                return products.Where(p => ProductContainsAll(p, "core i5", "rtx 4060"));
+                return query.Where(p => p.Name != null && p.Name.Contains("core i5") && p.Name.Contains("rtx 4060"));
             }
-
             if (keyword.Contains("core i7") && keyword.Contains("rtx 4070"))
             {
-                return products.Where(p => ProductContainsAll(p, "core i7", "rtx 4070"));
+                return query.Where(p => p.Name != null && p.Name.Contains("core i7") && p.Name.Contains("rtx 4070"));
             }
-
             if (keyword.Contains("core i9") && keyword.Contains("rtx 4090"))
             {
-                return products.Where(p => ProductContainsAll(p, "core i9", "rtx 4090"));
+                return query.Where(p => p.Name != null && p.Name.Contains("core i9") && p.Name.Contains("rtx 4090"));
             }
-
             if (keyword.Contains("ryzen 7") && keyword.Contains("rx 7000"))
             {
-                return products.Where(p => ProductContainsAll(p, "ryzen 7", "rx 7000"));
+                return query.Where(p => p.Name != null && p.Name.Contains("ryzen 7") && p.Name.Contains("rx 7000"));
+            }
+            if (keyword == "144hz 165hz")
+            {
+                return query.Where(p => p.Name != null && (p.Name.Contains("144hz") || p.Name.Contains("165hz")));
+            }
+            if (keyword == "240hz 360hz")
+            {
+                return query.Where(p => p.Name != null && (p.Name.Contains("240hz") || p.Name.Contains("360hz")));
+            }
+            if (keyword == "ssd hdd")
+            {
+                return query.Where(p => (p.Name != null && (p.Name.Contains("ssd") || p.Name.Contains("hdd"))) || 
+                                        p.Categories.Any(c => c.Name != null && (c.Name.Contains("ssd") || c.Name.Contains("hdd"))));
             }
 
             // Tách các từ trong từ khóa tìm kiếm (bỏ các từ quá ngắn < 2 ký tự)
@@ -198,37 +203,31 @@ namespace GAMINGSTORE.Controllers
         {
             var terms = new List<string>();
 
-            if (!string.IsNullOrWhiteSpace(keyword))
-                terms.Add(keyword);
-
+            // Các từ khóa thông dụng cần giữ nguyên khối
             var knownTerms = new[]
             {
                 "msi", "asus", "rog", "lenovo", "legion", "acer", "predator",
                 "gigabyte", "aorus", "apple", "macbook", "samsung", "dell", "lg",
-
                 "intel", "core ultra", "core i5", "core i7", "core i9",
-                "amd", "ryzen", "ryzen ai", "rtx", "rtx 4060", "rtx 4070", "rtx 4090",
-
-                "gaming", "ai", "hi-end", "van phong", "do hoa", "build pc",
-
-                "24 inch", "27 inch", "32 inch", "sieu rong", "144hz", "165hz",
-                "240hz", "360hz", "oled",
-
-                "cpu", "vga", "card do hoa", "mainboard", "ram", "ssd", "hdd",
-                "psu", "nguon", "tan nhiet", "case", "quat",
-
-                "chuot", "ban phim", "lot chuot", "tay cam", "tai nghe",
-                "loa", "micro", "microphone", "webcam", "ghe", "ban gaming"
+                "amd", "ryzen", "ryzen ai", "rtx 4060", "rtx 4070", "rtx 4090", "rtx",
+                "gaming", "ai", "hi-end", "văn phòng", "đồ họa", "build pc",
+                "24 inch", "27 inch", "32 inch", "144hz", "165hz", "240hz", "360hz", "oled",
+                "chuột", "bàn phím", "tai nghe", "màn hình", "laptop", "pc"
             };
+
+            var lowerKeyword = keyword.ToLower();
 
             foreach (var term in knownTerms)
             {
-                if (keyword.Contains(term) && !terms.Contains(term))
+                if (lowerKeyword.Contains(term))
+                {
                     terms.Add(term);
+                    lowerKeyword = lowerKeyword.Replace(term, "").Trim();
+                }
             }
 
-            // Tách thêm từng từ để search dễ ra hơn
-            var splitTerms = keyword
+            // Tách các từ còn lại theo dấu cách
+            var splitTerms = lowerKeyword
                 .Split(' ', StringSplitOptions.RemoveEmptyEntries)
                 .Where(x => x.Length >= 2);
 
@@ -239,48 +238,6 @@ namespace GAMINGSTORE.Controllers
             }
 
             return terms.Distinct().ToList();
-        }
-
-        private bool ProductContains(Product product, string keyword)
-        {
-            keyword = NormalizeText(keyword);
-
-            var name = NormalizeText(product.Name);
-            var description = NormalizeText(product.Description);
-
-            var matchName = name.Contains(keyword);
-            var matchDescription = description.Contains(keyword);
-
-            var matchCategory = product.Categories != null &&
-                product.Categories.Any(c => NormalizeText(c.Name).Contains(keyword));
-
-            return matchName || matchDescription || matchCategory;
-        }
-
-        private bool ProductContainsAny(Product product, params string[] keywords)
-        {
-            return keywords.Any(keyword => ProductContains(product, keyword));
-        }
-
-        private bool ProductContainsAll(Product product, params string[] keywords)
-        {
-            return keywords.All(keyword => ProductContains(product, keyword));
-        }
-
-        private string NormalizeText(string? text)
-        {
-            if (string.IsNullOrWhiteSpace(text))
-                return string.Empty;
-
-            text = text.ToLower().Trim();
-
-            var normalized = text.Normalize(NormalizationForm.FormD);
-
-            var chars = normalized.Where(c =>
-                CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark);
-
-            return new string(chars.ToArray())
-                .Normalize(NormalizationForm.FormC);
         }
 
         public IActionResult Services()

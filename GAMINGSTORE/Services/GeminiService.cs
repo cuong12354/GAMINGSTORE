@@ -1,3 +1,6 @@
+using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using GAMINGSTORE.Data;
 using GAMINGSTORE.Models;
 using Microsoft.EntityFrameworkCore;
@@ -23,145 +26,203 @@ namespace GAMINGSTORE.Services
             _logger = logger;
         }
 
-        public async Task<string> GetConsultationAsync(string userMessage, string userId)
+        public async Task<ChatResponseDto> GetConsultationAsync(string userMessage, string? userId = null)
         {
             try
             {
-                // Lấy thông tin khách hàng từ database
-                var user = await _context.Users
-                    .Include(u => u.Orders)
-                    .Include(u => u.LoyaltyPoints)
-                    .FirstOrDefaultAsync(u => u.Id == userId);
+                ApplicationUser? user = null;
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    user = await _context.Users
+                        .Include(u => u.Orders)
+                        .Include(u => u.LoyaltyPoints)
+                        .FirstOrDefaultAsync(u => u.Id == userId);
+                }
 
-                if (user == null)
-                    return "Xin lỗi, không thể tìm thấy thông tin khách hàng.";
-
-                // Lấy danh sách sản phẩm phổ biến
-                var popularProducts = await _context.Products
-                    .Where(p => p.IsActive)
-                    .OrderByDescending(p => p.ReviewCount)
-                    .Take(10)
-                    .ToListAsync();
-
-                // Lấy danh mục sản phẩm
                 var categories = await _context.Categories
                     .Where(c => c.IsMenuVisible)
                     .Select(c => c.Name)
                     .ToListAsync();
 
-                // Xây dựng response dựa vào dữ liệu database
-                var response = BuildSmartResponse(userMessage, user, popularProducts, categories);
+                var apiKey = _configuration["Gemini:ApiKey"];
+                if (!string.IsNullOrWhiteSpace(apiKey))
+                {
+                    var geminiResponse = await CallGeminiApiAsync(userMessage, user, categories, apiKey);
+                    if (geminiResponse != null)
+                    {
+                        var products = await SearchProductsAsync(geminiResponse.SearchKeywords, geminiResponse.MaxBudget);
+                        
+                        return new ChatResponseDto
+                        {
+                            Message = geminiResponse.Reply,
+                            Suggestions = geminiResponse.SuggestedQuestions ?? new List<string>(),
+                            Products = products
+                        };
+                    }
+                }
 
-                return response;
+                // Fallback nếu không có API Key hoặc API lỗi
+                return await GetFallbackResponseAsync(userMessage, user, categories);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Lỗi khi tư vấn: {ex.Message}");
-                return GetFallbackResponse(userMessage);
+                _logger.LogError($"Lỗi khi tư vấn Gemini: {ex.Message}");
+                return new ChatResponseDto { Message = $"SYSTEM ERROR: {ex.Message}" };
             }
         }
 
-        private string BuildSmartResponse(string userMessage, ApplicationUser user, List<Product> products, List<string> categories)
+        private async Task<GeminiParsedResponse?> CallGeminiApiAsync(string userMessage, ApplicationUser? user, List<string?> categories, string apiKey)
         {
-            var message = userMessage.ToLower();
-            var totalOrders = user.Orders?.Count ?? 0;
-            var totalSpent = user.Orders?.Sum(o => o.TotalPrice) ?? 0;
-            var loyaltyPoints = user.LoyaltyPoints?.Sum(lp => lp.Points) ?? 0;
+            var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={apiKey}";
+            
+            var userContext = user != null 
+                ? $"Tên khách hàng: {user.FullName}. Đã mua {user.Orders?.Count ?? 0} đơn. Điểm tích lũy: {user.LoyaltyPoints?.Sum(lp => lp.Points) ?? 0}."
+                : "Khách chưa đăng nhập.";
 
-            // Tư vấn dựa vào từ khóa
-            if (message.Contains("laptop") || message.Contains("máy tính"))
+            var categoryContext = string.Join(", ", categories.Where(c => !string.IsNullOrEmpty(c)));
+
+            var prompt = $@"
+Bạn là trợ lý bán hàng ảo thân thiện của GAMINGSTORE.
+Thông tin khách hàng: {userContext}
+Danh mục cửa hàng: {categoryContext}
+Tin nhắn của khách hàng: '{userMessage}'
+
+Hãy phân tích tin nhắn và trả về một đối tượng JSON ĐÚNG chuẩn format sau, không thêm markdown ````json ở ngoài:
+{{
+  ""reply"": ""Câu trả lời giao tiếp tự nhiên của bạn (dùng được HTML cơ bản như <b>, <br>)"",
+  ""searchKeywords"": [""từ khóa 1"", ""từ khóa 2""], 
+  ""maxBudget"": 20000000, 
+  ""suggestedQuestions"": [""Gợi ý câu hỏi tiếp theo 1"", ""Gợi ý 2""]
+}}
+Lưu ý:
+- maxBudget là ngân sách tối đa khách đề cập (kiểu số nguyên). Nếu không đề cập thì để null.
+- searchKeywords là các từ khóa tiếng Việt hoặc tiếng Anh quan trọng để tìm sản phẩm (ví dụ: laptop, asus, chuột không dây).
+";
+
+            var payload = new
             {
-                var laptops = products.Where(p => p.Name.ToLower().Contains("laptop")).ToList();
-                if (laptops.Any())
+                contents = new[]
                 {
-                    var cheapest = laptops.OrderBy(p => p.Price).First();
-                    var mostRated = laptops.OrderByDescending(p => p.AverageRating).First();
-                    return $"Xin chào {user.FullName}! 👋\n\n" +
-                        $"Dựa vào lịch sử mua hàng của bạn ({totalOrders} đơn hàng, tổng chi tiêu: {totalSpent:C0}), tôi gợi ý:\n\n" +
-                        $"💻 **Laptop rẻ nhất:** {cheapest.Name} - {cheapest.Price:C0}\n" +
-                        $"⭐ **Laptop được đánh giá cao nhất:** {mostRated.Name} - {mostRated.AverageRating}/5 sao\n\n" +
-                        $"Bạn hiện có {loyaltyPoints} điểm thưởng. Hãy liên hệ nhân viên để được tư vấn chi tiết!";
+                    new { parts = new[] { new { text = prompt } } }
+                },
+                generationConfig = new { response_mime_type = "application/json" }
+            };
+
+            var response = await _httpClient.PostAsJsonAsync(url, payload);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Gemini API failed with status code {response.StatusCode}. Content: {errorContent}");
+                throw new Exception($"API HTTP Error {response.StatusCode}: {errorContent}");
+            }
+
+            var jsonString = await response.Content.ReadAsStringAsync();
+            var jsonDoc = JsonDocument.Parse(jsonString);
+            
+            try
+            {
+                var textContent = jsonDoc.RootElement
+                    .GetProperty("candidates")[0]
+                    .GetProperty("content")
+                    .GetProperty("parts")[0]
+                    .GetProperty("text")
+                    .GetString();
+
+                if (!string.IsNullOrEmpty(textContent))
+                {
+                    textContent = textContent.Trim();
+                    if (textContent.StartsWith("```json"))
+                        textContent = textContent.Substring(7);
+                    if (textContent.StartsWith("```"))
+                        textContent = textContent.Substring(3);
+                    if (textContent.EndsWith("```"))
+                        textContent = textContent.Substring(0, textContent.Length - 3);
+
+                    textContent = textContent.Trim();
+
+                    return JsonSerializer.Deserialize<GeminiParsedResponse>(textContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                 }
             }
-
-            if (message.Contains("tai nghe") || message.Contains("headphone"))
+            catch(Exception ex)
             {
-                var headphones = products.Where(p => p.Name.ToLower().Contains("tai nghe") || p.Name.ToLower().Contains("headphone")).ToList();
-                if (headphones.Any())
-                {
-                    var best = headphones.OrderByDescending(p => p.AverageRating).First();
-                    return $"Xin chào {user.FullName}! 👋\n\n" +
-                        $"Tai nghe gaming được đánh giá cao nhất: **{best.Name}** - {best.AverageRating}/5 sao\n" +
-                        $"Giá: {best.Price:C0}\n\n" +
-                        $"Bạn có {loyaltyPoints} điểm thưởng có thể dùng để giảm giá. Liên hệ nhân viên để biết thêm chi tiết!";
-                }
+                throw new Exception($"Lỗi parse JSON: {ex.Message}. Raw JSON: {jsonString}");
             }
 
-            if (message.Contains("màn hình") || message.Contains("monitor"))
-            {
-                var monitors = products.Where(p => p.Name.ToLower().Contains("màn hình") || p.Name.ToLower().Contains("monitor")).ToList();
-                if (monitors.Any())
-                {
-                    var best = monitors.OrderByDescending(p => p.AverageRating).First();
-                    return $"Xin chào {user.FullName}! 👋\n\n" +
-                        $"Màn hình gaming được đánh giá cao nhất: **{best.Name}** - {best.AverageRating}/5 sao\n" +
-                        $"Giá: {best.Price:C0}\n\n" +
-                        $"Bạn là khách hàng thân thiết với {totalOrders} đơn hàng. Hãy liên hệ để được ưu đãi đặc biệt!";
-                }
-            }
-
-            if (message.Contains("chuột") || message.Contains("mouse"))
-            {
-                var mice = products.Where(p => p.Name.ToLower().Contains("chuột") || p.Name.ToLower().Contains("mouse")).ToList();
-                if (mice.Any())
-                {
-                    var best = mice.OrderByDescending(p => p.AverageRating).First();
-                    return $"Xin chào {user.FullName}! 👋\n\n" +
-                        $"Chuột gaming được đánh giá cao nhất: **{best.Name}** - {best.AverageRating}/5 sao\n" +
-                        $"Giá: {best.Price:C0}\n\n" +
-                        $"Liên hệ nhân viên để được tư vấn thêm!";
-                }
-            }
-
-            if (message.Contains("bàn phím") || message.Contains("keyboard"))
-            {
-                var keyboards = products.Where(p => p.Name.ToLower().Contains("bàn phím") || p.Name.ToLower().Contains("keyboard")).ToList();
-                if (keyboards.Any())
-                {
-                    var best = keyboards.OrderByDescending(p => p.AverageRating).First();
-                    return $"Xin chào {user.FullName}! 👋\n\n" +
-                        $"Bàn phím gaming được đánh giá cao nhất: **{best.Name}** - {best.AverageRating}/5 sao\n" +
-                        $"Giá: {best.Price:C0}\n\n" +
-                        $"Liên hệ nhân viên để được tư vấn thêm!";
-                }
-            }
-
-            // Nếu không tìm thấy sản phẩm cụ thể, gợi ý sản phẩm phổ biến
-            if (products.Any())
-            {
-                var topProduct = products.OrderByDescending(p => p.AverageRating).First();
-                return $"Xin chào {user.FullName}! 👋\n\n" +
-                    $"Sản phẩm được đánh giá cao nhất của chúng tôi: **{topProduct.Name}** - {topProduct.AverageRating}/5 sao\n" +
-                    $"Giá: {topProduct.Price:C0}\n\n" +
-                    $"Bạn có {loyaltyPoints} điểm thưởng. Liên hệ nhân viên để được tư vấn chi tiết!";
-            }
-
-            return GetFallbackResponse(userMessage);
+            throw new Exception($"Lỗi: textContent rỗng. Raw JSON: {jsonString}");
         }
 
-        private string GetFallbackResponse(string userMessage)
+        private async Task<List<Product>> SearchProductsAsync(List<string>? keywords, decimal? maxBudget)
         {
-            // Fallback response khi API không hoạt động
-            if (userMessage.ToLower().Contains("laptop") || userMessage.ToLower().Contains("máy tính"))
-                return "Xin lỗi, hiện tại tôi gặp sự cố kỹ thuật. Nhưng tôi có thể gợi ý: Chúng tôi có các laptop gaming từ các thương hiệu nổi tiếng như ASUS, MSI, Lenovo. Vui lòng liên hệ với nhân viên bán hàng để được tư vấn chi tiết.";
-            
-            if (userMessage.ToLower().Contains("tai nghe") || userMessage.ToLower().Contains("headphone"))
-                return "Xin lỗi, hiện tại tôi gặp sự cố kỹ thuật. Nhưng tôi có thể gợi ý: Chúng tôi có tai nghe gaming chất lượng cao từ các thương hiệu như SteelSeries, HyperX, Corsair. Vui lòng liên hệ với nhân viên bán hàng để được tư vấn chi tiết.";
-            
-            if (userMessage.ToLower().Contains("màn hình") || userMessage.ToLower().Contains("monitor"))
-                return "Xin lỗi, hiện tại tôi gặp sự cố kỹ thuật. Nhưng tôi có thể gợi ý: Chúng tôi có màn hình gaming 27 inch, 32 inch với tần số quét cao. Vui lòng liên hệ với nhân viên bán hàng để được tư vấn chi tiết.";
-            
-            return "Xin lỗi, hiện tại tôi gặp sự cố kỹ thuật. Vui lòng thử lại sau hoặc liên hệ với nhân viên bán hàng để được hỗ trợ.";
+            var query = _context.Products
+                .Include(p => p.Categories)
+                .Where(p => p.IsActive)
+                .AsQueryable();
+
+            if (maxBudget.HasValue && maxBudget.Value > 0)
+            {
+                query = query.Where(p => p.Price <= maxBudget.Value);
+            }
+
+            var products = await query.ToListAsync();
+
+            if (keywords != null && keywords.Any())
+            {
+                products = products.Where(p => 
+                    keywords.Any(k => 
+                        (p.Name != null && p.Name.Contains(k, StringComparison.OrdinalIgnoreCase)) ||
+                        (p.Description != null && p.Description.Contains(k, StringComparison.OrdinalIgnoreCase)) ||
+                        (p.Categories != null && p.Categories.Any(c => c.Name != null && c.Name.Contains(k, StringComparison.OrdinalIgnoreCase)))
+                    )
+                )
+                .OrderByDescending(p => p.ReviewCount)
+                .Take(3)
+                .ToList();
+            }
+            else
+            {
+                products = products.OrderByDescending(p => p.ReviewCount).Take(3).ToList();
+            }
+
+            return products;
         }
+
+        private async Task<ChatResponseDto> GetFallbackResponseAsync(string userMessage, ApplicationUser? user, List<string?>? categories)
+        {
+            var msgLower = userMessage.ToLower();
+            
+            var products = await _context.Products.Where(p => p.IsActive).OrderByDescending(p => p.ReviewCount).Take(10).ToListAsync();
+            var result = new ChatResponseDto();
+            
+            var name = user != null ? user.FullName : "bạn";
+            
+            if (msgLower.Contains("laptop") || msgLower.Contains("máy tính"))
+            {
+                result.Message = $"Xin chào {name}! 👋<br><br>Gợi ý một số laptop nổi bật:";
+                result.Products = products.Where(p => p.Name != null && p.Name.ToLower().Contains("laptop")).Take(3).ToList();
+                result.Suggestions = new List<string> { "Laptop dưới 20 triệu", "Laptop đồ họa" };
+            }
+            else if (msgLower.Contains("tai nghe") || msgLower.Contains("headphone"))
+            {
+                result.Message = $"Xin chào {name}! 👋<br><br>Tai nghe gaming được đánh giá cao nhất:";
+                result.Products = products.Where(p => p.Name != null && p.Name.ToLower().Contains("tai nghe")).Take(3).ToList();
+                result.Suggestions = new List<string> { "Tai nghe không dây", "Chuột gaming" };
+            }
+            else
+            {
+                result.Message = $"Xin chào {name}! 👋<br><br>Hiện tại bộ não AI của mình đang nghỉ ngơi, nhưng mình vẫn có thể gợi ý các sản phẩm hot nhất bên dưới cho bạn!";
+                result.Products = products.Take(3).ToList();
+                result.Suggestions = new List<string> { "Laptop gaming", "Bàn phím cơ", "Màn hình 144hz" };
+            }
+
+            return result;
+        }
+    }
+
+    public class GeminiParsedResponse
+    {
+        public string Reply { get; set; } = string.Empty;
+        public List<string> SearchKeywords { get; set; } = new();
+        public decimal? MaxBudget { get; set; }
+        public List<string> SuggestedQuestions { get; set; } = new();
     }
 }
