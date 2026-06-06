@@ -22,7 +22,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		const bubble = document.createElement("div");
 		bubble.className = `sales-chat-message ${sender}`;
 		if (sender === 'bot') {
-			bubble.innerHTML = content;
+			// Giải mã HTML entities (phòng trường hợp AI hoặc backend trả về &lt; &gt;) và xử lý Markdown cơ bản
+			let htmlContent = content.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+			htmlContent = htmlContent.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+			bubble.innerHTML = htmlContent;
 		} else {
 			bubble.textContent = content;
 		}

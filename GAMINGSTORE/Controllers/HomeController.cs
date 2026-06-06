@@ -106,6 +106,7 @@ namespace GAMINGSTORE.Controllers
             ViewBag.PageSize = pageSize;
             ViewBag.TotalProduct = totalProduct;
 
+            var allProducts = await _productRepository.GetAllAsync() ?? new List<Product>();
             ViewBag.AllHomeProducts = allProducts;
 
             return View(productList);
@@ -115,28 +116,26 @@ namespace GAMINGSTORE.Controllers
         // Thay vì tìm từ khóa trong toàn bộ tên và mô tả sản phẩm (dễ bị dính chéo như Laptop Gaming có chữ "PC" trong mô tả), 
         // ở đây chúng ta CHỈ tìm kiếm trong Tên của Danh Mục (c.Name).
         // Ví dụ: productType="pc" thì chỉ lấy các sản phẩm thuộc danh mục có chữ "pc", "máy tính bàn", v.v...
-        private IEnumerable<Product> ApplyProductTypeFilter(IEnumerable<Product> products, string productType)
+        private IQueryable<Product> ApplyProductTypeFilter(IQueryable<Product> query, string productType)
         {
             var type = productType.ToLower().Trim();
 
             return type switch
             {
-                "laptop" => products.Where(p => p.Categories != null && p.Categories.Any(c => 
-                    NormalizeText(c.Name).Contains("laptop") || NormalizeText(c.Name).Contains("macbook"))),
+                "laptop" => query.Where(p => p.Categories.Any(c => 
+                    c.Name != null && (c.Name.Contains("laptop") || c.Name.Contains("macbook")))),
 
-                "pc" => products.Where(p => p.Categories != null && p.Categories.Any(c => 
-                    NormalizeText(c.Name).Contains("pc") || NormalizeText(c.Name).Contains("may tinh ban") || NormalizeText(c.Name).Contains("desktop") || NormalizeText(c.Name).Contains("may bo"))),
+                "pc" => query.Where(p => p.Categories.Any(c => 
+                    c.Name != null && (c.Name.Contains("pc") || c.Name.Contains("máy tính bàn") || c.Name.Contains("desktop") || c.Name.Contains("máy bộ")))),
 
-                "monitor" => products.Where(p => p.Categories != null && p.Categories.Any(c => 
-                    NormalizeText(c.Name).Contains("man hinh") || NormalizeText(c.Name).Contains("monitor") || NormalizeText(c.Name).Contains("display"))),
+                "monitor" => query.Where(p => p.Categories.Any(c => 
+                    c.Name != null && (c.Name.Contains("màn hình") || c.Name.Contains("monitor") || c.Name.Contains("display")))),
 
-                "component" => products.Where(p => p.Categories != null && p.Categories.Any(c => 
-                    new[] { "linh kien", "cpu", "vga", "card do hoa", "mainboard", "ram", "ssd", "hdd", "psu", "nguon", "tan nhiet", "case" }
-                    .Any(k => NormalizeText(c.Name).Contains(k)))),
+                "component" => query.Where(p => p.Categories.Any(c => 
+                    c.Name != null && (c.Name.Contains("linh kiện") || c.Name.Contains("cpu") || c.Name.Contains("vga") || c.Name.Contains("card đồ họa") || c.Name.Contains("mainboard") || c.Name.Contains("ram") || c.Name.Contains("ssd") || c.Name.Contains("hdd") || c.Name.Contains("psu") || c.Name.Contains("nguồn") || c.Name.Contains("tản nhiệt") || c.Name.Contains("case")))),
 
-                "gear" => products.Where(p => p.Categories != null && p.Categories.Any(c => 
-                    new[] { "gaming gear", "chuot", "ban phim", "lot chuot", "tay cam", "tai nghe", "loa", "micro", "microphone", "webcam", "ghe", "ban gaming" }
-                    .Any(k => NormalizeText(c.Name).Contains(k)))),
+                "gear" => query.Where(p => p.Categories.Any(c => 
+                    c.Name != null && (c.Name.Contains("gaming gear") || c.Name.Contains("chuột") || c.Name.Contains("bàn phím") || c.Name.Contains("lót chuột") || c.Name.Contains("tay cầm") || c.Name.Contains("tai nghe") || c.Name.Contains("loa") || c.Name.Contains("micro") || c.Name.Contains("microphone") || c.Name.Contains("webcam") || c.Name.Contains("ghế") || c.Name.Contains("bàn gaming")))),
 
                 _ => query
             };
@@ -185,18 +184,23 @@ namespace GAMINGSTORE.Controllers
                                         p.Categories.Any(c => c.Name != null && (c.Name.Contains("ssd") || c.Name.Contains("hdd"))));
             }
 
-            // Tách các từ trong từ khóa tìm kiếm (bỏ các từ quá ngắn < 2 ký tự)
-            var searchWords = keyword.Split(' ', StringSplitOptions.RemoveEmptyEntries)
-                                     .Where(w => w.Length >= 2)
-                                     .ToList();
+            var terms = BuildSearchTerms(searchString);
 
-            if (searchWords.Any())
+            if (terms.Any())
             {
-                // Yêu cầu sản phẩm phải chứa tất cả các từ trong từ khóa tìm kiếm (phép AND)
-                return products.Where(p => searchWords.All(word => ProductContains(p, word)));
+                // LOGIC AND: Sản phẩm phải chứa TẤT CẢ các từ khóa
+                foreach (var term in terms)
+                {
+                    var t = term; // Local copy for LINQ expression
+                    query = query.Where(p => 
+                        (p.Name != null && p.Name.Contains(t)) ||
+                        (p.Description != null && p.Description.Contains(t)) ||
+                        p.Categories.Any(c => c.Name != null && c.Name.Contains(t))
+                    );
+                }
             }
 
-            return products;
+            return query;
         }
 
         private List<string> BuildSearchTerms(string keyword)

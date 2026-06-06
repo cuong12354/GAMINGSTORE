@@ -2,29 +2,6 @@
 @using System.Globalization
 @{
     ViewData["Title"] = "GAMINGSTORE - Mua Thiết Bị Gaming Online";
-
-    string GetFirstImage(string? imageUrl)
-    {
-        if (string.IsNullOrWhiteSpace(imageUrl))
-        {
-            return "/images/no-image.png";
-        }
-
-        return imageUrl
-            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .FirstOrDefault() ?? "/images/no-image.png";
-    }
-
-    string GetShortDescription(string? description)
-    {
-        if (string.IsNullOrWhiteSpace(description))
-        {
-            return "Thiết kế hiện đại, sẵn sàng lên đơn nhanh với trải nghiệm mua sắm rõ ràng và tối ưu.";
-        }
-
-        var normalized = description.Trim();
-        return normalized.Length > 92 ? normalized[..89].TrimEnd() + "..." : normalized;
-    }
 }
 <style>
     * {
@@ -1049,183 +1026,59 @@
     }
     else
 {
-    <!-- CHẾ ĐỘ TRANG CHỦ MẶC ĐỊNH - CÁC CONTAINER DANH MỤC -->
-
+    <!-- CHẾ ĐỘ TRANG CHỦ MẶC ĐỊNH - CÁC CONTAINER DANH MỤC TỰ ĐỘNG -->
     var homeProducts = ViewBag.AllHomeProducts as IEnumerable<GAMINGSTORE.Models.Product> ?? Model;
+    var categories = ViewBag.Categories as IEnumerable<GAMINGSTORE.Models.Category>;
 
-    <!-- SECTION 1: LAPTOP GAMING -->
-    var laptopGaming = homeProducts?.Where(p => p.Categories != null && p.Categories.Any(c =>
-        c.Name?.Contains("Laptop Gaming", StringComparison.OrdinalIgnoreCase) == true &&
-        c.Name?.Contains("AI", StringComparison.OrdinalIgnoreCase) != true
-    )).Take(4) ?? Enumerable.Empty<GAMINGSTORE.Models.Product>();
-
-    if (laptopGaming.Any())
+    if (categories != null && homeProducts != null)
     {
-        <div class="container category-product-section">
-            <div class="bg-color-while">
-                <div class="d-flex row-left-list scroll-x-mb">
-                    <div class="item-banner">
-                        <a href="#"><img src="~/images/banner/banner1.jpg" alt="Banner 1"></a>
-                    </div>
-                    <div class="item-banner">
-                        <a href="#"><img src="~/images/banner/banner2.jpg" alt="Banner 2"></a>
-                    </div>
-                    <div class="item-banner">
-                        <a href="#"><img src="~/images/banner/banner3.jpg" alt="Banner 3"></a>
-                    </div>
-                </div>
-            </div>
+        var categoryIndex = 0;
+        foreach (var category in categories.Where(c => c.IsMenuVisible))
+        {
+            var categoryProducts = homeProducts.Where(p => p.Categories != null && p.Categories.Any(c => c.Id == category.Id)).Take(4).ToList();
 
-            <div class="section-content">
-                <div class="section-title-row">
-                    <h2 class="section-name">Laptop Gaming</h2>
-                </div>
-                <div class="product-grid">
-                    @foreach (var product in laptopGaming)
+            if (categoryProducts.Any())
+            {
+                <div class="container category-product-section">
+                    
+                    @if (categoryIndex == 0)
                     {
-                        @await Html.PartialAsync("_ProductCard", product)
+                        <div class="bg-color-while">
+                            <div class="d-flex row-left-list scroll-x-mb">
+                                <div class="item-banner">
+                                    <a href="#"><img src="~/images/banner/banner1.jpg" alt="Banner 1"></a>
+                                </div>
+                                <div class="item-banner">
+                                    <a href="#"><img src="~/images/banner/banner2.jpg" alt="Banner 2"></a>
+                                </div>
+                                <div class="item-banner">
+                                    <a href="#"><img src="~/images/banner/banner3.jpg" alt="Banner 3"></a>
+                                </div>
+                            </div>
+                        </div>
                     }
-                </div>
-                <div class="text-center mt-4 mb-2">
-                    <a href="/Home/Index?searchString=laptop" class="btn btn-outline-danger px-4 py-2 rounded-pill fw-bold">
-                        Xem thêm Laptop <i class="bi bi-arrow-right ms-2"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    }
 
-    <!-- SECTION 2: LAPTOP AI -->
-    var laptopAI = homeProducts?.Where(p => p.Categories != null && p.Categories.Any(c =>
-        c.Name?.Contains("Laptop AI", StringComparison.OrdinalIgnoreCase) == true ||
-        c.Name?.EndsWith(" AI", StringComparison.OrdinalIgnoreCase) == true ||
-        c.Name?.Equals("AI", StringComparison.OrdinalIgnoreCase) == true
-    )).Take(4) ?? Enumerable.Empty<GAMINGSTORE.Models.Product>();
-
-    if (laptopAI.Any())
-    {
-        <div class="container category-product-section">
-            <div class="section-content">
-                <div class="section-title-row">
-                    <h2 class="section-name">Laptop AI - Thế hệ mới</h2>
-                </div>
-                <div class="product-grid">
-                    @foreach (var product in laptopAI)
-                    {
-                        @await Html.PartialAsync("_ProductCard", product)
-                    }
-                </div>
-                <div class="text-center mt-4 mb-2">
-                    <a href="/Home/Index?searchString=ai" class="btn btn-outline-danger px-4 py-2 rounded-pill fw-bold">
-                        Xem thêm Laptop AI <i class="bi bi-arrow-right ms-2"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    }
-
-    <!-- SECTION 3: PC GAMING -->
-    var pcGaming = homeProducts?.Where(p => p.Categories != null && p.Categories.Any(c =>
-        c.Name?.Contains("PC Gaming", StringComparison.OrdinalIgnoreCase) == true ||
-        c.Name?.Contains("Desktop", StringComparison.OrdinalIgnoreCase) == true
-    )).Take(4) ?? Enumerable.Empty<GAMINGSTORE.Models.Product>();
-
-    if (pcGaming.Any())
-    {
-        <div class="container category-product-section">
-            <div class="section-content">
-                <div class="section-title-row">
-                    <h2 class="section-name">PC Gaming & Đồ họa</h2>
-                </div>
-                <div class="product-grid">
-                    @foreach (var product in pcGaming)
-                    {
-                        @await Html.PartialAsync("_ProductCard", product)
-                    }
-                </div>
-                <div class="text-center mt-4 mb-2">
-                    <a href="/Home/Index?searchString=pc" class="btn btn-outline-danger px-4 py-2 rounded-pill fw-bold">
-                        Xem thêm PC Gaming <i class="bi bi-arrow-right ms-2"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    }
-
-    <!-- SECTION 4: MÀN HÌNH -->
-    var manHinh = homeProducts?.Where(p => p.Categories != null && p.Categories.Any(c =>
-        c.Name?.Contains("Màn hình", StringComparison.OrdinalIgnoreCase) == true ||
-        c.Name?.Contains("Monitor", StringComparison.OrdinalIgnoreCase) == true
-    )).Take(4) ?? Enumerable.Empty<GAMINGSTORE.Models.Product>();
-
-    if (manHinh.Any())
-    {
-        <div class="container category-product-section">
-            <div class="section-content">
-                <div class="section-title-row">
-                    <h2 class="section-name">Màn hình</h2>
-                </div>
-                <div class="product-grid">
-                    @foreach (var product in manHinh)
-                    {
-                        @await Html.PartialAsync("_ProductCard", product)
-                    }
-                </div>
-                <div class="text-center mt-4 mb-2">
-                    <a href="/Home/Index?searchString=màn+hình" class="btn btn-outline-danger px-4 py-2 rounded-pill fw-bold">
-                        Xem thêm Màn hình <i class="bi bi-arrow-right ms-2"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    }
-
-    <!-- SECTION 5: LINH KIỆN & GAMING GEAR -->
-    var linhKien = homeProducts?.Where(p => p.Categories != null && p.Categories.Any(c =>
-        c.Name?.Contains("Linh kiện", StringComparison.OrdinalIgnoreCase) == true ||
-        c.Name?.Contains("Gear", StringComparison.OrdinalIgnoreCase) == true ||
-        c.Name?.Contains("Gaming Gear", StringComparison.OrdinalIgnoreCase) == true ||
-        c.Name?.Contains("Chuột", StringComparison.OrdinalIgnoreCase) == true ||
-        c.Name?.Contains("Bàn phím", StringComparison.OrdinalIgnoreCase) == true ||
-        c.Name?.Contains("Tai nghe", StringComparison.OrdinalIgnoreCase) == true ||
-        c.Name?.Contains("VGA", StringComparison.OrdinalIgnoreCase) == true ||
-        c.Name?.Contains("RAM", StringComparison.OrdinalIgnoreCase) == true ||
-        c.Name?.Contains("SSD", StringComparison.OrdinalIgnoreCase) == true ||
-        c.Name?.Contains("Mainboard", StringComparison.OrdinalIgnoreCase) == true ||
-        c.Name?.Contains("CPU", StringComparison.OrdinalIgnoreCase) == true
-    )).Take(4) ?? Enumerable.Empty<GAMINGSTORE.Models.Product>();
-
-    if (linhKien.Any())
-    {
-        <div class="container category-product-section">
-            <div class="bg-color-while">
-                <div class="d-flex row-left-list scroll-x-mb">
-                    <div class="item-banner">
-                        <a href="#"><img src="~/images/banner/banner2.jpg" alt="Components 1"></a>
-                    </div>
-                    <div class="item-banner">
-                        <a href="#"><img src="~/images/banner/banner3.jpg" alt="Components 2"></a>
+                    <div class="section-content">
+                        <div class="section-title-row">
+                            <h2 class="section-name">@category.Name</h2>
+                        </div>
+                        <div class="product-grid">
+                            @foreach (var product in categoryProducts)
+                            {
+                                @await Html.PartialAsync("_ProductCard", product)
+                            }
+                        </div>
+                        <div class="text-center mt-4 mb-2">
+                            <a href="/Home/Index?categoryId=@category.Id" class="btn btn-outline-danger px-4 py-2 rounded-pill fw-bold">
+                                Xem thêm @category.Name <i class="bi bi-arrow-right ms-2"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="section-content">
-                <div class="section-title-row">
-                    <h2 class="section-name">Linh kiện & Gaming Gear</h2>
-                </div>
-                <div class="product-grid">
-                    @foreach (var product in linhKien)
-                    {
-                        @await Html.PartialAsync("_ProductCard", product)
-                    }
-                </div>
-                <div class="text-center mt-4 mb-2">
-                    <a href="/Home/Index?searchString=linh+kiện" class="btn btn-outline-danger px-4 py-2 rounded-pill fw-bold">
-                        Xem thêm Linh kiện & Gear <i class="bi bi-arrow-right ms-2"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
+                
+                categoryIndex++;
+            }
+        }
     }
 }
 
