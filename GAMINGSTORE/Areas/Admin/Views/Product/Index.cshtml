@@ -214,7 +214,6 @@
         background: #fff;
         border: 1px solid var(--admin-line);
         border-radius: 26px;
-        overflow: hidden;
         box-shadow: 0 18px 38px rgba(15, 23, 42, 0.07);
         transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.28s ease, border-color 0.28s ease;
     }
@@ -229,6 +228,7 @@
         position: relative;
         height: 220px;
         background: linear-gradient(180deg, #fff8f5, #f8fafc);
+        border-radius: 25px 25px 0 0;
     }
 
     .admin-product-thumb img {
@@ -797,6 +797,89 @@
         }
     }
 
+    /* Tooltip styles */
+    .tooltip-container {
+        position: relative;
+        cursor: help;
+    }
+
+    .tooltip-content {
+        position: absolute;
+        bottom: calc(100% + 8px);
+        left: 50%;
+        transform: translateX(-50%) translateY(8px);
+        background: #fff;
+        border: 1px solid var(--admin-line);
+        box-shadow: 0 14px 32px rgba(15, 23, 42, 0.12);
+        border-radius: 16px;
+        padding: 16px;
+        width: 260px;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        z-index: 100;
+        pointer-events: none;
+    }
+
+    .tooltip-container:hover .tooltip-content {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    .tooltip-content::before {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 8px;
+        border-style: solid;
+        border-color: #fff transparent transparent transparent;
+        z-index: 2;
+    }
+
+    .tooltip-content::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%) translateY(1px);
+        border-width: 8px;
+        border-style: solid;
+        border-color: var(--admin-line) transparent transparent transparent;
+        z-index: 1;
+    }
+
+    .tooltip-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 10px;
+        line-height: 1.4;
+    }
+
+    .tooltip-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .tooltip-label {
+        font-weight: 800;
+        color: var(--admin-muted);
+        text-transform: uppercase;
+        font-size: 10px;
+        letter-spacing: 0.5px;
+        width: 75px;
+        flex-shrink: 0;
+    }
+
+    .tooltip-value {
+        font-weight: 700;
+        color: var(--admin-text);
+        text-align: right;
+        font-size: 12px;
+    }
+
 </style>
 
 <div class="container admin-shell">
@@ -805,8 +888,8 @@
 
         <div class="admin-title-row">
             <div>
-                <h1 class="admin-title">Quản lý sản phẩm theo cùng ngôn ngữ thiết kế của storefront.</h1>
-                <p class="admin-desc">Khu quản trị giờ không còn là bảng thô. Bạn có thể quét nhanh ảnh, danh mục, giá, mô tả ngắn và thao tác sửa, xem, xóa ngay trên từng card mà vẫn đồng bộ với trải nghiệm ngoài trang bán hàng.</p>
+                <h1 class="admin-title">Quản lý sản phẩm</h1>
+                <p class="admin-desc">Bạn có thể quét nhanh ảnh, danh mục, giá, mô tả ngắn và thao tác sửa, xem, xóa ngay trên từng card mà vẫn đồng bộ với trải nghiệm ngoài trang bán hàng.</p>
             </div>
 
             @if (User.HasPermission(PermissionConstants.ProductManage))
@@ -847,64 +930,101 @@
 
         @if (Model.Any())
         {
-            <div class="admin-grid">
-                @foreach (var product in Model)
-                {
-                    <article class="admin-product-card">
-                        <div class="admin-product-thumb">
-                            <img src="@GetFirstImage(product.ImageUrl)" alt="@product.Name" onerror="this.src='/images/no-image.png'">
-                            <span class="admin-product-badge"><i class="bi bi-stars"></i> @(product.Categories?.FirstOrDefault()?.Name ?? "Chưa phân loại")</span>
-                            <span class="admin-product-id">GS-@product.Id.ToString("0000")</span>
-                        </div>
+            var groupedProducts = Model
+                .GroupBy(p => p.Categories?.FirstOrDefault()?.Name ?? "Chưa phân loại")
+                .OrderBy(g => g.Key == "Chưa phân loại" ? 1 : 0) // Put "Uncategorized" at the bottom
+                .ThenBy(g => g.Key);
 
-                        <div class="admin-product-body">
-                            <div class="admin-product-name">@product.Name</div>
+            foreach (var group in groupedProducts)
+            {
+                <div style="margin-top: 36px; margin-bottom: 20px;">
+                    <h3 style="font-size: 20px; font-weight: 900; color: var(--admin-text); display: flex; align-items: center; gap: 10px; margin: 0;">
+                        <i class="bi bi-folder2-open" style="color: var(--admin-primary);"></i>
+                        @group.Key
+                        <span style="font-size: 12px; font-weight: 800; padding: 4px 10px; background: #fff4f1; color: var(--admin-primary-dark); border-radius: 999px; margin-left: auto;">@group.Count() sản phẩm</span>
+                    </h3>
+                    <hr style="border-top: 1px dashed var(--admin-line); margin: 12px 0 0 0;" />
+                </div>
 
-                            <div class="admin-product-categories">
-                                @if (product.Categories?.Any() == true)
-                                {
-                                    @foreach (var category in product.Categories.Take(3))
+                <div class="admin-grid">
+                    @foreach (var product in group)
+                    {
+                        <article class="admin-product-card">
+                            <div class="admin-product-thumb">
+                                <img src="@GetFirstImage(product.ImageUrl)" alt="@product.Name" onerror="this.src='/images/no-image.png'">
+                                <span class="admin-product-badge"><i class="bi bi-stars"></i> @(product.Categories?.FirstOrDefault()?.Name ?? "Chưa phân loại")</span>
+                                <span class="admin-product-id">GS-@product.Id.ToString("0000")</span>
+                            </div>
+
+                            <div class="admin-product-body">
+                                <div class="admin-product-name">@product.Name</div>
+
+                                <div class="admin-product-categories">
+                                    @if (product.Categories?.Any() == true)
                                     {
-                                        <span class="admin-category-chip">@category.Name</span>
+                                        @foreach (var category in product.Categories.Take(3))
+                                        {
+                                            <span class="admin-category-chip">@category.Name</span>
+                                        }
                                     }
-                                }
-                                else
-                                {
-                                    <span class="admin-category-chip">Chưa phân loại</span>
-                                }
+                                    else
+                                    {
+                                        <span class="admin-category-chip">Chưa phân loại</span>
+                                    }
+                                </div>
+
+                                <div class="admin-product-description">@GetShortDescription(product.Description)</div>
+
+                                <div class="admin-meta">
+                                    <span class="admin-meta-pill"><i class="bi bi-image"></i> @(string.IsNullOrWhiteSpace(product.ImageUrl) ? "Chưa có ảnh" : "Đã có ảnh")</span>
+                                    
+                                    <div class="admin-meta-pill tooltip-container">
+                                        <i class="bi bi-diagram-3"></i> @(product.Categories?.Count ?? 0) danh mục
+                                        <div class="tooltip-content">
+                                            <div class="tooltip-item">
+                                                <span class="tooltip-label">Tồn kho</span>
+                                                <span class="tooltip-value">@(product.Inventory?.StockQuantity.ToString() ?? "N/A")</span>
+                                            </div>
+                                            <div class="tooltip-item">
+                                                <span class="tooltip-label">Danh mục</span>
+                                                <span class="tooltip-value">@(product.Categories != null && product.Categories.Any() ? string.Join(", ", product.Categories.Select(c => c.Name)) : "Chưa có")</span>
+                                            </div>
+                                            <div class="tooltip-item">
+                                                <span class="tooltip-label">Trạng thái</span>
+                                                <span class="tooltip-value" style="color: @(product.IsActive ? "var(--admin-primary)" : "var(--admin-muted)");">
+                                                    @(product.IsActive ? "Đang bán" : "Ngừng bán")
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    @if (product.ReviewCount > 0)
+                                    {
+                                        <span class="admin-meta-pill" style="color: #fbbf24;">
+                                            ⭐ @product.AverageRating.ToString("F1") (@product.ReviewCount)
+                                        </span>
+                                    }
+                                </div>
+
+                                <div class="admin-product-price">@Math.Round(product.Price, 0).ToString("N0", new CultureInfo("vi-VN")) ₫</div>
+                                <div class="admin-product-note">Card quản trị đồng bộ với phong cách giao diện bán hàng hiện tại.</div>
+
+                                <div class="admin-actions">
+                                    <a asp-action="Details" asp-route-id="@product.Id" class="admin-action admin-action-view">
+                                        <i class="bi bi-eye"></i> Xem
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@product.Id" class="admin-action admin-action-edit">
+                                        <i class="bi bi-pencil-square"></i> Sửa
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@product.Id" class="admin-action admin-action-delete">
+                                        <i class="bi bi-trash3"></i> Xóa
+                                    </a>
+                                </div>
                             </div>
-
-                            <div class="admin-product-description">@GetShortDescription(product.Description)</div>
-
-                            <div class="admin-meta">
-                                <span class="admin-meta-pill"><i class="bi bi-image"></i> @(string.IsNullOrWhiteSpace(product.ImageUrl) ? "Chưa có ảnh" : "Đã có ảnh")</span>
-                                <span class="admin-meta-pill"><i class="bi bi-diagram-3"></i> @(product.Categories?.Count ?? 0) danh mục</span>
-                                @if (product.ReviewCount > 0)
-                                {
-                                    <span class="admin-meta-pill" style="color: #fbbf24;">
-                                        ⭐ @product.AverageRating.ToString("F1") (@product.ReviewCount @(product.ReviewCount == 1 ? "đánh giá" : "đánh giá"))
-                                    </span>
-                                }
-                            </div>
-
-                            <div class="admin-product-price">@Math.Round(product.Price, 0).ToString("N0", new CultureInfo("vi-VN")) ₫</div>
-                            <div class="admin-product-note">Card quản trị đồng bộ với phong cách giao diện bán hàng hiện tại.</div>
-
-                            <div class="admin-actions">
-                                <a asp-action="Details" asp-route-id="@product.Id" class="admin-action admin-action-view">
-                                    <i class="bi bi-eye"></i> Xem
-                                </a>
-                                <a asp-action="Edit" asp-route-id="@product.Id" class="admin-action admin-action-edit">
-                                    <i class="bi bi-pencil-square"></i> Sửa
-                                </a>
-                                <a asp-action="Delete" asp-route-id="@product.Id" class="admin-action admin-action-delete">
-                                    <i class="bi bi-trash3"></i> Xóa
-                                </a>
-                            </div>
-                        </div>
-                    </article>
-                }
-            </div>
+                        </article>
+                    }
+                </div>
+            }
         }
         else
         {

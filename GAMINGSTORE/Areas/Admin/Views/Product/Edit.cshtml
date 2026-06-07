@@ -419,6 +419,55 @@
             width: 100%;
         }
     }
+
+    /* ===== CHIP CHECKBOXES ===== */
+    .category-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 8px;
+    }
+
+    .category-chip-label {
+        cursor: pointer;
+        user-select: none;
+        margin: 0;
+    }
+
+    .category-chip-label input {
+        display: none;
+    }
+
+    .category-chip-label .chip-text {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 16px;
+        border-radius: 999px;
+        background: #fff;
+        border: 1px solid var(--edit-line);
+        color: var(--edit-muted);
+        font-size: 13px;
+        font-weight: 700;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .category-chip-label:hover .chip-text {
+        border-color: var(--edit-primary);
+        color: var(--edit-primary);
+    }
+
+    .category-chip-label input:checked + .chip-text {
+        background: var(--edit-primary);
+        color: #fff;
+        border-color: var(--edit-primary);
+        box-shadow: 0 4px 12px rgba(217, 46, 46, 0.25);
+    }
+
+    .category-chip-label input:checked:hover + .chip-text {
+        background: var(--edit-primary-dark);
+        border-color: var(--edit-primary-dark);
+        color: #fff;
+    }
 </style>
 
 <div class="container edit-shell">
@@ -427,8 +476,8 @@
 
         <div class="edit-hero-row">
             <div>
-                <h1 class="edit-title">Tinh chỉnh sản phẩm với giao diện quản trị rõ ràng và trực quan hơn.</h1>
-                <p class="edit-desc">Bạn có thể cập nhật tên, giá, mô tả, danh mục và bộ ảnh trong cùng một bố cục nhìn nhanh. Trang này đã được làm lại theo cùng tông với storefront và dashboard quản trị mới.</p>
+                <h1 class="edit-title">Tinh chỉnh sản phẩm</h1>
+                <p class="edit-desc">Bạn có thể cập nhật tên, giá, mô tả, danh mục và bộ ảnh trong cùng một bố cục nhìn nhanh</p>
             </div>
 
             <a asp-action="Index" class="edit-back-link">
@@ -485,11 +534,21 @@
                         <input type="number" name="stockQuantity" class="field-input" value="@(Model.Inventory?.StockQuantity ?? 0)" min="0" />
                     </div>
 
-                    <div>
-                        <label class="field-label">Danh mục</label>
-                        <select name="categoryIds" asp-items="ViewBag.CategoryList" class="field-select" multiple>
-                        </select>
-                        <div class="field-help">Giữ phím Ctrl hoặc Cmd để chọn nhiều danh mục cùng lúc. Phần này ảnh hưởng trực tiếp tới gợi ý sản phẩm tương tự và khu lọc ngoài storefront.</div>
+                    <div class="category-group">
+                        <label class="field-label">Danh mục (Chọn nhiều)</label>
+                        <div class="category-chips">
+                            @if (ViewBag.CategoryList != null)
+                            {
+                                foreach (var item in (IEnumerable<SelectListItem>)ViewBag.CategoryList)
+                                {
+                                    <label class="category-chip-label">
+                                        <input type="checkbox" name="categoryIds" value="@item.Value" @(item.Selected ? "checked" : "") />
+                                        <span class="chip-text">@item.Text</span>
+                                    </label>
+                                }
+                            }
+                        </div>
+                        <div class="field-help">Click trực tiếp vào từng thẻ để thêm hoặc gỡ danh mục. Rất trực quan và không cần giữ phím Ctrl.</div>
                     </div>
 
                     <div>
@@ -519,17 +578,17 @@
                         <img src="@existingImages[0]" id="previewImage" alt="@Model.Name" onerror="this.src='/images/no-image.png'" />
                     </div>
 
-                    @if (existingImages.Count > 1)
-                    {
-                        <div class="thumb-grid">
+                    <div class="thumb-grid" id="thumbGrid">
+                        @if (existingImages.Count > 1)
+                        {
                             @foreach (var image in existingImages.Take(6))
                             {
                                 <div class="thumb-item">
                                     <img src="@image" alt="Thumbnail" onerror="this.src='/images/no-image.png'" />
                                 </div>
                             }
-                        </div>
-                    }
+                        }
+                    </div>
 
                     <div class="upload-box">
                         <label class="field-label">Thay bộ ảnh mới</label>
@@ -552,20 +611,40 @@
     <script>
         const imageInput = document.getElementById('imageInput');
         const previewImage = document.getElementById('previewImage');
+        const thumbGrid = document.getElementById('thumbGrid');
 
-        if (imageInput && previewImage) {
+        if (imageInput && previewImage && thumbGrid) {
             imageInput.addEventListener('change', function (event) {
-                const file = event.target.files && event.target.files[0];
-
-                if (!file) {
+                const files = Array.from(event.target.files || []);
+                
+                // Only clear the grid if the user selected new files
+                if (files.length > 0) {
+                    thumbGrid.innerHTML = '';
+                } else {
                     return;
                 }
 
-                const reader = new FileReader();
-                reader.onload = function (loadEvent) {
+                const firstReader = new FileReader();
+                firstReader.onload = function (loadEvent) {
                     previewImage.src = loadEvent.target?.result;
                 };
-                reader.readAsDataURL(file);
+                firstReader.readAsDataURL(files[0]);
+
+                files.slice(0, 6).forEach(function (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (loadEvent) {
+                        const item = document.createElement('div');
+                        item.className = 'thumb-item';
+
+                        const img = document.createElement('img');
+                        img.src = loadEvent.target?.result;
+                        img.alt = file.name;
+
+                        item.appendChild(img);
+                        thumbGrid.appendChild(item);
+                    };
+                    reader.readAsDataURL(file);
+                });
             });
         }
     </script>

@@ -1,12 +1,193 @@
-﻿@model GAMINGSTORE.Models.Product
+@model GAMINGSTORE.Models.Product
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Xóa Sản Phẩm";
 }
 
-<h2>Delete Product</h2>
-<form asp-action="Delete" method="post">
-    <input type="hidden" asp-for="Id" />
-    <p>Are you sure you want to delete @Model.Name?</p>
-    <button type="submit" class="btn btn-danger">Delete</button>
-</form>
+<style>
+    :root {
+        --delete-danger: #dc2626;
+        --delete-danger-dark: #b91c1c;
+        --delete-text: #18212f;
+        --delete-muted: #64748b;
+        --delete-line: rgba(15, 23, 42, 0.08);
+        --delete-bg: #f5f7fb;
+    }
+
+    body {
+        background:
+            radial-gradient(circle at top right, rgba(220, 38, 38, 0.08), transparent 24%),
+            linear-gradient(180deg, #fffaf8 0%, var(--delete-bg) 40%, #eef2f7 100%);
+    }
+
+    .delete-shell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: calc(100vh - 140px);
+        padding: 40px 20px;
+    }
+
+    .delete-card {
+        background: rgba(255,255,255,0.96);
+        border: 1px solid rgba(220, 38, 38, 0.2);
+        border-radius: 32px;
+        box-shadow: 0 32px 64px rgba(220, 38, 38, 0.08), 0 12px 24px rgba(15, 23, 42, 0.04);
+        max-width: 540px;
+        width: 100%;
+        text-align: center;
+        padding: 48px 40px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .delete-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: linear-gradient(90deg, var(--delete-danger), #ff6b6b);
+    }
+
+    .warning-icon {
+        width: 80px;
+        height: 80px;
+        background: #fef2f2;
+        color: var(--delete-danger);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        margin: 0 auto 24px;
+        box-shadow: 0 0 0 8px rgba(254, 242, 242, 0.5);
+    }
+
+    .delete-title {
+        font-size: 28px;
+        font-weight: 900;
+        color: var(--delete-text);
+        margin-bottom: 12px;
+        line-height: 1.2;
+    }
+
+    .delete-desc {
+        font-size: 15px;
+        color: var(--delete-muted);
+        line-height: 1.6;
+        margin-bottom: 32px;
+    }
+
+    .product-preview {
+        background: #fafaf9;
+        border: 1px dashed rgba(220, 38, 38, 0.3);
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 36px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .product-name {
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--delete-text);
+    }
+
+    .product-price {
+        font-size: 20px;
+        font-weight: 900;
+        color: var(--delete-danger);
+    }
+
+    .delete-actions {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+    }
+
+    .btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 50px;
+        padding: 0 28px;
+        border-radius: 16px;
+        font-size: 15px;
+        font-weight: 800;
+        background: #fff;
+        color: var(--delete-text);
+        border: 1px solid var(--delete-line);
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-cancel:hover {
+        background: #f1f5f9;
+        color: var(--delete-text);
+    }
+
+    .btn-confirm {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 50px;
+        padding: 0 28px;
+        border-radius: 16px;
+        font-size: 15px;
+        font-weight: 800;
+        background: var(--delete-danger);
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 12px 24px rgba(220, 38, 38, 0.2);
+    }
+
+    .btn-confirm:hover {
+        background: var(--delete-danger-dark);
+        transform: translateY(-2px);
+    }
+
+    @@media (max-width: 576px) {
+        .delete-card {
+            padding: 32px 24px;
+        }
+
+        .delete-actions {
+            flex-direction: column;
+        }
+
+        .btn-cancel, .btn-confirm {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="container delete-shell">
+    <div class="delete-card animate-in fade-in zoom-in duration-300">
+        <div class="warning-icon">
+            <i class="bi bi-exclamation-triangle"></i>
+        </div>
+        
+        <h1 class="delete-title">Xác nhận xóa sản phẩm?</h1>
+        <p class="delete-desc">Hành động này không thể hoàn tác. Sản phẩm sẽ bị xóa hoàn toàn khỏi cơ sở dữ liệu và catalog của cửa hàng.</p>
+        
+        <div class="product-preview">
+            <div class="product-name">@Model.Name</div>
+            <div class="product-price">@Model.Price.ToString("N0", new System.Globalization.CultureInfo("vi-VN")) ₫</div>
+        </div>
+
+        <form asp-action="Delete" method="post" class="delete-actions">
+            <input type="hidden" asp-for="Id" />
+            <a asp-action="Index" class="btn-cancel">Hủy, quay lại</a>
+            <button type="submit" class="btn-confirm">
+                <i class="bi bi-trash3"></i> Xóa vĩnh viễn
+            </button>
+        </form>
+    </div>
+</div>

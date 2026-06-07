@@ -135,7 +135,7 @@ namespace GAMINGSTORE.Areas.Admin.Controllers
 
             var categories = await _categoryRepository.GetAllAsync();
             var selectedCategoryIds = product.Categories?.Select(c => c.Id).ToList() ?? new List<int>();
-            ViewBag.CategoryList = new SelectList(categories, "Id", "Name", selectedCategoryIds);
+            ViewBag.CategoryList = new MultiSelectList(categories, "Id", "Name", selectedCategoryIds);
 
             return View(product);
         }

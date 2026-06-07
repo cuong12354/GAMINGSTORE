@@ -433,6 +433,55 @@
             width: 100%;
         }
     }
+
+    /* ===== CHIP CHECKBOXES ===== */
+    .category-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 8px;
+    }
+
+    .category-chip-label {
+        cursor: pointer;
+        user-select: none;
+        margin: 0;
+    }
+
+    .category-chip-label input {
+        display: none;
+    }
+
+    .category-chip-label .chip-text {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 16px;
+        border-radius: 999px;
+        background: #fff;
+        border: 1px solid var(--create-line);
+        color: var(--create-muted);
+        font-size: 13px;
+        font-weight: 700;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .category-chip-label:hover .chip-text {
+        border-color: var(--create-primary);
+        color: var(--create-primary);
+    }
+
+    .category-chip-label input:checked + .chip-text {
+        background: var(--create-primary);
+        color: #fff;
+        border-color: var(--create-primary);
+        box-shadow: 0 4px 12px rgba(217, 46, 46, 0.25);
+    }
+
+    .category-chip-label input:checked:hover + .chip-text {
+        background: var(--create-primary-dark);
+        border-color: var(--create-primary-dark);
+        color: #fff;
+    }
 </style>
 
 <div class="container create-shell">
@@ -441,8 +490,8 @@
 
         <div class="create-hero-row">
             <div>
-                <h1 class="create-title">Tạo sản phẩm mới với giao diện quản trị đồng bộ và dễ nhìn hơn.</h1>
-                <p class="create-desc">Trang thêm mới giờ cùng phong cách với dashboard quản trị và trang chỉnh sửa. Bạn có thể nhập tên, giá, mô tả, danh mục và bộ ảnh trong một bố cục rõ ràng hơn để lên catalog nhanh.</p>
+                <h1 class="create-title">Khởi tạo sản phẩm mới</h1>
+                <p class="create-desc">Tạo siêu phẩm tiếp theo cho cửa hàng của bạn. Thiết lập giá, gán danh mục và cập nhật bộ ảnh nhanh chóng trên một giao diện trực quan.</p>
             </div>
 
             <a asp-action="Index" class="create-back-link">
@@ -491,11 +540,21 @@
                         <span asp-validation-for="Price" class="text-danger validation-note"></span>
                     </div>
 
-                    <div>
-                        <label class="field-label">Danh mục</label>
-                        <select name="categoryIds" asp-items="ViewBag.CategoryList" class="field-select" multiple>
-                        </select>
-                        <div class="field-help">Giữ phím Ctrl hoặc Cmd để chọn nhiều danh mục cùng lúc. Một sản phẩm có thể thuộc nhiều nhóm để hiển thị linh hoạt hơn ngoài storefront.</div>
+                    <div class="category-group">
+                        <label class="field-label">Danh mục (Chọn nhiều)</label>
+                        <div class="category-chips">
+                            @if (ViewBag.CategoryList != null)
+                            {
+                                foreach (var item in (IEnumerable<SelectListItem>)ViewBag.CategoryList)
+                                {
+                                    <label class="category-chip-label">
+                                        <input type="checkbox" name="categoryIds" value="@item.Value" />
+                                        <span class="chip-text">@item.Text</span>
+                                    </label>
+                                }
+                            }
+                        </div>
+                        <div class="field-help">Click trực tiếp vào từng thẻ để thêm hoặc gỡ danh mục. Rất trực quan và không cần giữ phím Ctrl.</div>
                     </div>
 
                     <div>
