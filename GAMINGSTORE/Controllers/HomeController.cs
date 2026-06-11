@@ -210,9 +210,10 @@ namespace GAMINGSTORE.Controllers
                 "gigabyte", "aorus", "apple", "macbook", "samsung", "dell", "lg",
                 "intel", "core ultra", "core i5", "core i7", "core i9",
                 "amd", "ryzen", "ryzen ai", "rtx 4060", "rtx 4070", "rtx 4090", "rtx",
+                "bàn gaming", "ghế gaming", "tai nghe", "bàn phím", "màn hình", "lót chuột", "tay cầm",
                 "gaming", "ai", "hi-end", "văn phòng", "đồ họa", "build pc",
                 "24 inch", "27 inch", "32 inch", "144hz", "165hz", "240hz", "360hz", "oled",
-                "chuột", "bàn phím", "tai nghe", "màn hình", "laptop", "pc"
+                "chuột", "laptop", "pc", "loa", "micro", "webcam"
             };
 
             var lowerKeyword = keyword.ToLower();

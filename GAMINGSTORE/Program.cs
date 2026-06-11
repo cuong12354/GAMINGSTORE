@@ -57,6 +57,7 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LoginPath = "/Identity/Account/Login";
     options.LogoutPath = "/Identity/Account/Logout";
     options.AccessDeniedPath = "/Identity/Account/AccessDenied"; 
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // ✨ Tăng cường bảo mật mạng
 });
 
 builder.Services.AddRazorPages();
@@ -68,6 +69,7 @@ builder.Services.AddSession(options =>
     options.Cookie.Name = ".GAMINGSTORE.Session.v2";
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // ✨ Chống đánh cắp Session
 });
 
 builder.Services.AddAuthorization(options =>

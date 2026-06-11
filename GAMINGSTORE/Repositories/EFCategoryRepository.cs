@@ -1,4 +1,4 @@
-﻿using GAMINGSTORE.Models;
+using GAMINGSTORE.Models;
 using Microsoft.EntityFrameworkCore;
 using GAMINGSTORE.Data;
 

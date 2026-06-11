@@ -30,6 +30,7 @@ namespace GAMINGSTORE.Services
         public async Task<List<Order>> GetAllOrdersAsync()
         {
             return await _context.Orders
+                .AsNoTracking() // ✨ Tối ưu hóa hiệu năng
                 .Include(o => o.ApplicationUser)
                 .Include(o => o.OrderDetails)
                 .OrderByDescending(o => o.OrderDate)
